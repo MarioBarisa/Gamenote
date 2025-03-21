@@ -1,18 +1,10 @@
 # Specijalizirana Web Aplikacija za Praćenje osobne biblioteke videoigara korisnika
 
-## Sastav tima
-
 - Mario Bariša
-
-## Fakultet informatike u Puli
 
 [Fakultet informatike u Puli](https://www.fip.unipu.hr)
 
-## Kolegij: Programsko inženjerstvo
-
 [Kolegij Programsko inženjerstvo](https://ntankovic.unipu.hr/pi)
-
-## Mentor
 
 mag. inf. Alesandro Žužić i [doc. dr. sc. Nikola Tanković](https://ntankovic.unipu.hr)
 
