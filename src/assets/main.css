@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @plugin "daisyui";
+@tailwind/preflight;
+@tailwind utilities;
+
 
 @plugin "daisyui/theme" {
   name: "dim";
