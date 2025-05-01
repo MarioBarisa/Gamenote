@@ -1,29 +1,47 @@
-# Gamenote
+# Specijalizirana Web Aplikacija za Praćenje osobne biblioteke videoigara korisnika
 
-This template should help get you started developing with Vue 3 in Vite.
+- Mario Bariša
 
-## Recommended IDE Setup
+[Fakultet informatike u Puli](https://www.fip.unipu.hr)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+[Kolegij Programsko inženjerstvo](https://ntankovic.unipu.hr/pi)
 
-## Customize configuration
+mag. inf. Alesandro Žužić i [doc. dr. sc. Nikola Tanković](https://ntankovic.unipu.hr)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+---
 
-## Project Setup
+## Kratki opis funkcionalnosti
 
-```sh
-npm install
-```
+Aplikacija omogućava korisnicima praćenje odigranih videoigara kroz sljedeće značajke:
 
-### Compile and Hot-Reload for Development
+- **Unos igara:** Korisnici mogu dodati sve odigrane videoigre ( te one koje igraju ).
+- **Strukturirana lista:** Omogućuje pregled odigrani i onih koje se trenutno igraju + organizaciju igara na jednom mjestu.
+- **Osnovne informacije:** Pri unosu ili odabiru igre, korisnici unose/odabiru:
+  - Naslov videoigre
+  - Platformu na kojoj je igrana
+  - Vrijeme provedeno u igri
+  - Žanr videoigre
+  - Izdavača
+  - Ocjenu (primjerice zvjezdice - 1/5, ocjena 1/5 ili 1/10)
+  - Postotak riješenih achivmenta
+  - Osobne bilješke
+  - Razdoblje igranja (od kada do kada, te da li igraju igru stalno/trenutno)
+- **Analitički prikazi:** Korisnici dobivaju vizualne prikaze, uključujući:
+  - Pie chart žanrova videoigara ili drugi oblik statističkog prikaza
+  - Statistiku najzastupljenijih platformi
+  - Kronološki prikaz (timeline) aktivnosti na osobnom home feedu
+  - Pregled profila igrača s analizama o preferencijama
+- **Dodatne značajke (ako bude vremena):**
+  - Implementacija login sustava (vrlo visok prioritet)
+  - Mogućnost praćenja drugih korisnika (funkcionalnost "follow")
+  - Timeline aktivnosti pratitelja (pregled onoga što igraju korisnici koje pratiš)
+  - Osnovna stranica profila (biografija, profilna slika, linkovi na druge mreže - vrlo visok prioritet)
+  - fora sstranice povezane sa igrom (wiki/mape...)
+  - metacritic score ( ili open critic -> moram pogledat TOS )
+  - još nešto fora ako se sjetim 
 
-```sh
-npm run dev
-```
+## Link na javni prototip
 
-### Compile and Minify for Production
+- bude stavljeno u bliskoj budućnosti
 
-```sh
-npm run build
-```
+---
