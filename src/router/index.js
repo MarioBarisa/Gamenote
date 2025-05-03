@@ -1,62 +1,52 @@
-
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import { supabase } from '../supabase';
 import Home from '../views/Home.vue';
-import Login from '../views/Login.vue';
-import Profile from '../views/Profile.vue';
-import GameDetails from '../views/GameDetails.vue';
 import AddGame from '../views/AddGame.vue';
-
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: { guestOnly: true }
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/games/:id',
-    name: 'GameDetails',
-    component: GameDetails,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/add-game',
-    name: 'AddGame',
-    component: AddGame,
-    meta: { requiresAuth: true }
-  }
-];
+import Games from '../views/Games.vue';
+import GameDetails from '../views/GameDetails.vue';
+import Stats from '../views/Stats.vue';
+import SignIn from '../components/SignIn.vue';
+import SignUp from '../components/SignUp.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-});
-
-// Provjera autentifikacije prije svake promjene rute
-router.beforeEach(async (to, from, next) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const guestOnly = to.matched.some(record => record.meta.guestOnly);
-
-  if (requiresAuth && !session) {
-    next('/login');
-  } else if (guestOnly && session) {
-    next('/');
-  } else {
-    next();
-  }
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/add-game',
+      name: 'add-game',
+      component: AddGame
+    },
+    {
+      path: '/games',
+      name: 'games',
+      component: Games
+    },
+    {
+      path: '/games/:id',
+      name: 'game-details',
+      component: GameDetails
+    },
+    {
+      path: '/stats',
+      name: 'stats',
+      component: Stats
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: SignIn
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: SignUp
+    }
+  ]
 });
 
 export default router;

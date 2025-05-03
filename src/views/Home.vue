@@ -1,54 +1,83 @@
-// src/views/Home.vue
+<!-- src/views/Home.vue -->
 <template>
   <div class="home">
-    <div v-if="!userStore.isLoggedIn" class="hero min-h-[70vh] bg-base-200">
-      <div class="hero-content text-center">
-        <div class="max-w-md">
-          <h1 class="text-5xl font-bold">Gamenote</h1>
-          <p class="py-6">Dobrodošli u Gamenote - vašu osobnu biblioteku videoigara. Pratite igre koje ste odigrali, koliko vremena ste proveli igrajući, i pogledajte statistike vaše kolekcije.</p>
-          <router-link to="/login" class="btn btn-primary">Započni</router-link>
+    <!-- Hero sekcija -->
+    <section class="hero py-12 bg-base-300 rounded-box mb-10">
+      <div class="text-center">
+        <h1 class="text-5xl font-bold mb-4">Gamenote</h1>
+        <p class="text-xl mb-6">Prati, dijeli i otkrivaj svoje omiljene videoigre</p>
+        <router-link to="/add-game" class="btn btn-primary btn-lg">Dodaj svoju prvu igru</router-link>
+      </div>
+    </section>
+
+    <!-- Trenutno igraš -->
+    <section v-if="currentlyPlaying.length > 0" class="mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold">Trenutno igraš</h2>
+        <router-link to="/games?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToGame(game.id)" class="cursor-pointer">
+          <GameCard :game="game" />
         </div>
       </div>
-    </div>
-    
-    <div v-else>
-      <h1 class="text-3xl font-bold mb-6">Vaša kolekcija igara</h1>
-      
-      <div class="tabs tabs-boxed mb-4">
-        <a class="tab" :class="{ 'tab-active': activeTab === 'all' }" 
-           @click="activeTab = 'all'">Sve igre</a>
-        <a class="tab" :class="{ 'tab-active': activeTab === 'playing' }" 
-           @click="activeTab = 'playing'">Trenutno igram</a>
-        <a class="tab" :class="{ 'tab-active': activeTab === 'completed' }" 
-           @click="activeTab = 'completed'">Završene</a>
+    </section>
+
+    <!-- Popularne igre -->
+    <section class="mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold">Popularne igre</h2>
+        <router-link to="/games?filter=popular" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
       </div>
-      
-      <div v-if="loading" class="flex justify-center my-8">
+      <div v-if="loading" class="flex justify-center py-12">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
-      
-      <div v-else-if="games.length === 0" class="text-center my-8">
-        <p class="text-xl">Nema igara za prikaz</p>
-        <router-link to="/add-game" class="btn btn-primary mt-4">Dodaj prvu igru</router-link>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div v-for="game in popularGames.slice(0, 5)" :key="game.id" class="cursor-pointer" @click="navigateToGame(game.id)">
+          <GameCard :game="game" />
+        </div>
       </div>
-      
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <GameCard 
-          v-for="game in filteredGames" 
-          :key="game.id" 
-          :game="game" 
-          @click="navigateToGameDetails(game.id)" 
-        />
+    </section>
+
+    <!-- Nedavno dodane -->
+    <section class="mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold">Nedavno dodane</h2>
+        <router-link to="/games?filter=recent" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
       </div>
-    </div>
+      <div v-if="loading" class="flex justify-center py-12">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div v-for="game in recentGames.slice(0, 5)" :key="game.id" class="cursor-pointer" @click="navigateToGame(game.id)">
+          <GameCard :game="game" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Najbolje ocijenjene -->
+    <section class="mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold">Najbolje ocijenjene</h2>
+        <router-link to="/games?filter=top-rated" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
+      </div>
+      <div v-if="loading" class="flex justify-center py-12">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div v-for="game in topRatedGames.slice(0, 5)" :key="game.id" class="cursor-pointer" @click="navigateToGame(game.id)">
+          <GameCard :game="game" />
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
+import { useUserStore } from '../stores/user';
 import GameCard from '../components/GameCard.vue';
 
 export default {
@@ -58,24 +87,61 @@ export default {
   setup() {
     const userStore = useUserStore();
     const router = useRouter();
-    const games = ref([]);
-    const loading = ref(false);
-    const activeTab = ref('all');
+    
+    const loading = ref(true);
+    const currentlyPlaying = ref([]);
+    const popularGames = ref([]);
+    const recentGames = ref([]);
+    const topRatedGames = ref([]);
     
     const fetchGames = async () => {
-      if (!userStore.user.value) return;
-      
       loading.value = true;
       
+      if (!userStore.user.value) {
+        loading.value = false;
+        return;
+      }
+      
       try {
-        const { data, error } = await supabase
+        // Dohvati trenutno igrane igre
+        const { data: currentGames } = await supabase
           .from('games')
           .select('*')
-          .eq('user_id', userStore.user.value.id);
-          
-        if (error) throw error;
+          .eq('user_id', userStore.user.value.id)
+          .eq('currently_playing', true)
+          .order('updated_at', { ascending: false });
         
-        games.value = data || [];
+        currentlyPlaying.value = currentGames || [];
+        
+        // Dohvati nedavno dodane igre
+        const { data: recent } = await supabase
+          .from('games')
+          .select('*')
+          .eq('user_id', userStore.user.value.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        
+        recentGames.value = recent || [];
+        
+        // Dohvati najbolje ocijenjene igre
+        const { data: topRated } = await supabase
+          .from('games')
+          .select('*')
+          .eq('user_id', userStore.user.value.id)
+          .order('rating', { ascending: false })
+          .limit(10);
+        
+        topRatedGames.value = topRated || [];
+        
+        // Dohvati popularne igre (po vremenu igranja)
+        const { data: popular } = await supabase
+          .from('games')
+          .select('*')
+          .eq('user_id', userStore.user.value.id)
+          .order('play_time', { ascending: false })
+          .limit(10);
+        
+        popularGames.value = popular || [];
       } catch (error) {
         console.error('Greška pri dohvaćanju igara:', error);
       } finally {
@@ -83,29 +149,21 @@ export default {
       }
     };
     
-    const filteredGames = computed(() => {
-      if (activeTab.value === 'all') {
-        return games.value;
-      } else if (activeTab.value === 'playing') {
-        return games.value.filter(game => game.currently_playing);
-      } else {
-        return games.value.filter(game => !game.currently_playing && game.end_date);
-      }
-    });
-    
-    const navigateToGameDetails = (id) => {
+    const navigateToGame = (id) => {
       router.push(`/games/${id}`);
     };
     
-    onMounted(fetchGames);
+    onMounted(async () => {
+      await fetchGames();
+    });
     
     return {
-      userStore,
-      games,
       loading,
-      activeTab,
-      filteredGames,
-      navigateToGameDetails
+      currentlyPlaying,
+      popularGames,
+      recentGames,
+      topRatedGames,
+      navigateToGame
     };
   }
 };

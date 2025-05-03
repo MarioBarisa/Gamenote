@@ -1,120 +1,122 @@
-// src/views/AddGame.vue
+<!-- src/views/AddGame.vue -->
 <template>
   <div class="add-game">
-    <h1 class="text-3xl font-bold mb-6">Dodaj novu igru</h1>
+    <h1 class="text-4xl font-bold mb-8 text-center">Dodaj novu igru</h1>
     
-    <div class="card bg-base-200">
+    <div class="card bg-base-200 shadow-xl">
       <div class="card-body">
-        <div class="mb-4">
-          <h2 class="text-xl mb-2">Pretraži igru</h2>
-          <div class="flex gap-2">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold mb-4">Pretraži igru</h2>
+          <div class="flex gap-3">
             <input 
               type="text" 
               v-model="searchQuery" 
-              placeholder="Unesite naziv igre" 
-              class="input input-bordered flex-grow"
+              placeholder="Unesite naziv igre..." 
+              class="input input-bordered input-lg flex-grow"
               @keyup.enter="searchGames" 
             />
-            <button @click="searchGames" class="btn btn-primary" :disabled="searchLoading">
+            <button @click="searchGames" class="btn btn-primary btn-lg" :disabled="searchLoading">
               <span v-if="searchLoading" class="loading loading-spinner"></span>
               <span v-else>Pretraži</span>
             </button>
           </div>
         </div>
         
-        <div v-if="searchResults.length > 0" class="search-results mb-6">
-          <h3 class="text-lg mb-2">Rezultati pretrage:</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-if="searchResults.length > 0" class="search-results mb-8">
+          <h3 class="text-xl font-bold mb-4">Rezultati pretrage</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div 
               v-for="game in searchResults" 
               :key="game.id" 
-              class="card bg-base-100 cursor-pointer hover:bg-base-300 transition-colors"
+              class="card bg-base-100 cursor-pointer transition-all duration-300 hover:bg-base-300 hover:shadow-lg"
               @click="selectGame(game)"
             >
-              <figure v-if="game.background_image">
-                <img :src="game.background_image" :alt="game.name" class="w-full h-32 object-cover" />
+              <figure v-if="game.background_image" class="h-40">
+                <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover" />
               </figure>
-              <div class="card-body p-3">
-                <h4 class="font-bold">{{ game.name }}</h4>
-                <p class="text-sm">{{ formatReleaseDate(game.released) }}</p>
+              <div class="card-body p-4">
+                <h4 class="card-title text-lg">{{ game.name }}</h4>
+                <p class="text-sm opacity-70">{{ formatReleaseDate(game.released) }}</p>
               </div>
             </div>
           </div>
         </div>
         
         <form v-if="selectedGame" @submit.prevent="saveGame" class="game-form">
-          <h3 class="text-xl mb-4">Informacije o igri</h3>
+          <h3 class="text-2xl font-bold mb-6 text-center">Informacije o igri</h3>
           
-          <div class="form-control">
-            <label class="label">Naziv</label>
-            <input type="text" v-model="gameForm.title" class="input input-bordered" required />
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Platforma</label>
-            <select v-model="gameForm.platform" class="select select-bordered" required>
-              <option value="" disabled selected>Odaberi platformu</option>
-              <option v-for="platform in platforms" :key="platform" :value="platform">
-                {{ platform }}
-              </option>
-            </select>
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Žanr</label>
-            <input type="text" v-model="gameForm.genre" class="input input-bordered" />
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Izdavač</label>
-            <input type="text" v-model="gameForm.publisher" class="input input-bordered" />
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Vrijeme igranja (sati)</label>
-            <input type="number" v-model="gameForm.play_time" class="input input-bordered" min="0" />
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Ocjena</label>
-            <div class="rating">
-              <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="gameForm.rating" />
-              <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="gameForm.rating" />
-              <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="gameForm.rating" />
-              <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="gameForm.rating" />
-              <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="gameForm.rating" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-control">
+              <label class="label font-medium">Naziv</label>
+              <input type="text" v-model="gameForm.title" class="input input-bordered" required />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Platforma</label>
+              <select v-model="gameForm.platform" class="select select-bordered" required>
+                <option value="" disabled selected>Odaberi platformu</option>
+                <option v-for="platform in platforms" :key="platform" :value="platform">
+                  {{ platform }}
+                </option>
+              </select>
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Žanr</label>
+              <input type="text" v-model="gameForm.genre" class="input input-bordered" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Izdavač</label>
+              <input type="text" v-model="gameForm.publisher" class="input input-bordered" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Vrijeme igranja (sati)</label>
+              <input type="number" v-model="gameForm.play_time" class="input input-bordered" min="0" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Ocjena</label>
+              <div class="rating rating-lg">
+                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="gameForm.rating" />
+                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="gameForm.rating" />
+                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="gameForm.rating" />
+                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="gameForm.rating" />
+                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="gameForm.rating" />
+              </div>
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Postotak ostvarenih achievementa (%)</label>
+              <input type="number" v-model="gameForm.achievement_percent" class="input input-bordered" min="0" max="100" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Datum početka igranja</label>
+              <input type="date" v-model="gameForm.start_date" class="input input-bordered" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Datum završetka igranja</label>
+              <input type="date" v-model="gameForm.end_date" class="input input-bordered" />
+            </div>
+            
+            <div class="form-control">
+              <label class="flex items-center cursor-pointer mt-8">
+                <input type="checkbox" v-model="gameForm.currently_playing" class="checkbox checkbox-primary" />
+                <span class="label-text ml-2 text-lg">Trenutno igram</span>
+              </label>
             </div>
           </div>
           
-          <div class="form-control mt-2">
-            <label class="label">Postotak ostvarenih achievementa (%)</label>
-            <input type="number" v-model="gameForm.achievement_percent" class="input input-bordered" min="0" max="100" />
+          <div class="form-control mt-6">
+            <label class="label font-medium">Bilješke</label>
+            <textarea v-model="gameForm.notes" class="textarea textarea-bordered h-32"></textarea>
           </div>
           
-          <div class="form-control mt-2">
-            <label class="label">Bilješke</label>
-            <textarea v-model="gameForm.notes" class="textarea textarea-bordered h-24"></textarea>
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Datum početka igranja</label>
-            <input type="date" v-model="gameForm.start_date" class="input input-bordered" />
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="label">Datum završetka igranja</label>
-            <input type="date" v-model="gameForm.end_date" class="input input-bordered" />
-          </div>
-          
-          <div class="form-control mt-2">
-            <label class="flex items-center cursor-pointer">
-              <input type="checkbox" v-model="gameForm.currently_playing" class="checkbox checkbox-primary" />
-              <span class="label-text ml-2">Trenutno igram</span>
-            </label>
-          </div>
-          
-          <div class="form-control mt-4">
-            <button type="submit" class="btn btn-primary" :disabled="saveLoading">
+          <div class="form-control mt-8">
+            <button type="submit" class="btn btn-primary btn-lg mx-auto w-full md:w-1/2" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
               <span v-else>Spremi igru</span>
             </button>
@@ -230,7 +232,7 @@ export default {
           
         if (error) throw error;
         
-        // Preusmjeri na stranicu detalja igre
+        // ISPRAVAK GREŠKE - pravilno dohvaća prvi element niza
         if (data && data.length > 0) {
           router.push(`/games/${data[0].id}`);
         } else {
