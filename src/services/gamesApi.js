@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 
-const API_KEY = 'API';
+const API_KEY = 'API_KEY_HERE'; // MOJI API
 const BASE_URL = 'https://api.rawg.io/api';
 
 export const useGamesApi = () => {
@@ -69,12 +69,60 @@ export const useGamesApi = () => {
       return [];
     }
   };
+  
+  const getPopularGames = async () => {
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const response = await fetch(
+        `${BASE_URL}/games?key=${API_KEY}&ordering=-rating&page_size=10`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Greška pri dohvaćanju popularnih igara');
+      }
+      
+      const data = await response.json();
+      return data.results;
+    } catch (err) {
+      error.value = err.message;
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
+  };
+  
+  const getRecentGames = async () => {
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const response = await fetch(
+        `${BASE_URL}/games?key=${API_KEY}&ordering=-released&page_size=10`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Greška pri dohvaćanju nedavnih igara');
+      }
+      
+      const data = await response.json();
+      return data.results;
+    } catch (err) {
+      error.value = err.message;
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
   return {
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
     searchGames,
     getGameDetails,
-    getGameScreenshots
+    getGameScreenshots,
+    getPopularGames,
+    getRecentGames
   };
 };

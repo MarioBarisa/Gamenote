@@ -17,6 +17,21 @@ const router = createRouter({
       component: Home
     },
     {
+      path: '/about',
+      name: 'about',
+      redirect: '/'
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      redirect: '/'
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      redirect: '/'
+    },
+    {
       path: '/add-game',
       name: 'add-game',
       component: AddGame
@@ -47,6 +62,30 @@ const router = createRouter({
       component: SignUp
     }
   ]
+});
+
+
+router.beforeEach(async (to, from, next) => {
+  try {
+    const userStore = await import('../stores/user').then(module => module.useUserStore());
+    
+    await userStore.fetchUser();
+    const isAuthenticated = userStore.isLoggedIn;
+    
+    
+    const authRequiredRoutes = ['add-game', 'games', 'game-details', 'stats'];
+    
+    
+    if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
+      console.log('Redirecting to login because auth required and not authenticated');
+      next({ name: 'login' });
+    } else {
+      next();
+    }
+  } catch (error) {
+    console.error('Error in navigation guard:', error);
+    next('/login');
+  }
 });
 
 export default router;

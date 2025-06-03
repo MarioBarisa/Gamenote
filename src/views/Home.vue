@@ -10,63 +10,63 @@
       </div>
     </section>
 
-    <!-- Trenutno igraš -->
-    <section v-if="currentlyPlaying.length > 0" class="mb-12">
+    <!-- Trenutno igraš - samo za ulogirane korisnike -->
+    <section v-if="userStore.isLoggedIn && currentlyPlaying.length > 0" class="mb-12">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold">Trenutno igraš</h2>
         <router-link to="/games?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToGame(game.id)" class="cursor-pointer">
+        <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)" class="cursor-pointer">
           <GameCard :game="game" />
         </div>
       </div>
     </section>
 
-    <!-- Popularne igre -->
+    <!-- Popularne igre - za sve korisnike, RAWG API -->
     <section class="mb-12">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold">Popularne igre</h2>
-        <router-link to="/games?filter=popular" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
+        <a href="https://rawg.io" target="_blank" class="btn btn-sm btn-ghost">Powered by RAWG</a>
       </div>
       <div v-if="loading" class="flex justify-center py-12">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        <div v-for="game in popularGames.slice(0, 5)" :key="game.id" class="cursor-pointer" @click="navigateToGame(game.id)">
-          <GameCard :game="game" />
+        <div v-for="game in popularGames" :key="game.id" class="cursor-pointer" @click="navigateToApiGame(game.id)">
+          <div class="card bg-base-100 shadow-xl h-full">
+            <figure v-if="game.background_image" class="h-40">
+              <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover">
+            </figure>
+            <div class="card-body p-4">
+              <h3 class="card-title text-md">{{ game.name }}</h3>
+              <p class="text-sm opacity-70">Ocjena: {{ game.rating }}/5</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Nedavno dodane -->
+    <!-- Nedavno objavljene - za sve korisnike, RAWG API -->
     <section class="mb-12">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-bold">Nedavno dodane</h2>
-        <router-link to="/games?filter=recent" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
+        <h2 class="text-3xl font-bold">Nedavno objavljene</h2>
+        <a href="https://rawg.io" target="_blank" class="btn btn-sm btn-ghost">Powered by RAWG</a>
       </div>
       <div v-if="loading" class="flex justify-center py-12">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        <div v-for="game in recentGames.slice(0, 5)" :key="game.id" class="cursor-pointer" @click="navigateToGame(game.id)">
-          <GameCard :game="game" />
-        </div>
-      </div>
-    </section>
-
-    <!-- Najbolje ocijenjene -->
-    <section class="mb-12">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-bold">Najbolje ocijenjene</h2>
-        <router-link to="/games?filter=top-rated" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
-      </div>
-      <div v-if="loading" class="flex justify-center py-12">
-        <span class="loading loading-spinner loading-lg"></span>
-      </div>
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        <div v-for="game in topRatedGames.slice(0, 5)" :key="game.id" class="cursor-pointer" @click="navigateToGame(game.id)">
-          <GameCard :game="game" />
+        <div v-for="game in recentGames" :key="game.id" class="cursor-pointer" @click="navigateToApiGame(game.id)">
+          <div class="card bg-base-100 shadow-xl h-full">
+            <figure v-if="game.background_image" class="h-40">
+              <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover">
+            </figure>
+            <div class="card-body p-4">
+              <h3 class="card-title text-md">{{ game.name }}</h3>
+              <p class="text-sm opacity-70">Objavljeno: {{ formatDate(game.released) }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -78,6 +78,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
+import { useGamesApi } from '../services/gamesApi';
 import GameCard from '../components/GameCard.vue';
 
 export default {
@@ -87,83 +88,85 @@ export default {
   setup() {
     const userStore = useUserStore();
     const router = useRouter();
+    const gamesApi = useGamesApi();
     
     const loading = ref(true);
     const currentlyPlaying = ref([]);
     const popularGames = ref([]);
     const recentGames = ref([]);
-    const topRatedGames = ref([]);
     
-    const fetchGames = async () => {
-      loading.value = true;
-      
-      if (!userStore.user.value) {
-        loading.value = false;
+    const fetchUserGames = async () => {
+      // Ako korisnik nije prijavljen, ne dohvaćaj korisničke igre
+      if (!userStore.isLoggedIn || !userStore.user) {
         return;
       }
       
       try {
-        // Dohvati trenutno igrane igre
-        const { data: currentGames } = await supabase
+        const userId = userStore.user.id;
+        
+        // Dohvati samo trenutno igrane igre iz baze
+        const { data: currentGames, error } = await supabase
           .from('games')
           .select('*')
-          .eq('user_id', userStore.user.value.id)
+          .eq('user_id', userId)
           .eq('currently_playing', true)
           .order('updated_at', { ascending: false });
         
         currentlyPlaying.value = currentGames || [];
-        
-        // Dohvati nedavno dodane igre
-        const { data: recent } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userStore.user.value.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        recentGames.value = recent || [];
-        
-        // Dohvati najbolje ocijenjene igre
-        const { data: topRated } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userStore.user.value.id)
-          .order('rating', { ascending: false })
-          .limit(10);
-        
-        topRatedGames.value = topRated || [];
-        
-        // Dohvati popularne igre (po vremenu igranja)
-        const { data: popular } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userStore.user.value.id)
-          .order('play_time', { ascending: false })
-          .limit(10);
-        
-        popularGames.value = popular || [];
       } catch (error) {
-        console.error('Greška pri dohvaćanju igara:', error);
+        console.error('Greška pri dohvaćanju korisničkih igara:', error);
+      }
+    };
+    
+    const fetchApiGames = async () => {
+      loading.value = true;
+      
+      try {
+        // Dohvati popularne igre s RAWG API-ja
+        const popularnigre = await gamesApi.getPopularGames();
+        popularGames.value = popularnigre;
+        
+        // Dohvati nedavno objavljene igre s RAWG API-ja
+        const nedavnigre = await gamesApi.getRecentGames();
+        recentGames.value = nedavnigre;
+      } catch (error) {
+        console.error('Greška pri dohvaćanju API igara:', error);
       } finally {
         loading.value = false;
       }
     };
     
-    const navigateToGame = (id) => {
+    const navigateToUserGame = (id) => {
       router.push(`/games/${id}`);
     };
     
+    const navigateToApiGame = (id) => {
+      // Preusmjeri na dodavanje igre s predpopunjenim API ID-om
+      router.push({
+        path: '/add-game',
+        query: { api_id: id }
+      });
+    };
+    
+    const formatDate = (dateString) => {
+      if (!dateString) return 'Nepoznat datum';
+      return new Date(dateString).toLocaleDateString('hr-HR');
+    };
+    
     onMounted(async () => {
-      await fetchGames();
+      await fetchUserGames();
+      await fetchApiGames();
     });
     
     return {
+      userStore,
       loading,
       currentlyPlaying,
       popularGames,
       recentGames,
-      topRatedGames,
-      navigateToGame
+      navigateToUserGame,
+      navigateToApiGame,
+      formatDate
     };
   }
 };

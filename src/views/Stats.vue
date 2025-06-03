@@ -178,7 +178,7 @@
       const fetchGames = async () => {
         loading.value = true;
         
-        if (!userStore.user.value) {
+        if (!userStore.user || !userStore.user.value) {
           loading.value = false;
           return;
         }

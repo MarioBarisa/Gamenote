@@ -49,10 +49,13 @@ export default {
         return errorMessage.value = error.message;
       }
 
-      // Postavi korisničke podatke u store
+      // user data -> store
       userStore.setUser(data.user);
       
-      // Preusmjeri na home
+      // cekaj da budeš siguran da je veza sa supabase-om uspjela
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // preusmjeri na home
       router.push("/");
       loading.value = false;
     };

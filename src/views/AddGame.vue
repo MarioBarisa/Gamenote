@@ -193,6 +193,8 @@ export default {
       gameForm.genre = gameDetails?.genres?.map(g => g.name).join(', ') || '';
       gameForm.publisher = gameDetails?.publishers?.map(p => p.name).join(', ') || '';
       gameForm.game_api_id = game.id.toString();
+      
+      // Sačuvaj URL slike - potreban za prikaz u GameCard i GameDetails
       gameForm.image = game.background_image;
     };
     
@@ -202,7 +204,8 @@ export default {
     };
     
     const saveGame = async () => {
-      if (!userStore.user.value) {
+      // provjeri ako korisnik postoji
+      if (!userStore.isLoggedIn || !userStore.user) {
         router.push('/login');
         return;
       }
@@ -210,10 +213,9 @@ export default {
       saveLoading.value = true;
       
       try {
-        const { data, error } = await supabase
-          .from('games')
-          .insert({
-            user_id: userStore.user.value.id,
+        // Provjeri postoji li kolona image_url u bazi
+        const gameData = {
+            user_id: userStore.user.id,
             title: gameForm.title,
             platform: gameForm.platform,
             play_time: parseInt(gameForm.play_time) || 0,
@@ -225,9 +227,21 @@ export default {
             start_date: gameForm.start_date || null,
             end_date: gameForm.end_date || null,
             currently_playing: gameForm.currently_playing,
-            game_api_id: gameForm.game_api_id,
-            image: gameForm.image
-          })
+            game_api_id: gameForm.game_api_id
+        };
+        
+        // Spremamo sliku u obje kolone za maksimalnu kompatibilnost
+        // Nakon izvršavanja alter_games_table.sql oba polja će postojati
+        if (gameForm.image) {
+          // Glavna slika
+          gameData.image_url = gameForm.image;
+          // Backup polje za kompatibilnost s RAWG API formatom
+          gameData.background_image = gameForm.image;
+        }
+        
+        const { data, error } = await supabase
+          .from('games')
+          .insert(gameData)
           .select();
           
         if (error) throw error;

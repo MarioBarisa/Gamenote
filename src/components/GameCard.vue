@@ -3,7 +3,7 @@
   <div class="game-card card bg-base-200 shadow-xl overflow-hidden h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
     <figure class="relative h-48 overflow-hidden">
       <img 
-        :src="game.image || 'https://placehold.co/600x400?text=No+Image'" 
+        :src="getGameImage(game)" 
         :alt="game.title" 
         class="w-full h-full object-cover"
       />
@@ -57,6 +57,23 @@ export default {
     truncateText(text, maxLength) {
       if (!text) return '';
       return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    },
+    getGameImage(game) {
+      //FUNKCIJA SLIKE
+      if (game.image_url) return game.image_url;
+      if (game.background_image) return game.background_image;
+      
+      
+      if (game.game_api_id) {
+        
+        const apiId = parseInt(game.game_api_id);
+        if (!isNaN(apiId)) {
+          return `https://api.rawg.io/media/games/${apiId}/media/screenshots/1.jpg`;
+        }
+      }
+      
+      
+      return 'https://placehold.co/600x400?text=No+Image';
     }
   }
 };

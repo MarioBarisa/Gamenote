@@ -130,7 +130,7 @@ export default {
     });
     
     const fetchGames = async () => {
-      if (!userStore.user.value) return;
+      if (!userStore.user || !userStore.user.value) return;
       
       loading.value = true;
       

@@ -97,16 +97,20 @@
       const fetchGames = async () => {
         loading.value = true;
         
-        if (!userStore.user.value) {
+        // Provjeri da li je korisnik prijavljen
+        if (!userStore.isLoggedIn || !userStore.user) {
           loading.value = false;
           return;
         }
         
         try {
+          // Dohvati ID korisnika
+          const userId = userStore.user.id;
+          
           const { data, error } = await supabase
             .from('games')
             .select('*')
-            .eq('user_id', userStore.user.value.id)
+            .eq('user_id', userId)
             .order(sortField.value, { ascending: sortOrder.value === 'asc' });
             
           if (error) throw error;

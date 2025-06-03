@@ -14,8 +14,8 @@
       <div class="flex flex-col md:flex-row gap-4 mb-6">
         <div class="flex-none">
           <div class="card bg-base-200 shadow-xl" style="width: 300px;">
-            <figure v-if="game.image">
-              <img :src="game.image" :alt="game.title" class="w-full h-auto" />
+            <figure>
+              <img :src="getGameImage(game)" :alt="game.title" class="w-full h-auto" />
             </figure>
             <div class="card-body">
               <h2 class="card-title">
@@ -373,6 +373,28 @@ export default {
     
     onMounted(fetchGame);
     
+    // Funkcija za dobivanje odgovarajuće slike igre
+    const getGameImage = (game) => {
+      if (!game) return 'https://placehold.co/600x400?text=No+Image';
+      
+      
+      if (game.image_url) return game.image_url;
+      if (game.background_image) return game.background_image;
+      if (game.image) return game.image;
+      
+      // Ako je dostupan RAWG API ID -> konstruirati URL
+      if (game.game_api_id) {
+        // Provjerimo radi li se o validnom ID-u
+        const apiId = parseInt(game.game_api_id);
+        if (!isNaN(apiId) && apiGameDetails.value?.background_image) {
+          return apiGameDetails.value.background_image;
+        }
+      }
+      
+      // ako zaj*b -> placeholder
+      return 'https://placehold.co/600x400?text=No+Image';
+    };
+    
     return {
       game,
       loading,
@@ -387,7 +409,8 @@ export default {
       updateGame,
       confirmDelete,
       deleteGame,
-      formatDate
+      formatDate,
+      getGameImage
     };
   }
 };
