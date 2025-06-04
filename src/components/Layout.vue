@@ -17,9 +17,15 @@
                 <li><router-link to="/stats">Statistika</router-link></li>
               </ul>
             </div>
-            <router-link to="/" class="btn btn-ghost normal-case text-xl">
+          <router-link
+            to="/"
+            class="btn normal-case text-xl bg-base-500 hover:bg-secondary group"
+          >
+            <span class="bg-gradient-to-tr from-rose-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
               Gamenote
-            </router-link>
+            </span>
+          </router-link>
+
           </div>
           <div class="navbar-center hidden lg:flex">
             <ul class="menu menu-horizontal px-1">
@@ -58,14 +64,14 @@
     <footer class="bg-base-200 p-10">
       <div class="container mx-auto">
         <div class="footer">
-          <div>
+          <div class="flex flex-row gap-4">
             <span class="footer-title">Gamenote</span> 
             <router-link to="/" class="link link-hover">Početna</router-link> 
             <router-link to="/about" class="link link-hover">O aplikaciji</router-link> 
             <router-link to="/contact" class="link link-hover">Kontakt</router-link> 
           </div> 
-          <div>
-            <span class="footer-title">Pravno</span> 
+          <div class="flex flex-row gap-4">
+            <span class="footer-title ">Pravno</span> 
             <a class="link link-hover">Uvjeti korištenja</a> 
             <a class="link link-hover">Privatnost</a> 
             <a class="link link-hover">Kolačići</a>
