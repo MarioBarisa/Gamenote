@@ -4,12 +4,12 @@
     <div v-if="loading" class="flex justify-center my-8">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
-    
+
     <div v-else-if="!game" class="text-center my-8">
       <p class="text-xl">Igra nije pronađena</p>
       <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
     </div>
-    
+
     <div v-else>
       <div class="flex flex-col md:flex-row gap-4 mb-6">
         <div class="flex-none">
@@ -20,41 +20,43 @@
             <div class="card-body">
               <h2 class="card-title">
                 {{ game.title }}
-                <div v-if="game.currently_playing" class="badge badge-primary">Trenutno igram</div>
+                <div v-if="game.currently_playing" class="badge badge-accent p-5">Trenutno igram</div>
               </h2>
               <p><strong>Platforma:</strong> {{ game.platform }}</p>
               <p><strong>Žanr:</strong> {{ game.genre }}</p>
               <p><strong>Izdavač:</strong> {{ game.publisher }}</p>
-              
+
               <div class="mt-2">
                 <p><strong>Ocjena:</strong></p>
                 <div class="rating">
-                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
-                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
-                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
-                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4" disabled />
-                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
+                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1"
+                    disabled />
+                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2"
+                    disabled />
+                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3"
+                    disabled />
+                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4"
+                    disabled />
+                  <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5"
+                    disabled />
                 </div>
               </div>
-              
+
               <div class="mt-2">
                 <p><strong>Vrijeme igranja:</strong> {{ game.play_time || 0 }} sati</p>
               </div>
-              
+
               <div class="mt-2">
                 <p><strong>Achievement completion:</strong> {{ game.achievement_percent || 0 }}%</p>
-                <progress
-                  class="progress progress-primary w-full" 
-                  :value="game.achievement_percent || 0" 
-                  max="100"
-                ></progress>
+                <progress class="progress progress-primary w-full" :value="game.achievement_percent || 0"
+                  max="100"></progress>
               </div>
-              
+
               <div class="mt-2">
                 <p><strong>Datum početka:</strong> {{ formatDate(game.start_date) }}</p>
                 <p><strong>Datum završetka:</strong> {{ formatDate(game.end_date) }}</p>
               </div>
-              
+
               <div class="card-actions justify-end mt-4">
                 <button @click="confirmDelete" class="btn btn-error">Izbriši</button>
                 <button @click="showEditModal = true" class="btn btn-primary">Uredi</button>
@@ -62,11 +64,100 @@
             </div>
           </div>
         </div>
-        
+
         <div class="flex-1">
           <div class="card bg-base-200 shadow-xl h-full">
+            <div v-if="apiGameDetails" class="mt-8">
+              <h2 class="text-2xl font-bold mb-4 ml-4">Dodatne informacije</h2>
+
+              <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h3 class="text-lg font-bold">Opis</h3>
+                      <p>{{ apiGameDetails.description_raw }}</p>
+                    </div>
+
+                    <div>
+                      <h3 class="text-lg font-bold ">Informacije</h3>
+                      <p class="pt-2"><strong>Datum izdavanja:</strong> {{ formatDate(apiGameDetails.released) }}</p>
+                      <div class="pt-2"><strong>Metacritic ocjena:</strong> <br>
+                        <div class="radial-progress font-bold m-2" 
+                          :class="getMetacriticColorClass(apiGameDetails.metacritic)"
+                          :style="`--value:${apiGameDetails.metacritic || 0}`" 
+                          :aria-valuenow="apiGameDetails.metacritic" 
+                          role="progressbar">{{ apiGameDetails.metacritic || 'N/A' }} / 100</div>
+                        </div>
+                        <p class="pt-2"><strong>ESRB ocjena:</strong> <br>
+                        <img v-if="apiGameDetails.esrb_rating?.name == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-auto h-auto  p-4" />
+                        <img v-if="apiGameDetails.esrb_rating?.name == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-auto h-auto  p-4" />
+                        <img v-if="apiGameDetails.esrb_rating?.name == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-auto h-auto  p-4" />
+                        <img v-if="apiGameDetails.esrb_rating?.name == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-auto h-auto  p-4" />
+                        <img v-if="apiGameDetails.esrb_rating?.name == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-auto h-auto  p-4" />
+                      <!--  {{ apiGameDetails.esrb_rating?.name || 'N/A' }} --></p>
+                      <p class="pt-2"><strong>Službena web stranica:</strong>
+                        <a v-if="apiGameDetails.website" :href="apiGameDetails.website" target="_blank"
+                          class="link link-primary">
+                          {{ apiGameDetails.website }}
+                        </a>
+                        <span v-else>N/A</span>
+                      </p>
+                    </div>
+                  </div>
+
+                      <div class="mt-6" v-if="screenshots.length > 0">
+                      <h3 class="text-lg font-bold mb-2">Slike igre</h3>
+                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div v-for="(screenshot, index) in screenshots" :key="index" class="relative">
+                        <img 
+                          :src="screenshot.image" 
+                          :alt="`Screenshot ${index + 1}`" 
+                          class="w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                          @click="openScreenshotModal(index)"
+                        />
+                        </div>
+                      </div>
+                      </div>
+
+                      <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
+                      <div class="modal-box max-w-5xl">
+                        <div class="relative">
+                        <img :src="screenshots[selectedScreenshotIndex].image" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
+                        
+                        <!-- lijevi  screenshot -->
+                        <button 
+                          v-if="screenshots.length > 1"
+                          @click="previousScreenshot" 
+                          class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
+                        >
+                          ❮
+                        </button>
+                        
+                        <!-- desni screenshot -->
+                        <button 
+                          v-if="screenshots.length > 1"
+                          @click="nextScreenshot" 
+                          class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
+                        >
+                          ❯
+                        </button>
+                        
+                        <!-- brojac -->
+                        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+                          {{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}
+                        </div>
+                        </div>
+                        
+                        <div class="modal-action">
+                        <button @click="closeScreenshotModal" class="btn">Zatvori</button>
+                        </div>
+                      </div>
+                      </div>
+                </div>
+              </div>
+            </div>
             <div class="card-body">
-              <h2 class="text-xl mb-4">Bilješke</h2>
+              <h2 class="text-xl mb-4">Vaše bilješke</h2>
               <div class="prose max-w-none">
                 <p v-if="game.notes">{{ game.notes }}</p>
                 <p v-else class="text-gray-500">Nema bilješki.</p>
@@ -75,60 +166,21 @@
           </div>
         </div>
       </div>
-      
-      <div v-if="apiGameDetails" class="mt-8">
-        <h2 class="text-2xl font-bold mb-4">Dodatne informacije</h2>
-        
-        <div class="card bg-base-200 shadow-xl">
-          <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 class="text-lg font-bold">Opis</h3>
-                <p>{{ apiGameDetails.description_raw }}</p>
-              </div>
-              
-              <div>
-                <h3 class="text-lg font-bold">Informacije</h3>
-                <p><strong>Datum izdavanja:</strong> {{ formatDate(apiGameDetails.released) }}</p>
-                <p><strong>Metacritic ocjena:</strong> {{ apiGameDetails.metacritic || 'N/A' }}</p>
-                <p><strong>ESRB ocjena:</strong> {{ apiGameDetails.esrb_rating?.name || 'N/A' }}</p>
-                <p><strong>Službena web stranica:</strong> 
-                  <a v-if="apiGameDetails.website" :href="apiGameDetails.website" target="_blank" class="link link-primary">
-                    {{ apiGameDetails.website }}
-                  </a>
-                  <span v-else>N/A</span>
-                </p>
-              </div>
-            </div>
-            
-            <div class="mt-6" v-if="screenshots.length > 0">
-              <h3 class="text-lg font-bold mb-2">Slike igre</h3>
-              <div class="carousel carousel-center rounded-box">
-                <div 
-                  v-for="(screenshot, index) in screenshots" 
-                  :key="index" 
-                  class="carousel-item"
-                >
-                  <img :src="screenshot.image" :alt="`Screenshot ${index + 1}`" class="h-64" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+
     </div>
-    
+
     <!-- Edit Modal -->
     <div v-if="showEditModal" class="modal modal-open">
       <div class="modal-box max-w-2xl">
         <h3 class="font-bold text-lg">Uredi informacije o igri</h3>
-        
+
         <form @submit.prevent="updateGame" class="mt-4">
           <div class="form-control">
             <label class="label">Naziv</label>
             <input type="text" v-model="editForm.title" class="input input-bordered" required />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Platforma</label>
             <select v-model="editForm.platform" class="select select-bordered" required>
@@ -138,60 +190,66 @@
               </option>
             </select>
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Žanr</label>
             <input type="text" v-model="editForm.genre" class="input input-bordered" />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Izdavač</label>
             <input type="text" v-model="editForm.publisher" class="input input-bordered" />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Vrijeme igranja (sati)</label>
             <input type="number" v-model="editForm.play_time" class="input input-bordered" min="0" />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Ocjena</label>
             <div class="rating">
-              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="editForm.rating" />
-              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="editForm.rating" />
-              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="editForm.rating" />
-              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="editForm.rating" />
-              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="editForm.rating" />
+              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="1"
+                v-model="editForm.rating" />
+              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="2"
+                v-model="editForm.rating" />
+              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="3"
+                v-model="editForm.rating" />
+              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="4"
+                v-model="editForm.rating" />
+              <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="5"
+                v-model="editForm.rating" />
             </div>
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Postotak ostvarenih achievementa (%)</label>
-            <input type="number" v-model="editForm.achievement_percent" class="input input-bordered" min="0" max="100" />
+            <input type="number" v-model="editForm.achievement_percent" class="input input-bordered" min="0"
+              max="100" />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Bilješke</label>
             <textarea v-model="editForm.notes" class="textarea textarea-bordered h-24"></textarea>
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Datum početka igranja</label>
             <input type="date" v-model="editForm.start_date" class="input input-bordered" />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="label">Datum završetka igranja</label>
             <input type="date" v-model="editForm.end_date" class="input input-bordered" />
           </div>
-          
+
           <div class="form-control mt-2">
             <label class="flex items-center cursor-pointer">
               <input type="checkbox" v-model="editForm.currently_playing" class="checkbox checkbox-primary" />
               <span class="label-text ml-2">Trenutno igram</span>
             </label>
           </div>
-          
+
           <div class="modal-action">
             <button type="button" @click="showEditModal = false" class="btn">Odustani</button>
             <button type="submit" class="btn btn-primary" :disabled="updating">
@@ -202,7 +260,7 @@
         </form>
       </div>
     </div>
-    
+
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal modal-open">
       <div class="modal-box">
@@ -240,11 +298,37 @@ export default {
     const showDeleteModal = ref(false);
     const apiGameDetails = ref(null);
     const screenshots = ref([]);
+    const selectedScreenshotIndex = ref(null);
     
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
       'Nintendo Switch', 'iOS', 'Android', 'Other'
     ];
+    
+    // Screenshot modal funkcije
+    const openScreenshotModal = (index) => {
+      selectedScreenshotIndex.value = index;
+    };
+    
+    const closeScreenshotModal = () => {
+      selectedScreenshotIndex.value = null;
+    };
+    
+    const previousScreenshot = () => {
+      if (selectedScreenshotIndex.value > 0) {
+        selectedScreenshotIndex.value--;
+      } else {
+        selectedScreenshotIndex.value = screenshots.value.length - 1;
+      }
+    };
+    
+    const nextScreenshot = () => {
+      if (selectedScreenshotIndex.value < screenshots.value.length - 1) {
+        selectedScreenshotIndex.value++;
+      } else {
+        selectedScreenshotIndex.value = 0;
+      }
+    };
     
     const editForm = reactive({
       title: '',
@@ -332,7 +416,7 @@ export default {
           
         if (error) throw error;
         
-        // Zatvori modal i osvježi igru
+        // Zatvori  i osvježi igru
         showEditModal.value = false;
         fetchGame();
       } catch (error) {
@@ -395,6 +479,22 @@ export default {
       return 'https://placehold.co/600x400?text=No+Image';
     };
     
+    // FUNKCIJA ZA BOJANJE RADILA PROGRESS BAR-a -> OCIJENA
+    const getMetacriticColorClass = (score) => {
+      if (!score) return 'text-gray-400 border-gray-300';
+      
+      // Standardne boje po ocjeni
+      if (score >= 90) return 'text-green-700 [--size:7rem] [--thickness:0.6rem] bg-base-200 border-green-900'; // Tamno zelena
+      if (score >= 80) return 'text-green-600 [--size:7rem] [--thickness:0.6rem] bg-base-200 border-green-700'; // Zelena
+      if (score >= 70) return 'text-green-500 [--size:7rem] [--thickness:0.6rem] bg-base-200 border-green-500'; // Svijetlo zelena
+      if (score >= 60) return 'text-yellow-500 [--size:7rem] [--thickness:0.6rem] bg-base-200 border-yellow-500'; // Žuta
+      if (score >= 50) return 'text-yellow-600 [--size:7rem] [--thickness:0.6rem] bg-base-200 border-yellow-600'; // Tamnije žuta
+      if (score >= 40) return 'text-orange-500 [--size:7rem] [--thickness:0.6rem] bg-base-200 border-orange-500'; // Narančasta
+      
+      // Loše ocjene
+      return 'text-red-500 [--size:7rem] [--thickness:0.8rem] bg-base-200 border-red-500'; // Crvena za ispod 40
+    };
+    
     return {
       game,
       loading,
@@ -404,13 +504,19 @@ export default {
       showDeleteModal,
       apiGameDetails,
       screenshots,
+      selectedScreenshotIndex,
       platforms,
       editForm,
       updateGame,
       confirmDelete,
       deleteGame,
       formatDate,
-      getGameImage
+      getGameImage,
+      getMetacriticColorClass,
+      openScreenshotModal,
+      closeScreenshotModal,
+      previousScreenshot,
+      nextScreenshot
     };
   }
 };
