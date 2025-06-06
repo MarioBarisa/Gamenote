@@ -178,20 +178,25 @@
       const fetchGames = async () => {
         loading.value = true;
         
-        if (!userStore.user || !userStore.user.value) {
+        console.log('User store state:', userStore.user);
+        
+        if (!userStore.user) {
+          console.log('User not found in store, aborting fetch');
           loading.value = false;
           return;
         }
         
         try {
+          console.log('Fetching games for user ID:', userStore.user.id);
           const { data, error } = await supabase
             .from('games')
             .select('*')
-            .eq('user_id', userStore.user.value.id);
+            .eq('user_id', userStore.user.id);
             
           if (error) throw error;
           
           games.value = data || [];
+          console.log('Fetched games:', games.value.length, 'items');
         } catch (error) {
           console.error('Greška pri dohvaćanju igara:', error);
         } finally {
@@ -274,7 +279,8 @@
         router.push(`/games/${id}`);
       };
       
-      onMounted(() => {
+      onMounted(async () => {
+        await userStore.fetchUser();
         fetchGames();
       });
       
