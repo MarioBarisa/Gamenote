@@ -2,12 +2,16 @@
 <template>
   <div class="home">
     <!-- Hero sekcija -->
-    <section class="hero py-12 bg-base-300 rounded-box mb-10">
+    <section v-if="!userStore.isLoggedIn" class="hero py-12 bg-base-300 rounded-box mb-10">
       <div class="text-center">
         <h1 class="text-5xl font-bold mb-4">Gamenote</h1>
         <p class="text-xl mb-6">Prati, dijeli i otkrivaj svoje omiljene videoigre</p>
         <router-link to="/add-game" class="btn btn-primary btn-lg">Dodaj svoju prvu igru</router-link>
       </div>
+    </section>
+
+    <section v-if="userStore.isLoggedIn" class="hero py-12 bg-base-300 rounded-box mb-10">
+      <gameN></gameN>
     </section>
 
     <!-- Trenutno igraš - samo za ulogirane korisnike -->
@@ -80,10 +84,12 @@ import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
 import { useGamesApi } from '../services/gamesApi';
 import GameCard from '../components/GameCard.vue';
+import gameN from '../components/gameN.vue';
 
 export default {
   components: {
-    GameCard
+    GameCard,
+    gameN
   },
   setup() {
     const userStore = useUserStore();
