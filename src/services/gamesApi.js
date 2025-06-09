@@ -8,7 +8,7 @@ const BASE_URL = 'https://api.rawg.io/api';
 // RSS FEED LISTA IZVORA -> DODAJ ILI MAKNI PO POTREBI
 const RSS_FEEDS = [
   { name: 'GameSpot', url: 'https://www.gamespot.com/feeds/mashup/', domain: 'gamespot.com' },
-  { name: 'IGN', url: 'https://www.ign.com/articles?format=rss', domain: 'ign.com' },
+  { name: 'IGN', url: 'https://www.ign.com/rss/articles/feed?format=xml', domain: 'ign.com' },
   { name: 'Polygon', url: 'https://www.polygon.com/rss/index.xml', domain: 'polygon.com' },
   { name: 'PC Gamer', url: 'https://www.pcgamer.com/rss/', domain: 'pcgamer.com' },
   { name: 'Kotaku', url: 'https://kotaku.com/rss', domain: 'kotaku.com' },
