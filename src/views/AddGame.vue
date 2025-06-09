@@ -1,12 +1,12 @@
 <!-- src/views/AddGame.vue -->
 <template>
   <div class="add-game">
-    <h1 class="text-4xl font-bold mb-8 text-center">Dodaj novu igru</h1>
+    <h1 class="text-4xl font-bold mb-8 text-center">Pretraži igre</h1>
     
     <div class="card bg-base-200 shadow-xl">
       <div class="card-body">
         <div class="mb-6">
-          <h2 class="text-2xl font-bold mb-4">Pretraži igru</h2>
+          <h2 class="text-2xl font-bold mb-4"></h2>
           <div class="flex gap-3">
             <input 
               type="text" 

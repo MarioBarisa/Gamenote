@@ -226,7 +226,6 @@
         games.value.forEach(game => {
           if (!game.genre) return;
           
-          // Handling comma-separated genres
           const genres = game.genre.split(',').map(g => g.trim());
           
           genres.forEach(genre => {

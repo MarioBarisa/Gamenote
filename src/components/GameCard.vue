@@ -59,6 +59,7 @@
             <path d="M16 11a1 1 0 1 0 0 2 1 1 0 1 0 0-2M18 9a1 1 0 1 0 0 2 1 1 0 1 0 0-2M16 7a1 1 0 1 0 0 2 1 1 0 1 0 0-2M14 9a1 1 0 1 0 0 2 1 1 0 1 0 0-2M8 8a2 2 0 1 0 0 4 2 2 0 1 0 0-4"></path><path d="M17 4H7C4.24 4 2 6.24 2 9v7.88a3.124 3.124 0 0 0 5.33 2.21l1.96-1.96c1.45-1.45 3.97-1.45 5.41 0l1.96 1.96c.59.59 1.37.91 2.21.91 1.72 0 3.12-1.4 3.12-3.12V9c0-2.76-2.24-5-5-5Zm3 12.88a1.118 1.118 0 0 1-1.91.79l-1.96-1.96c-1.1-1.1-2.56-1.71-4.12-1.71s-3.02.61-4.12 1.71l-1.96 1.96a1.118 1.118 0 0 1-1.91-.79V9c0-1.65 1.35-3 3-3h10c1.65 0 3 1.35 3 3v7.88Z"></path>
           </svg>
 
+          
          <!-- {{ game.platform }} --> </span>
         <span v-if="game.genre" class="badge badge-outline ml-2 p-2 h-auto">
 
@@ -122,6 +123,11 @@
             <path class="b" d="m20,14h-5v-1h4c1.1,0,2-.9,2-2v-7c0-1.1-.9-2-2-2H5c-1.1,0-2,.9-2,2v7c0,1.1.9,2,2,2h4v1h-5c-1.1,0-2,.9-2,2v4c0,1.1.9,2,2,2h16c1.1,0,2-.9,2-2v-4c0-1.1-.9-2-2-2Zm-15-3v-7h14v7s-14,0-14,0Zm-1,9v-4h16v4s-16,0-16,0Z"></path><path class="b" d="M6 17H14V19H6z"></path><path class="b" d="M17 17A1 1 0 1 0 17 19 1 1 0 1 0 17 17z"></path>
             </svg>
 
+            <!--Action-->
+            <img v-if="game.genre && game.genre.includes('Action')" width="24" height="24" 
+            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFTUlEQVR4nO2aCYhWZRSGH51MGxrTFsuMiBbNMLO0bIMyRAODysKgSFposw0piAwqaoJpsxIr2gzL9s2oyajMlqmcNjQt2yQnyzIzLJtGbZwbJ94Pztzu/f5lmPr/8IUL89/vfMu59yzvOXdgC8rCKGAx8CbQiypAT6A/MAg4GrgcWAB0AImu86lAvO0OGLtagGnARmAdMIwKV6QN+AX4CngRqAfGAzWSnya574HDqHLcJmU2AQ3AjlQxzgF+l0LrgYeAk4ABVCD6AL0j47sDd8ocE3etBT5ShHsVeBf4RnJN/+L5GaPN/9T1RgF/2A44FZgDLNWcvKBhCnU7zKFvcKHWnuBm/b0BOLLIdbYGdgL2AfYF9gAu1Dozu1mHvx32FefElynx1QL36n5zF9afqTVOppuzdos2+g44PDVuCv2ocVP4YOCgAv6TRrPm70UXsafs+GLgCnc1yGxsk7eAnXPmL3PmFuz9J+DcIvf/WXPsDZeNu4rM3q3AlaIpHsc4GVP6JeB950vnFXGGjZJPr100ztBmfwDPKVw26JoOzAYaFU3CYee5JHeayxdGGge7tSe5cLtVgXOskez25ShhyelXLXBmEfJjgdWSX6lwGpR7OMcsPtH4sAJrL5TcUeUococmv1zCnF2VN4ICZg6XRuQ/lNzQAuveIrlrKREDZc92kAPLyCf1Loe8kGMS47S+yY11xDIvMoaoWFI9U6+Jcykf4xWZbJ0vlOAMPYCpGdTka+CAyHpNkou94U6odeEulo331queGAm7g8SbEq1pOeRJd3gLFDcrENjvbyMhdiTQruARHkoUU7SoOVgeLMosSj1Rq0FmZSStWkW8xJlbqyJaQG/gPY2dXYSlLJf5R7GsCDowVTIrZLdeodV6egH9gHdSCg/PWPMijc+I7Gt55FnJRZnwSAn9EHG+3YDfJDdO5mV/v666IhGDfQa4x9GTRGZlimXhVslcFzug3liiiJeLqyR0X0TmQck8od9DnH33UHMh/ZY2FMjgE5S9EzGBPNQocCSak4tgy1bB5cGo+ufKGQErNW+w2/AxV58fEjGVa5zvBD42IyfMHisZ86covpRg3sZ5aNS8E929Vbp3aM6c/m5eBzAfeFqBIBEzSOMmjRlhjUaiTRLMs+M83K155rAhUiUKlVkYociTqOtynBsbLm6XZITZkEssjEfzQog6pWJ6xpNaq3v7p2RPdwf9WCVCGk9p/PjU/UBOo02KYH/lFPgPaK7loDRXW66kOSZFJC3nbJOz3ms5Dh1IbJSmXOI2KBULNPcEd6+vuiDpuqWtQDCZLJ8xX6lLjYVQnr7fCfdLyPq1paDOOeguGX43ydUTKyIktAa40RVcWcp+VgztD5zITKwUTHaFUxYGKEG25fhDkJnv3tpmdVPSmKtxT286oZ8IWUeJLUx74ksK5J4jXE2fhdEuD4Xr0QIJ24JLJiZK4FNKw/XOoa2zmAWf+dNOeoHL6OscvbF+VqwuMcqfieclYLV4sajVW2zPaAF59HA0fY7YsR30EfcGZushJmIOMSxSndMrS8t22WWpfSOLdKcUITfaNSH8ZfnkLBeWF+f4RvoBGiv4B5a6BkF3Yqj41yqxayOd+znWu0ZmWDaaFbFKpSVdRU/XCm2t1g8/fdWUCEpMoAoxSmVAKOBKZdr/OSznXO0Y9hJ9MqgqmP1/4GqP2yOEsSIxRFk68KeWAqVsRaFOuWWeU6BVTYVtqXAM1LeOxlQHcb0+S1jnpaIxQnW2bx60qzU0RR86Kxp91Ahod7X546LXO1BFWPh/+e+FJrFQ3xrdArqAvwCix+vY0vUdbgAAAABJRU5ErkJggg==" alt="action">
+
+          <!--  <span v-else> {{ truncateText(game.genre, 12) }} </span> -->
          <!--  {{ truncateText(game.genre, 12) }} --></span>
       </div>
       

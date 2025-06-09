@@ -7,6 +7,7 @@ import GameDetails from '../views/GameDetails.vue';
 import Stats from '../views/Stats.vue';
 import SignIn from '../components/SignIn.vue';
 import SignUp from '../components/SignUp.vue';
+import Profile from '../views/Profile.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,7 +61,12 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: SignUp
-    }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile
+    },
   ]
 });
 
