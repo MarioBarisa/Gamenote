@@ -66,15 +66,25 @@
             </ul>
           </div>
           <div class="navbar-end">
-            <div v-if="isLoggedIn">
+            <div v-if="isLoggedIn" class="flex items-center gap-3">
+              <!-- ime korisnika -->
+              <span class="hidden sm:block text-sm font-medium">
+                {{ userName }}
+              </span>
+              
               <div class="dropdown dropdown-end">
                 <label tabindex="0" class="btn btn-ghost btn-circle avatar">
                   <div class="w-10 rounded-full">
-                    <img src="https://api.dicebear.com/6.x/initials/svg?seed=GN" alt="Avatar" />
+                    <img :src="profileImageUrl" alt="Avatar" />
                   </div>
                 </label>
                 <ul tabindex="0"
                   class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 rounded-box w-52">
+                  <!-- email u dropdown -->
+                  <li class="menu-title">
+                    <span class="text-base-content/70 text-xs">{{ userStore.user?.email }}</span>
+                  </li>
+                  <div class="divider my-1"></div>
                   <li><router-link to="/profile">Profil</router-link></li>
                   <li><a @click="logout">Odjava</a></li>
                 </ul>
@@ -157,6 +167,20 @@ export default {
     
     const isLoggedIn = computed(() => userStore.isLoggedIn);
     
+    const profileImageUrl = computed(() => {
+      return userStore.user?.user_metadata?.avatar_url || 
+             'https://i.pravatar.cc/300?u=' + (userStore.user?.email || 'default');
+    });
+    
+    const userName = computed(() => {
+      const name = userStore.user?.user_metadata?.name;
+      if (name) {
+        return name.length > 15 ? name.split(' ')[0] : name;
+      }
+      const email = userStore.user?.email;
+      return email ? email.split('@')[0] : 'Korisnik';
+    });
+    
     const logout = async () => {
       await userStore.logout();
       router.push('/login');
@@ -164,6 +188,9 @@ export default {
     
     return {
       isLoggedIn,
+      profileImageUrl,
+      userName,
+      userStore,
       logout
     };
   }
