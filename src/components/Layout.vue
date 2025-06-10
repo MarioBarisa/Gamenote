@@ -90,7 +90,10 @@
                 </ul>
               </div>
             </div>
-            <router-link v-else to="/login" class="btn btn-primary">Prijava</router-link>
+            <div v-else class="flex items-center gap-2">
+              <router-link to="/login" class="btn btn-primary">Prijava</router-link>
+            </div>
+            
           </div>
         </div>
       </div>

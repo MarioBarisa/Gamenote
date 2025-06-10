@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="text-xl mb-4">Registracija računa</h2>
-    <form @submit.prevent="handleSignup" class="flex flex-col gap-3">
+    <form @submit.prevent="handleSignup" class="flex flex-col items-start gap-2">
       <div class="form-control">
         <label for="name" class="label">Ime</label>
         <input id="name" type="text" v-model="name" class="input input-bordered" required />

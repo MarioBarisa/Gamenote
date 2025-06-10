@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="text-xl mb-4">Prijava</h2>
-    <form @submit.prevent="handleSignin" class="flex flex-col gap-3">
+    <form @submit.prevent="handleSignin" class="flex flex-col items-start gap-2">
       <div class="form-control">
         <label for="email" class="label">Email</label>
         <input id="email" type="email" v-model="email" class="input input-bordered" required />
@@ -14,6 +14,8 @@
         <button type="submit" class="btn btn-primary" :disabled="loading">
           {{ loading ? 'Učitavanje...' : 'Prijava' }}
         </button>
+         <br> 
+         <router-link to="/register" class="btn btn-outline btn-primary mt-2"> ili se Registrirajte</router-link>  
       </div>
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
     </form>

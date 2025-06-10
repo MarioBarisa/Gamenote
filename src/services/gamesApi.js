@@ -95,8 +95,15 @@ export const useGamesApi = () => {
     error.value = null;
     
     try {
+      const today = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(today.getFullYear() - 1);
+      
+      const startDate = oneYearAgo.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const endDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
       const response = await fetch(
-        `${BASE_URL}/games?key=${API_KEY}&ordering=-rating&page_size=10`
+        `${BASE_URL}/games?key=${API_KEY}&dates=${startDate},${endDate}&metacritic=75,100&ordering=-metacritic&page_size=10`
       );
       
       if (!response.ok) {
@@ -124,6 +131,34 @@ export const useGamesApi = () => {
       
       if (!response.ok) {
         throw new Error('Greška pri dohvaćanju nedavnih igara');
+      }
+      
+      const data = await response.json();
+      return data.results;
+    } catch (err) {
+      error.value = err.message;
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const getThisYearGames = async () => {
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const startOfYear = `${currentYear}-01-01`;
+      const todayFormatted = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      const response = await fetch(
+        `${BASE_URL}/games?key=${API_KEY}&dates=${startOfYear},${todayFormatted}&ordering=-added&page_size=10`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Greška pri dohvaćanju igara ove godine');
       }
       
       const data = await response.json();
@@ -205,6 +240,7 @@ export const useGamesApi = () => {
     getGameScreenshots,
     getPopularGames,
     getRecentGames,
+    getThisYearGames,
     getGameNews,
     getMockGameNews
   };

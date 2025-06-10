@@ -30,7 +30,7 @@
     <!-- Popularne igre - za sve korisnike, RAWG API -->
     <section class="mb-12">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-bold">Popularne igre</h2>
+        <h2 class="text-3xl font-bold">Popularne igre (zadnja godina)</h2>
         <a href="https://rawg.io" target="_blank" class="btn btn-sm btn-ghost">Powered by RAWG</a>
       </div>
       <div v-if="loading" class="flex justify-center py-12">
@@ -44,14 +44,17 @@
             </figure>
             <div class="card-body p-4">
               <h3 class="card-title text-md">{{ game.name }}</h3>
-              <p class="text-sm opacity-70">Ocjena: {{ game.rating }}/5</p>
+              <p class="text-sm opacity-70">
+                <span v-if="game.metacritic" class="badge badge-success">{{ game.metacritic }}% Metacritic</span>
+                <span v-else>Bez ocene</span>
+              </p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Nedavno objavljene - za sve korisnike, RAWG API -->
+    <!-- Nedavno objavljene - za sve korisnike, RAWG API 
     <section class="mb-12">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold">Nedavno objavljene</h2>
@@ -73,7 +76,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section>-->
   </div>
 </template>
 
