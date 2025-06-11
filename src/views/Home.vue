@@ -18,7 +18,7 @@
     <section v-if="userStore.isLoggedIn && currentlyPlaying.length > 0" class="mb-12">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold">Trenutno igraš</h2>
-        <router-link to="/games?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
+        <router-link to="/library?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)" class="cursor-pointer">
@@ -131,11 +131,11 @@ export default {
       loading.value = true;
       
       try {
-        // Dohvati popularne igre s RAWG API-ja
+        // Dohvati popularne igre s RAWG API-ja -> NERADI DOBRO ZATO COMMENT
         const popularnigre = await gamesApi.getPopularGames();
         popularGames.value = popularnigre;
         
-        // Dohvati nedavno objavljene igre s RAWG API-ja
+        // Dohvati nedavno objavljene igre s RAWG API-ja -> NERADI DOBRO ZATO COMMENT
         const nedavnigre = await gamesApi.getRecentGames();
         recentGames.value = nedavnigre;
       } catch (error) {
@@ -146,15 +146,12 @@ export default {
     };
     
     const navigateToUserGame = (id) => {
-      router.push(`/games/${id}`);
+      router.push(`/game/${id}`);
     };
     
     const navigateToApiGame = (id) => {
-      // Preusmjeri na dodavanje igre s predpopunjenim API ID-om
-      router.push({
-        path: '/add-game',
-        query: { api_id: id }
-      });
+      // Preusmjeri na API game details view
+      router.push(`/api-games/${id}`);
     };
     
     const formatDate = (dateString) => {

@@ -275,7 +275,7 @@
       });
       
       const navigateToGame = (id) => {
-        router.push(`/games/${id}`);
+        router.push(`/game/${id}`);
       };
       
       onMounted(async () => {
@@ -298,4 +298,3 @@
     }
   };
   </script>
-  

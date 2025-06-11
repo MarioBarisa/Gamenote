@@ -232,6 +232,23 @@ export const useGamesApi = () => {
     ];
   };
 
+  const getGameSeries = async (gameId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/games/${gameId}/game-series?key=${API_KEY}`);
+      
+      if (!response.ok) {
+        throw new Error('Greška pri dohvaćanju serijala igara');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error('Game series API error:', err);
+      // Vrati prazno ali nemoj razbiti stranicu
+      return { results: [] };
+    }
+  };
+
   return {
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
@@ -242,6 +259,7 @@ export const useGamesApi = () => {
     getRecentGames,
     getThisYearGames,
     getGameNews,
-    getMockGameNews
+    getMockGameNews,
+    getGameSeries
   };
 };

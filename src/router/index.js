@@ -4,6 +4,7 @@ import Home from '../views/Home.vue';
 import AddGame from '../views/AddGame.vue';
 import Games from '../views/Games.vue';
 import GameDetails from '../views/GameDetails.vue';
+import ApiGameDetails from '../views/ApiGameDetails.vue';
 import Stats from '../views/Stats.vue';
 import SignIn from '../components/SignIn.vue';
 import SignUp from '../components/SignUp.vue';
@@ -28,24 +29,35 @@ const router = createRouter({
       redirect: '/'
     },
     {
-      path: '/profile',
-      name: 'profile',
-      redirect: '/'
-    },
-    {
       path: '/add-game',
       name: 'add-game',
       component: AddGame
     },
     {
-      path: '/games',
-      name: 'games',
+      path: '/library',
+      name: 'library',
       component: Games
     },
     {
-      path: '/games/:id',
+      path: '/games',
+      name: 'games',
+      redirect: '/library'
+    },
+    {
+      path: '/game/:id',
       name: 'game-details',
       component: GameDetails
+    },
+    {
+      path: '/edit-game/:id',
+      name: 'edit-game',
+      component: GameDetails,
+      props: { editMode: true }
+    },
+    {
+      path: '/api-games/:id',
+      name: 'api-game-details',
+      component: ApiGameDetails
     },
     {
       path: '/stats',
@@ -66,10 +78,9 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: Profile
-    },
+    }
   ]
 });
-
 
 router.beforeEach(async (to, from, next) => {
   try {
@@ -79,7 +90,7 @@ router.beforeEach(async (to, from, next) => {
     const isAuthenticated = userStore.isLoggedIn;
     
     
-    const authRequiredRoutes = ['add-game', 'games', 'game-details', 'stats'];
+    const authRequiredRoutes = ['add-game', 'games', 'game-details', 'edit-game', 'stats'];
     
     
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
