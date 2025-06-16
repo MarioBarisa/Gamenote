@@ -11,14 +11,14 @@
     </div>
 
     <div v-else-if="!editMode">
-      <div class="flex flex-col md:flex-row gap-4 mb-6">
+      <div class="flex flex-col lg:flex-row gap-4 mb-6">
         <div class="flex-none">
-          <div class="card bg-base-200 shadow-xl" style="width: 300px;">
+          <div class="card bg-base-200 shadow-xl w-full lg:w-80">
             <figure>
               <img :src="game.background_image || game.image_url || 'https://placehold.co/600x400?text=No+Image'" :alt="game.title" class="w-full h-auto" />
             </figure>
-            <div class="card-body">
-              <h2 class="card-title">{{ game.title }}</h2>
+            <div class="card-body p-4">
+              <h2 class="card-title text-lg sm:text-xl">{{ game.title }}</h2>
               <p><strong>Platforma:</strong> {{ getPlatforms() }}</p>
               <p><strong>Žanr:</strong> {{ getGenres() }}</p>
               <p><strong>Izdavač:</strong> {{ getPublishers() }}</p>
@@ -34,7 +34,7 @@
 
               <div class="mt-2" v-if="game.rating">
                 <p><strong>Vaša ocjena:</strong></p>
-                <div class="rating rating-lg">
+                <div class="rating rating-sm sm:rating-md lg:rating-lg">
                   <input type="radio" class="mask mask-star-2 bg-orange-400" :class="{ 'bg-orange-400': game.rating >= 1, 'bg-gray-300': game.rating < 1 }" disabled />
                   <input type="radio" class="mask mask-star-2 bg-orange-400" :class="{ 'bg-orange-400': game.rating >= 2, 'bg-gray-300': game.rating < 2 }" disabled />
                   <input type="radio" class="mask mask-star-2 bg-orange-400" :class="{ 'bg-orange-400': game.rating >= 3, 'bg-gray-300': game.rating < 3 }" disabled />
@@ -47,9 +47,9 @@
                 <p><strong>Vrijeme igranja:</strong> {{ game.play_time }} sati</p>
               </div>
 
-              <div class="card-actions justify-between mt-4">
-                <button @click="enterEditMode" class="btn btn-primary">Uredi</button>
-                <button @click="confirmDelete" class="btn btn-error">Obriši</button>
+              <div class="card-actions justify-between mt-4 flex-col sm:flex-row gap-2">
+                <button @click="enterEditMode" class="btn btn-primary w-full sm:w-auto">Uredi</button>
+                <button @click="confirmDelete" class="btn btn-error w-full sm:w-auto">Obriši</button>
               </div>
             </div>
           </div>

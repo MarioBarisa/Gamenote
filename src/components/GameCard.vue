@@ -1,29 +1,29 @@
 <!-- src/components/GameCard.vue -->
 <template>
   <div class="game-card card bg-base-200 shadow-xl overflow-hidden h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-    <figure class="relative h-48 overflow-hidden">
+    <figure class="relative h-36 sm:h-40 md:h-48 overflow-hidden">
       <img 
         :src="getGameImage(game)" 
         :alt="game.title" 
         class="w-full h-full object-cover"
       />
-      <div v-if="game.currently_playing" class="absolute top-0 right-0 m-2">
-        <div class="badge badge-primary p-3">Trenutno igram</div>
+      <div v-if="game.currently_playing" class="absolute top-0 right-0 m-1 sm:m-2">
+        <div class="badge badge-primary text-xs sm:text-sm p-2 sm:p-3">Trenutno igram</div>
       </div>
     </figure>
-    <div class="card-body p-4">
-      <h2 class="card-title text-lg font-bold mb-1 line-clamp-1">{{ game.title }}</h2>
+    <div class="card-body p-2 sm:p-3 md:p-4">
+      <h2 class="card-title text-sm sm:text-base md:text-lg font-bold mb-1 line-clamp-1">{{ game.title }}</h2>
       
-      <div class="flex items-center text-sm mb-2">
-        <span class="badge badge-outline p-2 h-auto">
+      <div class="flex items-center text-xs sm:text-sm mb-2">
+        <span class="badge badge-outline p-1 sm:p-2 h-auto">
           <!--NINTENDO SWITCH-->
-          <svg v-if="game.platform=='Nintendo Switch'" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="nintendo-switch">
+          <svg v-if="game.platform=='Nintendo Switch'" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="nintendo-switch">
             <path fill="#F31014" d="M3.78 7.343c.022.391.043.498.203.815.236.482.585.835 1.067 1.072.333.166.418.182.851.198.391.016.53 0 .793-.092 1.076-.364 1.73-1.409 1.543-2.486-.209-1.27-1.425-2.127-2.673-1.875-.311.059-.787.299-1.044.52-.52.45-.782 1.092-.74 1.848z"></path>
             <path fill="#F31014" d="M5.136.078C2.746.506.824 2.274.219 4.599 0 5.44-.016 5.933.01 12.447c.01 5.978.016 6.118.118 6.584.552 2.491 2.32 4.264 4.837 4.848.327.075.745.091 3.434.102 2.78.022 3.069.016 3.145-.059.075-.075.08-1.034.08-11.904 0-8.063-.016-11.855-.048-11.924-.048-.092-.134-.096-3.048-.092-2.368.006-3.079.022-3.39.075l-.002.001zm4.482 1.855v10.072l.011-.001V22.07l-2.025-.026c-1.864-.022-2.062-.032-2.437-.124-1.602-.412-2.786-1.645-3.123-3.251-.107-.504-.107-12.863-.005-13.356A4.27 4.27 0 0 1 4.61 2.238c.654-.263.959-.295 3.085-.299l1.923-.006zM14.038.03c-.022.016-.032 5.4-.032 11.974 0 10.838.006 11.936.08 11.968.134.048 3.99.032 4.467-.022a6.204 6.204 0 0 0 4.767-3.279 8.19 8.19 0 0 0 .375-.867c.311-.933.305-.686.305-7.827 0-5.701-.01-6.552-.08-6.911-.493-2.588-2.469-4.543-5.062-4.987-.349-.059-.883-.076-2.614-.076-1.2-.006-2.191.01-2.207.026h.001zm2.404 12.435c.369-1.216 1.66-1.934 2.904-1.607v-.001a2.432 2.432 0 0 1 1.671 1.549c.166.466.161 1.152-.006 1.581-.305.787-.9 1.339-1.666 1.543-1.243.321-2.565-.429-2.924-1.661-.108-.375-.102-1.013.021-1.404z"></path>
           </svg>
 
           <!--PC-->
-          <svg v-if="game.platform=='PC'"xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <svg v-if="game.platform=='PC'"xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
           </svg>
 
@@ -132,17 +132,17 @@
       </div>
       
       <div class="flex items-center mb-2">
-        <div class="rating rating-sm">
+        <div class="rating rating-xs sm:rating-sm">
           <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
           <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
           <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
           <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4" disabled />
           <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
         </div>
-        <span class="ml-2 text-sm opacity-70">{{ game.rating }}/5</span>
+        <span class="ml-1 sm:ml-2 text-xs sm:text-sm opacity-70">{{ game.rating }}/5</span>
       </div>
       
-      <div v-if="game.play_time" class="text-sm mb-2 opacity-70">
+      <div v-if="game.play_time" class="text-xs sm:text-sm mb-2 opacity-70">
         <span>{{ game.play_time }} sati igranja</span>
       </div>
       

@@ -1,38 +1,37 @@
 <!-- src/views/Stats.vue -->
 <template>
     <div class="stats-page">
-      <h1 class="text-4xl font-bold mb-8 text-center">Statistika igranja</h1>
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">Statistika igranja</h1>
       
-      <div v-if="loading" class="flex justify-center py-12">
+      <div v-if="loading" class="flex justify-center py-8 sm:py-12">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
       
       <div v-else>
-        <!-- Sažetak statistike -->
-        <div class="stats shadow w-full mb-8">
+      <!-- SAŽETAK STATS -->
+        <div class="stats shadow w-full mb-6 sm:mb-8 text-center">
           <div class="stat">
-            <div class="stat-title">Ukupno igara</div>
-            <div class="stat-value">{{ games.length }}</div>
+            <div class="stat-title text-xs sm:text-sm">Ukupno igara</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ games.length }}</div>
           </div>
           
           <div class="stat">
-            <div class="stat-title">Ukupno sati igranja</div>
-            <div class="stat-value">{{ totalPlayTime }}</div>
+            <div class="stat-title text-xs sm:text-sm">Ukupno sati igranja</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ totalPlayTime }}</div>
           </div>
           
           <div class="stat">
-            <div class="stat-title">Prosječna ocjena</div>
-            <div class="stat-value">{{ averageRating }}/5</div>
+            <div class="stat-title text-xs sm:text-sm">Prosječna ocjena</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ averageRating }}/5</div>
           </div>
           
           <div class="stat">
-            <div class="stat-title">Trenutno igram</div>
-            <div class="stat-value">{{ currentlyPlaying.length }}</div>
+            <div class="stat-title text-xs sm:text-sm">Trenutno igram</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ currentlyPlaying.length }}</div>
           </div>
         </div>
         
-        <!-- Grafovi i statistika -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
           <!-- Žanrovi igara -->
           <div class="card bg-base-200 shadow-xl">
             <div class="card-body">
@@ -92,20 +91,23 @@
             <h2 class="card-title text-2xl mb-4">Najbolje ocijenjene igre</h2>
             
             <div class="overflow-x-auto">
-              <table class="table w-full">
+              <table class="table table-compact w-full text-sm">
                 <thead>
                   <tr>
-                    <th>Igra</th>
-                    <th>Ocjena</th>
-                    <th>Vrijeme igranja</th>
-                    <th>Platforma</th>
+                    <th class="text-xs sm:text-sm">Igra</th>
+                    <th class="text-xs sm:text-sm">Ocjena</th>
+                    <th class="hidden sm:table-cell text-xs sm:text-sm">Vrijeme igranja</th>
+                    <th class="hidden md:table-cell text-xs sm:text-sm">Platforma</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="game in topRatedGames" :key="game.id" class="cursor-pointer hover:bg-base-300" @click="navigateToGame(game.id)">
-                    <td>{{ game.title }}</td>
+                    <td class="text-xs sm:text-sm">
+                      <div class="truncate max-w-32 sm:max-w-none">{{ game.title }}</div>
+                      <div class="text-xs opacity-70 sm:hidden">{{ game.play_time }}h • {{ game.platform }}</div>
+                    </td>
                     <td>
-                      <div class="rating rating-sm">
+                      <div class="rating rating-xs sm:rating-sm">
                         <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
                         <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
                         <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
@@ -113,8 +115,8 @@
                         <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
                       </div>
                     </td>
-                    <td>{{ game.play_time }} sati</td>
-                    <td>{{ game.platform }}</td>
+                    <td class="hidden sm:table-cell text-xs sm:text-sm">{{ game.play_time }} sati</td>
+                    <td class="hidden md:table-cell text-xs sm:text-sm">{{ game.platform }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -128,21 +130,33 @@
             <h2 class="card-title text-2xl mb-4">Najviše igrani naslovi</h2>
             
             <div class="overflow-x-auto">
-              <table class="table w-full">
+              <table class="table table-compact w-full text-sm">
                 <thead>
                   <tr>
-                    <th>Igra</th>
-                    <th>Vrijeme igranja</th>
-                    <th>Ocjena</th>
-                    <th>Platforma</th>
+                    <th class="text-xs sm:text-sm">Igra</th>
+                    <th class="text-xs sm:text-sm">Vrijeme igranja</th>
+                    <th class="hidden sm:table-cell text-xs sm:text-sm">Ocjena</th>
+                    <th class="hidden md:table-cell text-xs sm:text-sm">Platforma</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="game in mostPlayedGames" :key="game.id" class="cursor-pointer hover:bg-base-300" @click="navigateToGame(game.id)">
-                    <td>{{ game.title }}</td>
-                    <td>{{ game.play_time }} sati</td>
-                    <td>
-                      <div class="rating rating-sm">
+                    <td class="text-xs sm:text-sm">
+                      <div class="truncate max-w-32 sm:max-w-none">{{ game.title }}</div>
+                      <div class="text-xs opacity-70 sm:hidden flex items-center gap-1">
+                        <div class="rating rating-xs">
+                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
+                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
+                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
+                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4" disabled />
+                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
+                        </div>
+                        <span>• {{ game.platform }}</span>
+                      </div>
+                    </td>
+                    <td class="text-xs sm:text-sm">{{ game.play_time }} sati</td>
+                    <td class="hidden sm:table-cell">
+                      <div class="rating rating-xs sm:rating-sm">
                         <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
                         <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
                         <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
@@ -150,7 +164,7 @@
                         <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
                       </div>
                     </td>
-                    <td>{{ game.platform }}</td>
+                    <td class="hidden md:table-cell text-xs sm:text-sm">{{ game.platform }}</td>
                   </tr>
                 </tbody>
               </table>

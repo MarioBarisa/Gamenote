@@ -1,13 +1,13 @@
 // src/views/Profile.vue
 <template>
   <div class="profile">
-    <h1 class="text-3xl font-bold mb-6">Profil</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Profil</h1>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       <div class="col-span-1">
         <div class="card bg-base-200">
-          <div class="card-body">
-            <h2 class="text-xl mb-4">Osobni podaci</h2>
+          <div class="card-body p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl mb-4">Osobni podaci</h2>
             
             <!-- Profilna slika -->
             <div class="avatar mb-4 flex justify-center">
@@ -112,12 +112,12 @@
         </div>
       </div>
       
-      <div class="col-span-1 md:col-span-2">
-        <!-- Gaming Card za export -->
-        <div class="card bg-base-200 mb-6">
-          <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold">Tvoja Gamenote kartica</h2>
+      <div class="col-span-1 lg:col-span-2">
+      <!-- Gaming card export -->
+        <div class="card bg-base-200 mb-4 sm:mb-6">
+          <div class="card-body p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+              <h2 class="text-lg sm:text-xl font-semibold">Tvoja Gamenote kartica</h2>
               <div class="dropdown dropdown-end">
                 <label tabindex="0" class="btn btn-sm btn-primary">
                   📸 Izvezi karticu
@@ -128,9 +128,8 @@
                 </ul>
               </div>
             </div>
-            
             <!-- Gaming Card -->
-            <div ref="gamingCardRef" id="gaming-card" class="bg-gradient-to-br from-slate-800 to-amber-600/80 p-8 rounded-2xl text-white relative overflow-hidden border border-amber-500/30 shadow-xl">
+            <div ref="gamingCardRef" id="gaming-card" class="bg-gradient-to-br from-slate-800 to-amber-600/80 p-4 sm:p-8 rounded-2xl text-white relative overflow-hidden border border-amber-500/30 shadow-xl">
               <!-- Background pattern -->
               <div class="absolute inset-0 opacity-5">
                 <div class="absolute top-4 right-4 text-6xl">🎮</div>
@@ -167,17 +166,17 @@
               </div>
               
               <!-- Stats Grid -->
-              <div class="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.totalGames }}</div>
+              <div class="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                <div class="bg-white/15 backdrop-blur-md rounded-lg p-2 sm:p-4 text-center border border-amber-400/20 shadow-sm">
+                  <div class="text-lg sm:text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.totalGames }}</div>
                   <div class="text-xs text-amber-200/90">Ukupno igara</div>
                 </div>
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.totalPlayTime }}</div>
+                <div class="bg-white/15 backdrop-blur-md rounded-lg p-2 sm:p-4 text-center border border-amber-400/20 shadow-sm">
+                  <div class="text-lg sm:text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.totalPlayTime }}</div>
                   <div class="text-xs text-amber-200/90">Ukupno sati</div>
                 </div>
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.completed }}</div>
+                <div class="bg-white/15 backdrop-blur-md rounded-lg p-2 sm:p-4 text-center border border-amber-400/20 shadow-sm">
+                  <div class="text-lg sm:text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.completed }}</div>
                   <div class="text-xs text-amber-200/90">Završene</div>
                 </div>
                 <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 text-center border border-amber-400/20 shadow-sm">

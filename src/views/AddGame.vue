@@ -1,46 +1,46 @@
 <!-- src/views/AddGame.vue -->
 <template>
   <div class="add-game">
-    <h1 class="text-4xl font-bold mb-8 text-center">Pretraži igre</h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">Pretraži igre</h1>
     
     <div class="card bg-base-200 shadow-xl">
-      <div class="card-body">
-        <div class="mb-6">
-          <h2 class="text-2xl font-bold mb-4"></h2>
-          <div class="flex gap-3">
+      <div class="card-body p-4 sm:p-6">
+        <div class="mb-4 sm:mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-4"></h2>
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <input 
               type="text" 
               v-model="searchQuery" 
               placeholder="Unesite naziv igre..." 
-              class="input input-bordered input-lg flex-grow"
+              class="input input-bordered input-md sm:input-lg flex-grow"
               @keyup.enter="searchGames" 
             />
-            <button @click="searchGames" class="btn btn-primary btn-lg" :disabled="searchLoading">
+            <button @click="searchGames" class="btn btn-primary btn-md sm:btn-lg whitespace-nowrap" :disabled="searchLoading">
               <span v-if="searchLoading" class="loading loading-spinner"></span>
               <span v-else>Pretraži</span>
             </button>
           </div>
         </div>
         
-        <div v-if="searchResults.length > 0" class="search-results mb-8">
-          <h3 class="text-xl font-bold mb-4">Rezultati pretrage</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="searchResults.length > 0" class="search-results mb-6 sm:mb-8">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Rezultati pretrage</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div 
               v-for="game in searchResults" 
               :key="game.id" 
               class="card bg-base-100 cursor-pointer transition-all duration-300 hover:bg-base-300 hover:shadow-lg"
               @click="navigateToGameDetails(game)"
             >
-              <figure v-if="game.background_image" class="h-40">
+              <figure v-if="game.background_image" class="h-32 sm:h-40">
                 <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover" />
               </figure>
-              <div class="card-body p-4">
-                <h4 class="card-title text-lg">{{ game.name }}</h4>
+              <div class="card-body p-3 sm:p-4">
+                <h4 class="card-title text-md sm:text-lg">{{ game.name }}</h4>
                 <p class="text-sm opacity-70">{{ formatReleaseDate(game.released) }}</p>
                 <div class="card-actions justify-end mt-2">
                   <button 
                     @click.stop="selectGameForCollection(game)" 
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-xs sm:btn-sm btn-primary"
                   >
                     Dodaj u kolekciju
                   </button>
@@ -51,9 +51,9 @@
         </div>
         
         <form v-if="selectedGame" @submit.prevent="saveGame" class="game-form">
-          <h3 class="text-2xl font-bold mb-6 text-center">Informacije o igri</h3>
+          <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Informacije o igri</h3>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div class="form-control">
               <label class="label font-medium">Naziv</label>
               <input type="text" v-model="gameForm.title" class="input input-bordered" required />
@@ -86,7 +86,7 @@
             
             <div class="form-control">
               <label class="label font-medium">Ocjena</label>
-              <div class="rating rating-lg">
+              <div class="rating rating-sm sm:rating-md lg:rating-lg">
                 <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="gameForm.rating" />
                 <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="gameForm.rating" />
                 <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="gameForm.rating" />
@@ -178,7 +178,7 @@
             
             <div class="form-control">
               <label class="label font-medium">Ocjena (1-5)</label>
-              <div class="rating rating-lg">
+              <div class="rating rating-sm sm:rating-md lg:rating-lg">
                 <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="apiGameForm.rating" />
                 <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="apiGameForm.rating" />
                 <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="apiGameForm.rating" />

@@ -1,10 +1,9 @@
 <!-- src/components/Layout.vue -->
 <template>
   <div class="app-container min-h-screen flex flex-col bg-base-100" data-theme="dark">
-    <!-- Navigacija -->
     <header class="bg-base-200 sticky top-0 z-50 shadow-lg">
-      <div class="container mx-auto px-4">
-        <div class="navbar py-3">
+      <div class="container mx-auto px-2 sm:px-4">
+        <div class="navbar py-2 sm:py-3">
           <div class="navbar-start">
             <div class="dropdown">
               <label tabindex="0" class="btn btn-ghost lg:hidden">
@@ -13,14 +12,14 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
                 </svg>
               </label>
-              <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-200 rounded-box w-52">
+              <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-200 rounded-box w-52 z-50">
                 <li><router-link to="/">Početna</router-link></li>
                 <li><router-link to="/games">Moje igre</router-link></li>
                 <li><router-link to="/add-game">Dodaj igru</router-link></li>
                 <li><router-link to="/stats">Statistika</router-link></li>
               </ul>
             </div>
-            <router-link to="/" class="btn normal-case text-xl bg-base-500 hover:bg-secondary group">
+            <router-link to="/" class="btn normal-case text-lg sm:text-xl bg-base-500 hover:bg-secondary group px-2 sm:px-4">
               <span
                 class="bg-gradient-to-tr from-rose-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
                 Gamenote
@@ -98,9 +97,8 @@
         </div>
       </div>
     </header>
-
     <!-- Glavni sadržaj -->
-    <main class="container mx-auto px-4 py-6 flex-grow">
+    <main class="container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-full">
       <slot></slot>
     </main>
 
