@@ -107,12 +107,15 @@
                       <div class="text-xs opacity-70 sm:hidden">{{ game.play_time }}h • {{ game.platform }}</div>
                     </td>
                     <td>
-                      <div class="rating rating-xs sm:rating-sm">
-                        <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
-                        <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
-                        <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
-                        <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4" disabled />
-                        <input type="radio" name="rating-id-1" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
+                      <div class="flex">
+                        <template v-for="star in 5" :key="`top-${game.id}-${star}`">
+                          <svg class="w-3 h-3" 
+                               :class="star <= (game.rating || 0) ? 'text-orange-400' : 'text-gray-400'"
+                               fill="currentColor" 
+                               viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                        </template>
                       </div>
                     </td>
                     <td class="hidden sm:table-cell text-xs sm:text-sm">{{ game.play_time }} sati</td>
@@ -144,24 +147,30 @@
                     <td class="text-xs sm:text-sm">
                       <div class="truncate max-w-32 sm:max-w-none">{{ game.title }}</div>
                       <div class="text-xs opacity-70 sm:hidden flex items-center gap-1">
-                        <div class="rating rating-xs">
-                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
-                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
-                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
-                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4" disabled />
-                          <input type="radio" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
+                        <div class="flex">
+                          <template v-for="star in 5" :key="`mobile-${game.id}-${star}`">
+                            <svg class="w-2 h-2" 
+                                 :class="star <= (game.rating || 0) ? 'text-orange-400' : 'text-gray-400'"
+                                 fill="currentColor" 
+                                 viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                          </template>
                         </div>
                         <span>• {{ game.platform }}</span>
                       </div>
                     </td>
                     <td class="text-xs sm:text-sm">{{ game.play_time }} sati</td>
                     <td class="hidden sm:table-cell">
-                      <div class="rating rating-xs sm:rating-sm">
-                        <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 1" disabled />
-                        <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 2" disabled />
-                        <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 3" disabled />
-                        <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 4" disabled />
-                        <input type="radio" name="rating-id-2" class="mask mask-star-2 bg-orange-400" :checked="game.rating >= 5" disabled />
+                      <div class="flex">
+                        <template v-for="star in 5" :key="`played-${game.id}-${star}`">
+                          <svg class="w-3 h-3" 
+                               :class="star <= (game.rating || 0) ? 'text-orange-400' : 'text-gray-400'"
+                               fill="currentColor" 
+                               viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                        </template>
                       </div>
                     </td>
                     <td class="hidden md:table-cell text-xs sm:text-sm">{{ game.platform }}</td>
