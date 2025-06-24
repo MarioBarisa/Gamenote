@@ -8,7 +8,13 @@
 
 mag. inf. Alesandro Žužić i [doc. dr. sc. Nikola Tanković](https://ntankovic.unipu.hr)
 
----
+## Link na javni prototip
+
+[FIGMA](https://www.figma.com/proto/5m6XMsznSpRlDz2y5LX8BH/Gamenote?node-id=0-1&t=2tFCUSzA41azXTAf-1)
+
+## LINK NA SVE DIAGRAME 
+
+[Diagrami](https://mariobarisa.craft.me/gamenotediagrams)
 
 ## Kratki opis funkcionalnosti
 
@@ -40,8 +46,4 @@ Aplikacija omogućava korisnicima praćenje odigranih videoigara kroz sljedeće 
   - metacritic score ( ili open critic -> moram pogledat TOS )
   - još nešto fora ako se sjetim 
 
-## Link na javni prototip
 
-- bude stavljeno u bliskoj budućnosti
-
----
