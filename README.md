@@ -46,8 +46,8 @@ Aplikacija omogućava korisnicima praćenje odigranih videoigara kroz sljedeće 
   - Mogućnost praćenja drugih korisnika (funkcionalnost "follow")
   - Timeline aktivnosti pratitelja (pregled onoga što igraju korisnici koje pratiš)
   - Osnovna stranica profila (biografija, profilna slika, linkovi na druge mreže - vrlo visok prioritet)
-  - fora sstranice povezane sa igrom (wiki/mape...)
-  - metacritic score ( ili open critic -> moram pogledat TOS )
-  - još nešto fora ako se sjetim 
+  - fora stranice povezane sa igrom (wiki/mape...)
+  - metacritic score 
+
 
 
