@@ -16,6 +16,10 @@ mag. inf. Alesandro Žužić i [doc. dr. sc. Nikola Tanković](https://ntankovic
 
 [Diagrami](https://mariobarisa.craft.me/gamenotediagrams)
 
+## Dokumentacija
+
+[GamenoteDokumentacija.pdf](https://mariobarisa.craft.me/gamenotedokumentacija)
+
 ## Kratki opis funkcionalnosti
 
 Aplikacija omogućava korisnicima praćenje odigranih videoigara kroz sljedeće značajke:
