@@ -7,6 +7,7 @@
 <script>
 import { onMounted } from 'vue';
 import { useUserStore } from './stores/user';
+import { useThemeStore } from './stores/theme';
 import Layout from './components/Layout.vue';
 import { supabase } from './supabase';
 
@@ -16,8 +17,11 @@ export default {
   },
   setup() {
     const userStore = useUserStore();
+    const themeStore = useThemeStore();
     
     onMounted(async () => {
+      console.log('🚀 App montiran - inicijalizujem temu');
+      themeStore.initTheme();
       await userStore.fetchUser();
       supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session) {
@@ -26,10 +30,13 @@ export default {
           userStore.clearUser();
         }
       });
+
+      console.log('✅ App inicijalizacija završena');
     });
     
     return {
-      userStore
+      userStore,
+      themeStore
     };
   }
 };

@@ -3,16 +3,15 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createPinia } from 'pinia'
-import router from './router' 
-import { useThemeStore } from './stores/theme'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import router from './router'
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+
 const app = createApp(App)
 
 app.use(pinia)
-app.use(router) 
-
-const themeStore = useThemeStore()
-themeStore.initTheme()
+app.use(router)
 
 app.mount('#app')

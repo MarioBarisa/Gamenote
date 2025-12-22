@@ -1,72 +1,98 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 export const useThemeStore = defineStore('theme', () => {
   const availableThemes = [
-    { name: 'light', label: '☀️ Light' },
-    { name: 'dark', label: '🌙 Dark' },
-    { name: 'cupcake', label: '🧁 Cupcake' },
-    { name: 'bumblebee', label: '🐝 Bumblebee' },
-    { name: 'emerald', label: '💚 Emerald' },
-    { name: 'corporate', label: '🏢 Corporate' },
-    { name: 'synthwave', label: '🌆 Synthwave' },
-    { name: 'retro', label: '📼 Retro' },
-    { name: 'cyberpunk', label: '🤖 Cyberpunk' },
-    { name: 'valentine', label: '💕 Valentine' },
-    { name: 'halloween', label: '👻 Halloween' },
-    { name: 'garden', label: '🌻 Garden' },
-    { name: 'forest', label: '🌲 Forest' },
-    { name: 'aqua', label: '🌊 Aqua' },
-    { name: 'lofi', label: '🎧 Lofi' },
-    { name: 'pastel', label: '🎨 Pastel' },
-    { name: 'fantasy', label: '✨ Fantasy' },
-    { name: 'wireframe', label: '📐 Wireframe' },
-    { name: 'black', label: '⚫ Black' },
-    { name: 'luxury', label: '👑 Luxury' },
-    { name: 'dracula', label: '🧛 Dracula' },
-    { name: 'cmyk', label: '🖨️ CMYK' },
-    { name: 'autumn', label: '🍂 Autumn' },
-    { name: 'business', label: '💼 Business' },
-    { name: 'acid', label: '🔋 Acid' },
-    { name: 'lemonade', label: '🍋 Lemonade' },
-    { name: 'night', label: '🌃 Night' },
-    { name: 'coffee', label: '☕ Coffee' },
-    { name: 'winter', label: '❄️ Winter' },
-    { name: 'dim', label: '🌑 Dim' },
-    { name: 'nord', label: '🏔️ Nord' },
-    { name: 'sunset', label: '🌅 Sunset' }
+    { name: 'light', label: '☀️ Light', description: 'Svijetla tema' },
+    { name: 'dark', label: '🌙 Dark', description: 'Tamna tema' },
+    { name: 'cupcake', label: '🧁 Cupcake', description: 'Slatka, pastelna tema' },
+    { name: 'bumblebee', label: '🐝 Bumblebee', description: 'Žuta i crna' },
+    { name: 'emerald', label: '💚 Emerald', description: 'Smaragdno zelena' },
+    { name: 'corporate', label: '🏢 Corporate', description: 'Poslovni stil' },
+    { name: 'synthwave', label: '🌆 Synthwave', description: 'Retro-futuristička' },
+    { name: 'retro', label: '📼 Retro', description: '80-ih godina' },
+    { name: 'cyberpunk', label: '🤖 Cyberpunk', description: 'Futuristička' },
+    { name: 'valentine', label: '💕 Valentine', description: 'Ljubavna tema' },
+    { name: 'halloween', label: '👻 Halloween', description: 'Strašna tema' },
+    { name: 'garden', label: '🌻 Garden', description: 'Prirodna, vrtna tema' },
+    { name: 'forest', label: '🌲 Forest', description: 'Šumska tema' },
+    { name: 'aqua', label: '🌊 Aqua', description: 'Vodena tema' },
+    { name: 'lofi', label: '🎧 Lofi', description: 'Lo-fi muzička tema' },
+    { name: 'pastel', label: '🎨 Pastel', description: 'Pastelne boje' },
+    { name: 'fantasy', label: '✨ Fantasy', description: 'Fantastična tema' },
+    { name: 'wireframe', label: '📐 Wireframe', description: 'Minimalistička' },
+    { name: 'black', label: '⚫ Black', description: 'AMOLED crna' },
+    { name: 'luxury', label: '👑 Luxury', description: 'Luksuzna tema' },
+    { name: 'dracula', label: '🧛 Dracula', description: 'Tamna, dramatična' },
+    { name: 'cmyk', label: '🖨️ CMYK', description: 'Ispis stil' },
+    { name: 'autumn', label: '🍂 Autumn', description: 'Jesenstva boje' },
+    { name: 'business', label: '💼 Business', description: 'Poslovni stil' },
+    { name: 'acid', label: '🔋 Acid', description: 'Neonska tema' },
+    { name: 'lemonade', label: '🍋 Lemonade', description: 'Hladna, osvježavajuća' },
+    { name: 'night', label: '🌃 Night', description: 'Noćna tema' },
+    { name: 'coffee', label: '☕ Coffee', description: 'Topla, kava boja' },
+    { name: 'winter', label: '❄️ Winter', description: 'Zimska tema' },
+    { name: 'dim', label: '🌑 Dim', description: 'Slabo osvjetljenje' },
+    { name: 'nord', label: '🏔️ Nord', description: 'Nordijska boja' },
+    { name: 'sunset', label: '🌅 Sunset', description: 'Zalazak sunca' }
   ];
 
-  // Učitaj temu iz localStorage
-  const savedTheme = localStorage.getItem('gamenote-theme') || 'dark';
-  const currentTheme = ref(savedTheme);
+  // Default tema
+  const currentTheme = ref('dark');
 
+  // Funkcija za postavljanje teme
   const setTheme = (themeName) => {
-    console.log('🔄 Setting theme to:', themeName);
+    console.log('🔄 Postavljam temu:', themeName);
     
     const themeExists = availableThemes.some(t => t.name === themeName);
     if (!themeExists) {
-      console.error('❌ Theme does not exist:', themeName);
-      return;
+      console.error('❌ Tema ne postoji:', themeName);
+      return false;
     }
 
-    // Postavi temu
     currentTheme.value = themeName;
-    document.documentElement.setAttribute('data-theme', themeName);
-    localStorage.setItem('gamenote-theme', themeName);
+    applyTheme(themeName);
     
-    console.log('✅ Theme applied:', themeName);
-    console.log('📍 HTML data-theme:', document.documentElement.getAttribute('data-theme'));
+    console.log('✅ Tema postavljena:', themeName);
+    return true;
   };
+
+  // Primjeni temu na HTML element
+  const applyTheme = (themeName) => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', themeName);
+      console.log('📍 HTML data-theme:', document.documentElement.getAttribute('data-theme'));
+    }
+  };
+
+  // Inicijalizacija teme
   const initTheme = () => {
-    console.log('🚀 Initializing theme:', currentTheme.value);
-    setTheme(currentTheme.value);
+    console.log('🚀 Inicijalizacija teme:', currentTheme.value);
+    applyTheme(currentTheme.value);
+  };
+
+  // Watch za promjene teme
+  watch(currentTheme, (newTheme) => {
+    console.log('👀 Watch detektirao promjenu teme:', newTheme);
+    applyTheme(newTheme);
+  });
+
+  const getThemeByName = (name) => {
+    return availableThemes.find(t => t.name === name);
   };
 
   return {
     availableThemes,
     currentTheme,
     setTheme,
-    initTheme
+    initTheme,
+    getThemeByName
   };
+}, {
+  // ✅ KLJUČNA IZMJENA: Dodaj persist za localStorage
+  persist: {
+    key: 'gamenote-theme',
+    storage: localStorage,
+    paths: ['currentTheme'] // Samo spremi currentTheme
+  }
 });

@@ -2,7 +2,7 @@
 <template>
   <div class="home">
   <!-- Hero dio -->
-    <section v-if="!userStore.isLoggedIn" class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
+  <section v-if="!userStore.isLoggedIn" class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
       <div class="text-center px-4">
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">Gamenote</h1>
         <p class="text-lg sm:text-xl mb-6">Prati, dijeli i otkrivaj svoje omiljene videoigre</p>
@@ -25,7 +25,7 @@
         </div>
       </div>
     </section>
-    <!-- Popularne igre - za sve korisnike , RAWG API -->
+    <!-- Popularne igre - za sve korisnike , RAWG API 
     <section class="mb-8 sm:mb-12">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
         <h2 class="text-2xl sm:text-3xl font-bold">Popularne igre (zadnja godina)</h2>
@@ -50,7 +50,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section>-->
 
     <!-- Nedavno objavljene - za sve korisnike, RAWG API 
     <section class="mb-12">

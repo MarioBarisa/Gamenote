@@ -1,13 +1,10 @@
 <template>
   <div class="app-container min-h-screen flex flex-col bg-base-100">
-    <!-- Header -->
     <header class="bg-base-200 sticky top-0 z-50 shadow-lg">
       <div class="container mx-auto px-2 sm:px-4">
         <div class="navbar py-2 sm:py-3">
-          <!-- Navbar start - Mobile menu + Logo -->
           <div class="navbar-start">
-            <!-- Mobile menu button -->
-            <div class="dropdown">
+            <div class="dropdown" ref="mobileMenuDropdown">
               <label 
                 tabindex="0" 
                 class="btn btn-ghost lg:hidden"
@@ -25,7 +22,6 @@
               </ul>
             </div>
 
-            <!-- Logo -->
             <router-link to="/" class="btn normal-case text-lg sm:text-xl bg-base-500 hover:bg-secondary group px-2 sm:px-4">
               <span class="bg-gradient-to-tr from-rose-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
                 Gamenote
@@ -33,7 +29,6 @@
             </router-link>
           </div>
 
-          <!-- Navbar center - Desktop menu -->
           <div class="navbar-center hidden lg:flex">
             <ul class="menu menu-horizontal px-1">
               <li>
@@ -72,14 +67,10 @@
             </ul>
           </div>
 
-          <!-- Navbar end - User profile -->
           <div class="navbar-end">
             <div class="flex items-center gap-3">
-              <!-- Username - hidden on small screens -->
               <span class="hidden sm:block text-sm font-medium">{{ userName }}</span>
-              
-              <!-- Profile dropdown -->
-              <div class="dropdown dropdown-end">
+              <div class="dropdown dropdown-end" ref="profileDropdown">
                 <label 
                   tabindex="0" 
                   class="btn btn-ghost btn-circle avatar"
@@ -92,35 +83,12 @@
                 <ul 
                   tabindex="0"
                   class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 rounded-box w-52 z-[100]">
-                  <!-- Email -->
                   <li class="menu-title">
                     <span class="text-base-content/70 text-xs">{{ userStore.user?.email }}</span>
                   </li>
                   <div class="divider my-1"></div>
                   <li><router-link to="/profile" @click="closeProfileDropdown">Profil</router-link></li>
-                  
-                  <!-- THEME SWITCHER -->
-                  <div class="divider my-1"></div>
-                  <li class="menu-title">
-                    <span class="text-base-content/70 text-xs">🎨 Tema</span>
-                  </li>
-                  <li>
-                    <details>
-                      <summary class="cursor-pointer">{{ getCurrentThemeLabel() }}</summary>
-                      <ul class="bg-base-200 p-2 rounded-box max-h-64 overflow-y-auto z-[101]" @click.stop>
-                        <li v-for="theme in themeStore.availableThemes" :key="theme.name">
-                          <a 
-                            @click.stop="switchTheme(theme.name)"
-                            :class="{ 'active': themeStore.currentTheme === theme.name }"
-                            class="text-sm"
-                          >
-                            {{ theme.label }}
-                            <span v-if="themeStore.currentTheme === theme.name" class="ml-auto">✓</span>
-                          </a>
-                        </li>
-                      </ul>
-                    </details>
-                  </li>
+                  <li><router-link to="/theme-settings" @click="closeProfileDropdown">🎨 Teme i Stil</router-link></li>
                   
                   <div class="divider my-1"></div>
                   <li><a @click="logout">Odjava</a></li>
@@ -132,97 +100,170 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-full">
       <slot />
     </main>
+    <div>
+    <div class="flex flex-row gap-4 pl-4">
+            <span class="footer-title">Gamenote</span>
+            <router-link to="/" class="link link-hover">Početna</router-link>
+            <a href="https://github.com/MarioBarisa/Gamenote" target="_blank" class="link link-hover">O aplikaciji</a>
+          <a href="mailto:mario@barisa.me" class="link link-hover">Kontakt</a>
+          </div>
+    
+    <div class="p-2 text-left">
+        <p>© 2026 Gamenote - Mario Bariša. Sva prava pridržana.</p>
+      </div></div>
   </div>
 </template>
 
-
-
 <script>
-  import { computed, ref } from 'vue';
-  import { useUserStore } from '../stores/user';
-  import { useThemeStore } from '../stores/theme';
-  import { useRouter } from 'vue-router';
-  
-  export default {
-    setup() {
-      const userStore = useUserStore();
-      const themeStore = useThemeStore();
-      const router = useRouter();
-      const profileDropdownLabel = ref(null);
-      const mobileMenuLabel = ref(null);
-      
-      const isLoggedIn = computed(() => userStore.isLoggedIn);
-      
-      const profileImageUrl = computed(() => {
-        return userStore.user?.user_metadata?.avatar_url || 
-               'https://i.pravatar.cc/300?u=' + (userStore.user?.email || 'default');
-      });
-      
-      const userName = computed(() => {
-        const name = userStore.user?.user_metadata?.name;
-        if (name) {
-          return name.length > 15 ? name.split(' ')[0] : name;
-        }
-        const email = userStore.user?.email;
-        return email ? email.split('@')[0] : 'Korisnik';
-      });
-      
-      const getCurrentThemeLabel = () => {
-        const current = themeStore.availableThemes.find(
-          t => t.name === themeStore.currentTheme
-        );
-        return current ? current.label : '🎨 Odaberi temu';
-      };
-      
-      const closeProfileDropdown = () => {
-        setTimeout(() => {
-          if (profileDropdownLabel.value) {
-            profileDropdownLabel.value.blur();
-          }
-        }, 100);
-      };
-      
-      const closeMobileMenu = () => {
-        setTimeout(() => {
-          if (mobileMenuLabel.value) {
-            mobileMenuLabel.value.blur();
-          }
-        }, 50);
-      };
-      
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { useUserStore } from '../stores/user';
+import { useThemeStore } from '../stores/theme';
+import { useRouter } from 'vue-router';
 
-      const switchTheme = (themeName) => {
-        console.log('🔄 Switching theme to:', themeName);
-        themeStore.setTheme(themeName);
+export default {
+  setup() {
+    const userStore = useUserStore();
+    const themeStore = useThemeStore();
+    const router = useRouter();
+    const profileDropdownLabel = ref(null);
+    const mobileMenuLabel = ref(null);
+    const mobileMenuDropdown = ref(null);
+    const profileDropdown = ref(null);
+    
+    const isLoggedIn = computed(() => userStore.isLoggedIn);
+    
+    const profileImageUrl = computed(() => {
+      return userStore.user?.user_metadata?.avatar_url || 
+             'https://i.pravatar.cc/300?u=' + (userStore.user?.email || 'default');
+    });
+    
+    const userName = computed(() => {
+      const name = userStore.user?.user_metadata?.name;
+      if (name) {
+        return name.length > 15 ? name.split(' ')[0] : name;
+      }
+      const email = userStore.user?.email;
+      return email ? email.split('@')[0] : 'Korisnik';
+    });
+
+    const resetAllDropdowns = () => {
+      try {
+        if (mobileMenuLabel.value) {
+          mobileMenuLabel.value.removeAttribute('tabindex');
+          setTimeout(() => {
+            if (mobileMenuLabel.value) {
+              mobileMenuLabel.value.setAttribute('tabindex', '0');
+            }
+          }, 10);
+        }
+
+        if (profileDropdownLabel.value) {
+          profileDropdownLabel.value.removeAttribute('tabindex');
+          setTimeout(() => {
+            if (profileDropdownLabel.value) {
+              profileDropdownLabel.value.setAttribute('tabindex', '0');
+            }
+          }, 10);
+        }
+        const dropdownUls = document.querySelectorAll('[tabindex="0"]');
+        dropdownUls.forEach(ul => {
+          if (ul !== mobileMenuLabel.value && ul !== profileDropdownLabel.value) {
+            ul.removeAttribute('tabindex');
+            setTimeout(() => {
+              if (ul) {
+                ul.setAttribute('tabindex', '0');
+              }
+            }, 10);
+          }
+        });
+
+        console.log('✅ Svi dropdowni su resetirani');
+      } catch (error) {
+        console.error('❌ Greška pri resetiranju dropdown-a:', error);
+      }
+    };
+
+    const closeMobileMenu = () => {
+      try {
+        if (mobileMenuLabel.value) {
+          mobileMenuLabel.value.blur();
+          mobileMenuLabel.value.removeAttribute('tabindex');
+          
+          setTimeout(() => {
+            if (mobileMenuLabel.value) {
+              mobileMenuLabel.value.setAttribute('tabindex', '0');
+              mobileMenuLabel.value.blur();
+            }
+          }, 0);
+        }
         
-      };
-      
-      const logout = async () => {
-        await userStore.logout();
-        router.push('/login');
-      };
-      
-      return {
-        isLoggedIn,
-        profileImageUrl,
-        userName,
-        userStore,
-        themeStore,
-        logout,
-        switchTheme,
-        getCurrentThemeLabel,
-        closeProfileDropdown,
-        closeMobileMenu,
-        profileDropdownLabel,
-        mobileMenuLabel
-      };
-    }
-  };
-  </script>
-  
-  
-  
+        console.log('✅ Mobile menu zatvoren');
+      } catch (error) {
+        console.error('❌ Greška pri zatvaranju mobile menija:', error);
+      }
+    };
+
+    const closeProfileDropdown = () => {
+      try {
+        if (profileDropdownLabel.value) {
+          profileDropdownLabel.value.blur();
+          profileDropdownLabel.value.removeAttribute('tabindex');
+          
+          setTimeout(() => {
+            if (profileDropdownLabel.value) {
+              profileDropdownLabel.value.setAttribute('tabindex', '0');
+              profileDropdownLabel.value.blur();
+            }
+          }, 0);
+        }
+        
+        console.log('✅ Profile dropdown zatvoren');
+      } catch (error) {
+        console.error('❌ Greška pri zatvaranju profile dropdown-a:', error);
+      }
+    };
+    
+    const logout = async () => {
+      await userStore.logout();
+      router.push('/login');
+    };
+    onMounted(() => {
+      const routerBeforeEach = router.beforeEach((to, from, next) => {
+        resetAllDropdowns();
+        next();
+      });
+
+      const routerAfterEach = router.afterEach(() => {
+        setTimeout(() => {
+          resetAllDropdowns();
+        }, 100);
+      });
+
+      console.log('✅ Router listeners registrirani');
+    });
+
+    onUnmounted(() => {
+      console.log('✅ Layout komponenta unmountana');
+    });
+    
+    return {
+      isLoggedIn,
+      profileImageUrl,
+      userName,
+      userStore,
+      themeStore,
+      logout,
+      closeProfileDropdown,
+      closeMobileMenu,
+      resetAllDropdowns,
+      profileDropdownLabel,
+      mobileMenuLabel,
+      mobileMenuDropdown,
+      profileDropdown
+    };
+  }
+};
+</script>
