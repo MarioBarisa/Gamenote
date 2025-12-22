@@ -648,7 +648,6 @@ export default {
       }
     ]);
 
-    // Dodaj genre emoji mapper -> Neda mi se zezati sa SVG od prije
     const getGenreEmoji = (genre) => {
       const emojiMap = {
         'Action': '⚔️',
@@ -665,149 +664,239 @@ export default {
       return emojiMap[genre] || '🎮';
     };
     
-    // Export funkcionalnost koristeći Canvas API
     const exportCard = async (format = 'png') => {
-      if (!gamingCardRef.value) return;
-      
-      try {
-        showToast('Pripremam karticu za export...', 'info');
-        
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = 800;
-        canvas.height = 600;
-        
-        // Tamnji gradient sa zlatnim akcentom
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#1e293b'); // slate-800
-        gradient.addColorStop(1, '#d97706'); // amber-600
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Dodaj subtle overlay
-        const overlayGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        overlayGradient.addColorStop(0, 'rgba(0, 0, 0, 0.1)');
-        overlayGradient.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
-        ctx.fillStyle = overlayGradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        
-        ctx.fillStyle = '#fbbf24'; // amber-400
-        ctx.font = 'bold 32px Arial';
-        ctx.fillText(userStore.user?.user_metadata?.name || 'Gaming Entuzijast', 80, 80);
-        
-        ctx.font = '18px Arial';
-        ctx.fillStyle = '#fcd34d'; // amber-300
-        ctx.fillText(userLevel.value, 80, 110);
-        
-        // GameNote logo
-        ctx.font = 'bold 24px Arial';
-        ctx.fillStyle = '#fbbf24'; // amber-400
-        ctx.fillText('GameNote', canvas.width - 200, 50);
-        
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#fcd34d'; // amber-300
-        ctx.fillText('Gaming Tracker', canvas.width - 150, 70);
-        
-        // Statistike s amber bojama
-        const stats = [
-          { label: 'Ukupno igara', value: statistics.value.totalGames, x: 80, y: 200 },
-          { label: 'Ukupno sati', value: statistics.value.totalPlayTime, x: 280, y: 200 },
-          { label: 'Završene', value: statistics.value.completed, x: 480, y: 200 },
-          { label: 'Completion Rate', value: `${completionRate.value}%`, x: 680, y: 200 }
-        ];
-        
-        stats.forEach(stat => {
-          
-          ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; // amber-400/20
-          ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)'; // amber-400/30
-          ctx.lineWidth = 1;
-          ctx.fillRect(stat.x - 20, stat.y - 40, 120, 80);
-          ctx.strokeRect(stat.x - 20, stat.y - 40, 120, 80);
-          
-          
-          ctx.fillStyle = '#fef3c7'; // amber-100
-          ctx.font = 'bold 24px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(stat.value, stat.x + 40, stat.y - 10);
-          
-          
-          ctx.font = '12px Arial';
-          ctx.fillStyle = '#fcd34d'; // amber-300
-          ctx.fillText(stat.label, stat.x + 40, stat.y + 10);
-        });
-        
-        // Reset text align
-        ctx.textAlign = 'left';
-        
-        // omiljeno
-        if (favoriteGame.value) {
-          ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; // amber-400/20
-          ctx.fillRect(60, 320, 320, 120);
-          
-          ctx.fillStyle = 'white';
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText('🏆 Omiljena igra', 80, 350);
-          
-          ctx.font = 'bold 20px Arial';
-          ctx.fillText(favoriteGame.value.title, 80, 380);
-          
-          ctx.font = '14px Arial';
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-          ctx.fillText(`${favoriteGame.value.play_time || 0}h odigrano`, 80, 405);
+  if (!gamingCardRef.value) return;
+
+  try {
+    showToast('Pripremam karticu za export...', 'info');
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const isMobile = window.innerWidth < 768;
+    canvas.width = isMobile ? 600 : 800;
+    canvas.height = isMobile ? 450 : 600;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width *= dpr;
+    canvas.height *= dpr;
+    ctx.scale(dpr, dpr);
+
+    const actualWidth = canvas.width / dpr;
+    const actualHeight = canvas.height / dpr;
+
+    function drawRoundedRect(ctx, x, y, width, height, radius, fill = true, stroke = false) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+    const gradient = ctx.createLinearGradient(0, 0, actualWidth, actualHeight);
+    gradient.addColorStop(0, '#1e293b'); 
+    gradient.addColorStop(1, '#d97706'); 
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, actualWidth, actualHeight);
+
+
+    const overlayGradient = ctx.createLinearGradient(0, 0, actualWidth, actualHeight);
+    overlayGradient.addColorStop(0, 'rgba(0, 0, 0, 0.1)');
+    overlayGradient.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
+    ctx.fillStyle = overlayGradient;
+    ctx.fillRect(0, 0, actualWidth, actualHeight);
+    const nameSize = isMobile ? 24 : 32;
+    const titleSize = isMobile ? 14 : 18;
+    const headerXPos = isMobile ? 100 : 120; 
+    const headerYPos = isMobile ? 50 : 80;
+    const radius = isMobile ? 15 : 20; 
+    const avatarSrc = userStore.user?.user_metadata?.avatar_url || ''; 
+    if (avatarSrc) {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.crossOrigin = 'anonymous'; 
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = avatarSrc;
+      });
+      const avatarRadius = isMobile ? 30 : 40;
+      const avatarX = 40;
+      const avatarY = headerYPos - avatarRadius + 10;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, avatarX - avatarRadius, avatarY - avatarRadius, avatarRadius * 2, avatarRadius * 2);
+      ctx.restore();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#ffffff'; 
+    ctx.font = `bold ${nameSize}px Arial, sans-serif`;
+    ctx.fillText(userStore.user?.user_metadata?.name || 'Gaming Entuzijast', headerXPos, headerYPos);
+
+    ctx.font = `${titleSize}px Arial, sans-serif`;
+    ctx.fillStyle = '#fcd34d'; 
+    ctx.fillText(userLevel.value || 'Gaming Legend', headerXPos, headerYPos + 25);
+    const logoX = actualWidth - (isMobile ? 160 : 200);
+    const logoY = headerYPos - 30;
+    const logoWidth = isMobile ? 140 : 180;
+    const logoHeight = isMobile ? 50 : 60;
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; 
+    drawRoundedRect(ctx, logoX, logoY, logoWidth, logoHeight, radius, true, false);
+
+    ctx.font = `bold ${isMobile ? 18 : 24}px Arial, sans-serif`;
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText('GameNote', logoX + 20, headerYPos);
+
+    ctx.font = `${isMobile ? 10 : 12}px Arial, sans-serif`;
+    ctx.fillStyle = '#fcd34d';
+    ctx.fillText('Gaming Tracker', logoX + 40, headerYPos + 20);
+    const statsY = isMobile ? 130 : 200;
+    const statBoxWidth = isMobile ? 130 : 170; 
+    const statMargin = isMobile ? 10 : 15; 
+
+    const stats = [
+      { label: 'Ukupno igara', value: statistics.value?.totalGames ?? 0 },
+      { label: 'Ukupno sati', value: statistics.value?.totalPlayTime ?? 0 },
+      { label: 'Završene', value: statistics.value?.completed ?? 0 },
+      { label: 'Completion Rate', value: `${completionRate.value ?? 0}%` }
+    ];
+
+    let currentX = 30;
+    ctx.textAlign = 'center';
+    stats.forEach(stat => {
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; 
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, currentX, statsY - 40, statBoxWidth, 80, radius, true, true);
+
+      const centerX = currentX + statBoxWidth / 2;
+
+      ctx.fillStyle = '#ffffff'; 
+      ctx.font = `bold ${isMobile ? 18 : 24}px Arial, sans-serif`;
+      ctx.fillText(stat.value.toString(), centerX, statsY - 10);
+
+      ctx.font = `${isMobile ? 10 : 12}px Arial, sans-serif`;
+      ctx.fillStyle = '#fcd34d';
+      ctx.fillText(stat.label, centerX, statsY + 10);
+
+      currentX += statBoxWidth + statMargin;
+    });
+    ctx.textAlign = 'left';
+
+
+    const favoriteY = isMobile ? 240 : 320;
+    const favoriteBoxWidth = isMobile ? 260 : 340; 
+    const favoriteBoxHeight = isMobile ? 100 : 120;
+
+    if (favoriteGame.value) {
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.2)';
+      drawRoundedRect(ctx, 30, favoriteY, favoriteBoxWidth, favoriteBoxHeight, radius, true, false);
+
+      ctx.fillStyle = '#fcd34d'; // Zlatna za label
+      ctx.font = `bold ${isMobile ? 14 : 16}px Arial, sans-serif`;
+      ctx.fillText('🏆 Omiljena igra', 40, favoriteY + 25);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${isMobile ? 16 : 20}px Arial, sans-serif`;
+      let gameName = favoriteGame.value.title;
+      if (isMobile && gameName.length > 20) {
+        gameName = gameName.substring(0, 17) + '...';
+      } else if (ctx.measureText(gameName).width > favoriteBoxWidth - 20) {
+        while (ctx.measureText(gameName + '...').width > favoriteBoxWidth - 20) {
+          gameName = gameName.substring(0, gameName.length - 1);
         }
-        
-        if (favoriteGenre.value) {
-          ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; // amber-400/20
-          ctx.fillRect(420, 320, 320, 120);
-          
-          ctx.fillStyle = 'white';
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText('🎯 Omiljeni žanr', 440, 350);
-          
-          ctx.font = 'bold 20px Arial';
-          ctx.fillText(favoriteGenre.value.name, 440, 380);
-          
-          ctx.font = '14px Arial';
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-          ctx.fillText(`${favoriteGenre.value.count} igara`, 440, 405);
-        }
-        
-        // footer
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)'; // amber-400/30
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(60, 480);
-        ctx.lineTo(740, 480);
-        ctx.stroke();
-        
-        ctx.fillStyle = '#fcd34d'; // amber-300
-        ctx.font = '12px Arial';
-        ctx.fillText(`Član od ${formatDate(userStore.user?.created_at)}`, 60, 510);
-        ctx.fillText(`${totalPlayDays.value} dana igranja - gamenote.io`, 600, 510);
-        
-        // izvezivanje
-        const link = document.createElement('a');
-        link.download = `gamenote-kartica-${userStore.user?.user_metadata?.name || 'user'}.${format}`;
-        
-        if (format === 'jpg') {
-          link.href = canvas.toDataURL('image/jpeg', 0.9);
-        } else {
-          link.href = canvas.toDataURL('image/png');
-        }
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        showToast(`Kartica spremljena kao ${format.toUpperCase()}!`);
-        
-      } catch (error) {
-        console.error('Export greška:', error);
-        showToast('Greška pri exportu kartice', 'error');
+        gameName += '...';
       }
-    };
+      ctx.fillText(gameName, 40, favoriteY + 50);
+
+      ctx.font = `${isMobile ? 12 : 14}px Arial, sans-serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillText(`${favoriteGame.value.play_time || 0}h odigrano`, 40, favoriteY + 70);
+    }
+
+    if (favoriteGenre.value) {
+      const genreX = actualWidth - (isMobile ? 270 : 350);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.2)';
+      drawRoundedRect(ctx, genreX, favoriteY, favoriteBoxWidth, favoriteBoxHeight, radius, true, false);
+
+      ctx.fillStyle = '#fcd34d';
+      ctx.font = `bold ${isMobile ? 14 : 16}px Arial, sans-serif`;
+      ctx.fillText('🎯 Omiljeni žanr', genreX + 10, favoriteY + 25);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${isMobile ? 16 : 20}px Arial, sans-serif`;
+      let genreName = favoriteGenre.value.name;
+      if (ctx.measureText(genreName).width > favoriteBoxWidth - 20) {
+        while (ctx.measureText(genreName + '...').width > favoriteBoxWidth - 20) {
+          genreName = genreName.substring(0, genreName.length - 1);
+        }
+        genreName += '...';
+      }
+      ctx.fillText(genreName, genreX + 10, favoriteY + 50);
+
+      ctx.font = `${isMobile ? 12 : 14}px Arial, sans-serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillText(`${favoriteGenre.value.count || 0} igara`, genreX + 10, favoriteY + 70);
+    }
+
+    // Footer
+    const footerY = isMobile ? 370 : 480;
+    const footerLineY = isMobile ? 360 : 480;
+
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(30, footerLineY);
+    ctx.lineTo(actualWidth - 30, footerLineY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#fcd34d';
+    ctx.font = `${isMobile ? 10 : 12}px Arial, sans-serif`;
+    const joinDate = userStore.user?.created_at ? formatDate(userStore.user.created_at) : 'nepoznato';
+    ctx.fillText(`Član od ${joinDate}.`, 30, footerY);
+    ctx.fillText(`${totalPlayDays.value || 0} dana igranja gamenote.io`, actualWidth - 200, footerY); // Prilagođeno slici
+
+    // Izvezivanje
+    const userName = (userStore.user?.user_metadata?.name || 'user').replace(/\s+/g, '_');
+    const link = document.createElement('a');
+    link.download = `gamenote-kartica-${userName}.${format}`;
+
+    let dataUrl;
+    if (format === 'jpg') {
+      dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    } else if (format === 'png') {
+      dataUrl = canvas.toDataURL('image/png');
+    } else {
+      console.warn(`Nepodržani format '${format}', koristim PNG.`);
+      dataUrl = canvas.toDataURL('image/png');
+      format = 'png';
+    }
+    link.href = dataUrl;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast(`Kartica spremljena kao ${format.toUpperCase()}!`);
+
+  } catch (error) {
+    console.error('Export greška:', error);
+    showToast('Greška pri exportu kartice', 'error');
+  }
+};
+
     
     return {
       userStore,

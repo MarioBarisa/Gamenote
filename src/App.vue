@@ -1,4 +1,3 @@
-// src/App.vue
 <template>
   <Layout>
     <router-view />
@@ -19,10 +18,7 @@ export default {
     const userStore = useUserStore();
     
     onMounted(async () => {
-      // Dohvati trenutnog korisnika ako postoji sesija
       await userStore.fetchUser();
-      
-      // Postavi listener za promjene u autentifikaciji
       supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session) {
           userStore.setUser(session.user);

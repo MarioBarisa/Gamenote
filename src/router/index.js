@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import AddGame from '../views/AddGame.vue';
@@ -82,16 +81,29 @@ const router = createRouter({
   ]
 });
 
+
+let authCheckPromise = null;
+let lastAuthCheck = 0;
+const AUTH_CHECK_INTERVAL = 5000; 
+
 router.beforeEach(async (to, from, next) => {
   try {
     const userStore = await import('../stores/user').then(module => module.useUserStore());
     
-    await userStore.fetchUser();
+    const now = Date.now();
+    const shouldFetchUser = !lastAuthCheck || (now - lastAuthCheck) > AUTH_CHECK_INTERVAL;
+    
+    if (shouldFetchUser) {
+      if (!authCheckPromise) {
+        authCheckPromise = userStore.fetchUser();
+      }
+      await authCheckPromise;
+      lastAuthCheck = now;
+      authCheckPromise = null;
+    }
+    
     const isAuthenticated = userStore.isLoggedIn;
-    
-    
-    const authRequiredRoutes = ['add-game', 'games', 'game-details', 'edit-game', 'stats'];
-    
+    const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'stats', 'profile'];
     
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
       console.log('Redirecting to login because auth required and not authenticated');

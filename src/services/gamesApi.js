@@ -11,12 +11,12 @@ const RSS_FEEDS = [
   { name: 'IGN', url: 'https://www.ign.com/rss/articles/feed?format=xml', domain: 'ign.com' },
   { name: 'Polygon', url: 'https://www.polygon.com/rss/index.xml', domain: 'polygon.com' },
   { name: 'PC Gamer', url: 'https://www.pcgamer.com/rss/', domain: 'pcgamer.com' },
-  { name: 'Kotaku', url: 'https://kotaku.com/rss', domain: 'kotaku.com' },
   { name: 'VG247', url: 'https://www.vg247.com/feed', domain: 'vg247.com' },
   { name: 'Rock Paper Shotgun', url: 'https://www.rockpapershotgun.com/feed', domain: 'rockpapershotgun.com' },
   { name: 'DualShockers', url: 'https://www.dualshockers.com/feed', domain: 'dualshockers.com' },
   { name: 'TouchArcade', url: 'https://toucharcade.com/feed', domain: 'toucharcade.com' },
-  { name: 'GamingOnLinux', url: 'https://www.gamingonlinux.com/article_rss.php', domain: 'gamingonlinux.com' }
+  { name: 'GamingOnLinux', url: 'https://www.gamingonlinux.com/article_rss.php', domain: 'gamingonlinux.com' },
+  {name: 'HCL.hr', url: 'https://www.hcl.hr/feed/', domain: 'hcl.hr'}
 ];
 
 // API ZA RSS FEEDOVE
