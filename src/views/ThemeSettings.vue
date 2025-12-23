@@ -6,11 +6,11 @@
           <div
             v-for="theme in themeStore.availableThemes"
             :key="theme.name"
-            :data-theme="theme.name"
             class="rounded-lg"
           >
             <div
               @click="switchTheme(theme.name)"
+              :data-theme="theme.name"
               class="card cursor-pointer hover:scale-105 transition-all duration-300 border-2 bg-base-100 shadow-md overflow-hidden"
               :class="{ 
                 'border-primary shadow-xl scale-105 ring-2 ring-primary': themeStore.currentTheme === theme.name, 
