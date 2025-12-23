@@ -5,6 +5,19 @@
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
+    <div v-else-if="error" class="text-center my-8">
+      <div class="alert alert-error shadow-lg max-w-md mx-auto">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2" />
+        </svg>
+        <div>
+          <h3 class="font-bold">Greška</h3>
+          <div class="text-sm">{{ error }}</div>
+        </div>
+      </div>
+      <router-link to="/library" class="btn btn-primary mt-4">Natrag na biblioteku</router-link>
+    </div>
+
     <div v-else-if="!game" class="text-center my-8">
       <p class="text-xl">Igra nije pronađena</p>
       <router-link to="/library" class="btn btn-primary mt-4">Natrag na biblioteku</router-link>
@@ -274,7 +287,7 @@
 </template>
 
 <script>
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, onMounted, reactive, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 
@@ -291,6 +304,7 @@ export default {
     
     const game = ref(null);
     const loading = ref(true);
+    const error = ref(null);
     const saveLoading = ref(false);
     const deleteLoading = ref(false);
     const editMode = ref(props.editMode);
@@ -318,15 +332,21 @@ export default {
     
     const fetchGame = async () => {
       const gameId = route.params.id;
+      loading.value = true;
+      error.value = null;
       
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('games')
           .select('*')
           .eq('id', gameId)
           .single();
 
-        if (error) throw error;
+        if (fetchError) {
+          error.value = 'Igra nije pronađena u bazi podataka';
+          throw fetchError;
+        }
+        
         game.value = data;
 
         if (data) {
@@ -343,8 +363,9 @@ export default {
             editForm.end_date = new Date(data.end_date).toISOString().split('T')[0];
           }
         }
-      } catch (error) {
-        console.error('Error fetching game:', error);
+      } catch (fetchError) {
+        console.error('Error fetching game:', fetchError);
+        error.value = error.value || 'Greška pri učitavanju igre';
       } finally {
         loading.value = false;
       }
@@ -551,11 +572,19 @@ export default {
       return new Date(dateString).toLocaleDateString('hr-HR');
     };
     
+    // Watch for route parameter changes (when user navigates to different game)
+    watch(() => route.params.id, (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        fetchGame();
+      }
+    });
+    
     onMounted(fetchGame);
     
     return {
       game,
       loading,
+      error,
       saveLoading,
       deleteLoading,
       editMode,

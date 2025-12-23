@@ -20,7 +20,6 @@ export default {
     const themeStore = useThemeStore();
     
     onMounted(async () => {
-      console.log('🚀 App montiran - inicijalizujem temu');
       themeStore.initTheme();
       await userStore.fetchUser();
       supabase.auth.onAuthStateChange((event, session) => {
@@ -30,8 +29,6 @@ export default {
           userStore.clearUser();
         }
       });
-
-      console.log('✅ App inicijalizacija završena');
     });
     
     return {

@@ -83,13 +83,17 @@ const router = createRouter({
       path: '/theme-settings',
       name: 'theme-settings',
       component: ThemeSettings
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      redirect: '/'
     }
   ]
 });
 
 
 router.afterEach((to, from) => {
-  console.log('🔄 Router nakon navigacije sa', from.name, 'na', to.name);
   setTimeout(() => {
     const labels = document.querySelectorAll('label[tabindex]');
     labels.forEach(label => {
@@ -100,11 +104,8 @@ router.afterEach((to, from) => {
           label.setAttribute('tabindex', '0');
         }, 0);
       } catch (e) {
-        console.error('Greška pri resetiranju labele:', e);
       }
     });
-    
-    console.log('✅ UI state resetiran');
   }, 50);
 });
 
@@ -129,16 +130,14 @@ router.beforeEach(async (to, from, next) => {
     }
     
     const isAuthenticated = userStore.isLoggedIn;
-    const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'stats', 'profile', 'theme-settings'];
+    const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings'];
     
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
-      console.log('Preusmjeravam na login jer je autentifikacija obavezna');
       next({ name: 'login' });
     } else {
       next();
     }
   } catch (error) {
-    console.error('Greška u navigation guard-u:', error);
     next('/login');
   }
 });

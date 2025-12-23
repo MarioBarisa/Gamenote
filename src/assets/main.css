@@ -58,6 +58,9 @@ margin: 0;
   .btn {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  .btn:not(.btn-circle):not(.btn-square) {
     padding: 0.75rem 1rem;
   }
 

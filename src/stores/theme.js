@@ -37,43 +37,34 @@ export const useThemeStore = defineStore('theme', () => {
     { name: 'sunset', label: '🌅 Sunset', description: 'Zalazak sunca' }
   ];
 
-  // Default tema
   const currentTheme = ref('dark');
-
   // Funkcija za postavljanje teme
   const setTheme = (themeName) => {
     console.log('🔄 Postavljam temu:', themeName);
     
     const themeExists = availableThemes.some(t => t.name === themeName);
     if (!themeExists) {
-      console.error('❌ Tema ne postoji:', themeName);
       return false;
     }
 
     currentTheme.value = themeName;
     applyTheme(themeName);
     
-    console.log('✅ Tema postavljena:', themeName);
     return true;
   };
 
-  // Primjeni temu na HTML element
   const applyTheme = (themeName) => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', themeName);
-      console.log('📍 HTML data-theme:', document.documentElement.getAttribute('data-theme'));
     }
   };
 
-  // Inicijalizacija teme
+
   const initTheme = () => {
-    console.log('🚀 Inicijalizacija teme:', currentTheme.value);
     applyTheme(currentTheme.value);
   };
 
-  // Watch za promjene teme
   watch(currentTheme, (newTheme) => {
-    console.log('👀 Watch detektirao promjenu teme:', newTheme);
     applyTheme(newTheme);
   });
 
@@ -89,7 +80,6 @@ export const useThemeStore = defineStore('theme', () => {
     getThemeByName
   };
 }, {
-  // ✅ KLJUČNA IZMJENA: Dodaj persist za localStorage
   persist: {
     key: 'gamenote-theme',
     storage: localStorage,

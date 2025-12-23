@@ -76,7 +76,7 @@
                   class="btn btn-ghost btn-circle avatar"
                   ref="profileDropdownLabel"
                 >
-                  <div class="w-10 rounded-full">
+                  <div class="w-12 sm:w-10 rounded-full">
                     <img :src="profileImageUrl" alt="Avatar" />
                   </div>
                 </label>
@@ -88,7 +88,7 @@
                   </li>
                   <div class="divider my-1"></div>
                   <li><router-link to="/profile" @click="closeProfileDropdown">Profil</router-link></li>
-                  <li><router-link to="/theme-settings" @click="closeProfileDropdown">🎨 Teme i Stil</router-link></li>
+                  <li><router-link to="/theme-settings" @click="closeProfileDropdown">🎨 Teme</router-link></li>
                   
                   <div class="divider my-1"></div>
                   <li><a @click="logout">Odjava</a></li>
@@ -179,10 +179,7 @@ export default {
             }, 10);
           }
         });
-
-        console.log('✅ Svi dropdowni su resetirani');
       } catch (error) {
-        console.error('❌ Greška pri resetiranju dropdown-a:', error);
       }
     };
 
@@ -199,10 +196,8 @@ export default {
             }
           }, 0);
         }
-        
-        console.log('✅ Mobile menu zatvoren');
+      
       } catch (error) {
-        console.error('❌ Greška pri zatvaranju mobile menija:', error);
       }
     };
 
@@ -219,10 +214,7 @@ export default {
             }
           }, 0);
         }
-        
-        console.log('✅ Profile dropdown zatvoren');
-      } catch (error) {
-        console.error('❌ Greška pri zatvaranju profile dropdown-a:', error);
+      } catch (error) {;
       }
     };
     
@@ -241,12 +233,9 @@ export default {
           resetAllDropdowns();
         }, 100);
       });
-
-      console.log('✅ Router listeners registrirani');
     });
 
     onUnmounted(() => {
-      console.log('✅ Layout komponenta unmountana');
     });
     
     return {

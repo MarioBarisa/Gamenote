@@ -200,11 +200,7 @@
       
       const fetchGames = async () => {
         loading.value = true;
-        
-        console.log('User store state:', userStore.user);
-        
         if (!userStore.user) {
-          console.log('User not found in store, aborting fetch');
           loading.value = false;
           return;
         }
@@ -219,9 +215,7 @@
           if (error) throw error;
           
           games.value = data || [];
-          console.log('Fetched games:', games.value.length, 'items');
         } catch (error) {
-          console.error('Greška pri dohvaćanju igara:', error);
         } finally {
           loading.value = false;
         }

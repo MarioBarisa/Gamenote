@@ -4,6 +4,19 @@
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
+    <div v-else-if="error" class="text-center my-8">
+      <div class="alert alert-error shadow-lg max-w-md mx-auto">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2" />
+        </svg>
+        <div>
+          <h3 class="font-bold">Greška</h3>
+          <div class="text-sm">{{ error }}</div>
+        </div>
+      </div>
+      <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
+    </div>
+
     <div v-else-if="!game" class="text-center my-8">
       <p class="text-xl">Igra nije pronađena</p>
       <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
@@ -337,6 +350,7 @@ export default {
     
     const game = ref(null);
     const loading = ref(true);
+    const error = ref(null);
     const screenshots = ref([]);
     const gameSeries = ref([]);
     const selectedScreenshotIndex = ref(null);
@@ -362,15 +376,27 @@ export default {
 
     const fetchGame = async () => {
       const gameId = route.params.id;
+      loading.value = true;
+      error.value = null;
       
       try {
-        loading.value = true;
-        
         const gameDetails = await gamesApi.getGameDetails(gameId);
+        
+        if (!gameDetails) {
+          error.value = 'Igra nije pronađena na serveru';
+          game.value = null;
+          return;
+        }
+        
         game.value = gameDetails;
         
-        const screenshotsData = await gamesApi.getGameScreenshots(gameId);
-        screenshots.value = screenshotsData;
+        try {
+          const screenshotsData = await gamesApi.getGameScreenshots(gameId);
+          screenshots.value = screenshotsData || [];
+        } catch (screenshotError) {
+          console.warn('Screenshots not available:', screenshotError);
+          screenshots.value = [];
+        }
 
         try {
           const gameSeriesData = await gamesApi.getGameSeries(gameId);
@@ -379,8 +405,10 @@ export default {
           console.warn('Game series data not available:', seriesError);
           gameSeries.value = [];
         }
-      } catch (error) {
-        console.error('Greška pri dohvaćanju igre:', error);
+      } catch (fetchError) {
+        console.error('Greška pri dohvaćanju igre:', fetchError);
+        error.value = 'Greška pri učitavanju igre. Pokušajte ponovno.';
+        game.value = null;
       } finally {
         loading.value = false;
       }
@@ -620,6 +648,7 @@ export default {
     return {
       game,
       loading,
+      error,
       screenshots,
       gameSeries,
       selectedScreenshotIndex,
