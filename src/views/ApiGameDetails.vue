@@ -506,6 +506,19 @@ export default {
       }
     });
 
+    // Auto-set progress mode based on selected platform in modal
+    watch(() => collectionForm.platform, (newPlatform) => {
+      if (!newPlatform) return;
+      const newMode = getProgressModeFromPlatform(newPlatform);
+      collectionForm.progress_mode = newMode;
+      
+      // Also update the unit immediately
+      const modeObj = PROGRESS_MODE_MAP[newMode];
+      if (modeObj && modeObj.defaultUnit) {
+        collectionForm.progress_unit = modeObj.defaultUnit;
+      }
+    });
+
     const toggleGroupId = (groupId) => {
       const index = collectionForm.group_ids.indexOf(groupId);
       if (index > -1) {
@@ -649,6 +662,19 @@ export default {
       Object.assign(collectionForm, createEmptyCollectionForm());
     };
 
+    const getProgressModeFromPlatform = (platformName) => {
+      if (!platformName) return 'completion_standard';
+      const lower = platformName.toLowerCase();
+      
+      if (lower.includes('playstation') || lower.includes('ps')) return 'trophies_psn';
+      if (lower.includes('xbox')) return 'achievements_xbox';
+      if (lower.includes('steam') || lower === 'pc') return 'achievements_steam';
+      if (lower.includes('nintendo')) return 'completion_nintendo';
+      if (lower.includes('ios')) return 'achievements_gamecenter';
+      
+      return 'completion_standard';
+    };
+
     const openAddToCollectionModal = async () => {
       if (!userStore.user) {
         return;
@@ -659,22 +685,42 @@ export default {
       const firstPlatform = game.value?.platforms?.[0]?.platform?.name || '';
       collectionForm.title = game.value?.name || '';
       collectionForm.platform = collectionForm.platform || firstPlatform;
-      collectionForm.progress_source = collectionForm.progress_source || collectionForm.platform || firstPlatform;
       
-      // fetchaj achivments sa rwag
+      // Auto-set progress_mode based on platform FIRST
+      if (firstPlatform) {
+        const platformLower = firstPlatform.toLowerCase();
+        let newMode = 'completion_standard';
+        
+        if (platformLower.includes('playstation') || platformLower.includes('ps')) {
+          newMode = 'trophies_psn';
+        } else if (platformLower.includes('xbox')) {
+          newMode = 'achievements_xbox';
+        } else if (platformLower.includes('steam') || platformLower.includes('pc')) {
+          newMode = 'achievements_steam';
+        } else if (platformLower.includes('nintendo')) {
+          newMode = 'completion_nintendo';
+        } else if (platformLower.includes('ios')) {
+          newMode = 'achievements_gamecenter';
+        }
+        
+        collectionForm.progress_mode = newMode;
+        // Immediately set the unit based on the mode
+        const modeObj = PROGRESS_MODE_MAP[newMode];
+        if (modeObj && modeObj.defaultUnit) {
+          collectionForm.progress_unit = modeObj.defaultUnit;
+        }
+        collectionForm.progress_source = firstPlatform || '';
+      }
+      
+      // Fetch achievements count from RAWG
       try {
-        const achievements = await gamesApi.getGameAchievements(route.params.id);
-        if (achievements && achievements.count > 0) {
-          const platformName = firstPlatform.toLowerCase();
-          if (platformName.includes('playstation') || platformName.includes('ps')) {
-            collectionForm.progress_mode = 'trophies_psn';
-          } else if (platformName.includes('xbox')) {
-            collectionForm.progress_mode = 'achievements_xbox';
-          } else if (platformName.includes('steam') || platformName.includes('pc')) {
-            collectionForm.progress_mode = 'achievements_steam';
-          }
-          collectionForm.progress_total = achievements.count;
-          collectionForm.progress_value = 0; 
+        const achievementsData = await gamesApi.getGameAchievements(route.params.id);
+        console.log('Achievements data:', achievementsData);
+        
+        if (achievementsData && achievementsData.count > 0) {
+          collectionForm.progress_total = achievementsData.count;
+          collectionForm.progress_value = 0;
+          console.log('Set progress_total to:', achievementsData.count);
         }
       } catch (err) {
         console.warn('Could not fetch achievements:', err);
