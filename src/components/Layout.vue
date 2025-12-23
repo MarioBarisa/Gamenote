@@ -104,12 +104,14 @@
       <slot />
     </main>
     <div>
-    <div class="flex flex-row gap-4 pl-4">
-            <span class="footer-title">Gamenote</span>
-            <router-link to="/" class="link link-hover">Početna</router-link>
-            <a href="https://github.com/MarioBarisa/Gamenote" target="_blank" class="link link-hover">O aplikaciji</a>
-          <a href="mailto:mario@barisa.me" class="link link-hover">Kontakt</a>
-          </div>
+      <div class="flex items-center gap-2 pl-2">
+        <router-link to="/">
+          <img src="../assets/gamenote.png" class="h-22 w-auto" alt="Gamenote">
+        </router-link>
+        <a href="https://github.com/MarioBarisa/Gamenote" target="_blank" rel="noopener noreferrer" class="link link-hover pt-1">O aplikaciji</a>
+        <a href="mailto:mario@barisa.me" class="link link-hover pt-1">Kontakt</a>
+      </div>
+
     
     <div class="p-2 text-left">
         <p>© 2026 Gamenote - Mario Bariša. Sva prava pridržana.</p>
