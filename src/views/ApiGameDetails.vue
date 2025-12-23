@@ -335,15 +335,22 @@
 
           <div class="form-control" v-if="showGroupSelector">
             <label class="label font-medium">Odaberi grupe</label>
-            <select v-model="collectionForm.group_ids" class="select select-bordered" multiple size="4">
-              <option v-for="group in groups" :key="group.id" :value="group.id">
-                {{ group.name || group.title || 'Grupa' }}
-              </option>
-            </select>
-            <p class="text-xs opacity-70 mt-1">
-              <span v-if="groupsLoading">Učitavam grupe...</span>
-              <span v-else>Koristi Ctrl/Cmd za višestruki odabir.</span>
-            </p>
+            <div v-if="groupsLoading" class="text-sm opacity-70">Učitavam grupe...</div>
+            <div v-else-if="groups.length === 0" class="text-sm opacity-70">Nema dostupnih grupa. Kreiraj prvu!</div>
+            <div v-else class="space-y-2">
+              <label v-for="group in groups" :key="group.id" class="label cursor-pointer flex items-center justify-start gap-3 p-3 border border-base-300 rounded-lg hover:bg-base-300/30 transition-colors">
+                <input 
+                  type="checkbox" 
+                  class="checkbox checkbox-sm" 
+                  :checked="collectionForm.group_ids.includes(group.id)"
+                  @change="toggleGroupId(group.id)"
+                />
+                <span class="label-text flex-1">
+                  <span class="font-medium">{{ group.name }}</span>
+                  <span class="text-xs opacity-60 ml-2">({{ group.type }})</span>
+                </span>
+              </label>
+            </div>
           </div>
           
           <div class="form-control">
@@ -498,6 +505,15 @@ export default {
         collectionForm.progress_source = collectionForm.platform || mode.badgeSource || '';
       }
     });
+
+    const toggleGroupId = (groupId) => {
+      const index = collectionForm.group_ids.indexOf(groupId);
+      if (index > -1) {
+        collectionForm.group_ids.splice(index, 1);
+      } else {
+        collectionForm.group_ids.push(groupId);
+      }
+    };
     
     const previousGame = computed(() => {
       if (!game.value || gameSeries.value.length === 0) return null;
@@ -739,15 +755,19 @@ export default {
         if (error) throw error;
 
         const newGameId = insertedGame?.id;
-        if (newGameId && collectionForm.group_ids?.length) {
-          try {
-            await Promise.all(collectionForm.group_ids.map(groupId => addGameToGroup({
-              user_id: userStore.user.id,
-              group_id: groupId,
-              game_id: newGameId
-            })));
-          } catch (groupLinkError) {
-            console.error('Greška pri povezivanju igre u grupu:', groupLinkError);
+        
+        // Dodaj igru u odabrane grupe - isti način kao u GameDetails
+        if (newGameId && collectionForm.group_ids.length > 0) {
+          for (const groupId of collectionForm.group_ids) {
+            try {
+              await addGameToGroup({ 
+                user_id: userStore.user.id, 
+                group_id: groupId, 
+                game_id: newGameId 
+              });
+            } catch (groupError) {
+              console.error(`Greška pri dodavanju igre u grupu ${groupId}:`, groupError);
+            }
           }
         }
 
@@ -794,7 +814,8 @@ export default {
       collectionForm,
       openAddToCollectionModal,
       closeAddModal,
-      saveToCollection
+      saveToCollection,
+      toggleGroupId
     };
   }
 };
