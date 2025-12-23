@@ -111,12 +111,12 @@ export default {
       try {
         const userId = userStore.user.id;
         
-        // Dohvati samo trenutno igrane igre iz baze
-        const { data: currentGames, error } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('currently_playing', true)
+          // Dohvati samo trenutno igrane igre iz baze
+          const { data: currentGames, error } = await supabase
+            .from('games')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('status', 'playing')
           .order('updated_at', { ascending: false });
         
         currentlyPlaying.value = currentGames || [];

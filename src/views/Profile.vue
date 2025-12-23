@@ -158,7 +158,7 @@
                 <div class="text-right">
                   <div class="flex items-center gap-2 text-white/95">
                     <span class="text-xl bg-white/15 px-3 py-1 rounded-lg backdrop-blur-md border border-amber-400/30 shadow-sm">
-                      <span class="font-bold font-italic drop-shadow-sm text-white text-transparent">GameNote</span>
+                      <span class="font-bold font-italic drop-shadow-sm text-white">GameNote</span>
                     </span>
                   </div>
                   <p class="text-xs text-amber-200/70 mt-1 drop-shadow-sm">Gaming Tracker</p>
@@ -311,8 +311,8 @@ export default {
       
       return {
         totalGames: games.value.length,
-        currentlyPlaying: games.value.filter(g => g.currently_playing).length,
-        completed: games.value.filter(g => !g.currently_playing && g.end_date).length,
+        currentlyPlaying: games.value.filter(g => g.status === 'playing').length,
+        completed: games.value.filter(g => g.status === 'completed').length,
         totalPlayTime: games.value.reduce((sum, game) => sum + (game.play_time || 0), 0)
       };
     });

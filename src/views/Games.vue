@@ -258,11 +258,12 @@ export default {
       let filtered = games.value;
 
       switch (activeFilter.value) {
+        case 'playing':
         case 'current':
-          filtered = games.value.filter(game => game.currently_playing);
+          filtered = games.value.filter(game => game.status === 'playing');
           break;
         case 'completed':
-          filtered = games.value.filter(game => game.end_date && !game.currently_playing);
+          filtered = games.value.filter(game => game.status === 'completed');
           break;
         case 'rated-5':
           filtered = games.value.filter(game => game.rating === 5);

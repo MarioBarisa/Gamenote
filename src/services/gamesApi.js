@@ -3,7 +3,8 @@ import { ref, computed } from 'vue';
 // API ključ za RAWG Games Database
 // POSTAVITI -> VITE_RAWG_API_KEY u .env datoteci
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-const BASE_URL = 'https://api.rawg.io/api';
+// Use proxy in development to avoid CORS issues
+const BASE_URL = import.meta.env.DEV ? '/api/rawg' : 'https://api.rawg.io/api';
 
 // RSS FEED LISTA IZVORA -> DODAJ ILI MAKNI PO POTREBI
 const RSS_FEEDS = [
@@ -87,6 +88,27 @@ export const useGamesApi = () => {
     } catch (err) {
       console.error(err);
       return [];
+    }
+  };
+
+  const getGameAchievements = async (id) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/games/${id}/achievements?key=${API_KEY}`
+      );
+      
+      if (!response.ok) {
+        return { count: 0, results: [] };
+      }
+      
+      const data = await response.json();
+      return {
+        count: data.count || 0,
+        results: data.results || []
+      };
+    } catch (err) {
+      console.error(err);
+      return { count: 0, results: [] };
     }
   };
   
@@ -255,6 +277,7 @@ export const useGamesApi = () => {
     searchGames,
     getGameDetails,
     getGameScreenshots,
+    getGameAchievements,
     getPopularGames,
     getRecentGames,
     getThisYearGames,

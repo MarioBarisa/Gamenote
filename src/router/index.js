@@ -9,6 +9,8 @@ import SignIn from '../components/SignIn.vue';
 import SignUp from '../components/SignUp.vue';
 import Profile from '../views/Profile.vue';
 import ThemeSettings from '../views/ThemeSettings.vue';
+import Groups from '../views/Groups.vue';
+import GroupDetails from '../views/GroupDetails.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +19,16 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: Home
+    },
+    {
+      path: '/groups',
+      name: 'groups',
+      component: Groups
+    },
+    {
+      path: '/groups/:id',
+      name: 'group-details',
+      component: GroupDetails
     },
     {
       path: '/about',
@@ -130,7 +142,7 @@ router.beforeEach(async (to, from, next) => {
     }
     
     const isAuthenticated = userStore.isLoggedIn;
-    const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings'];
+    const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings', 'groups', 'group-details'];
     
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
       next({ name: 'login' });

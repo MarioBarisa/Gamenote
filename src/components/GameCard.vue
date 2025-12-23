@@ -7,12 +7,24 @@
         :alt="game.title" 
         class="w-full h-full object-cover"
       />
-      <div v-if="game.currently_playing" class="absolute top-0 right-0 m-1 sm:m-2">
-        <div class="badge badge-primary text-xs sm:text-sm p-2 sm:p-3">Trenutno igram</div>
+      <!-- 100% Badge --->
+      <div v-if="achievementPercent === 100" class="absolute top-0 left-0 m-1 sm:m-2">
+        <div class="badge bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-black font-bold text-xs sm:text-sm p-2 sm:p-3 shadow-lg border-2 border-yellow-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          100%
+        </div>
       </div>
     </figure>
     <div class="card-body p-2 sm:p-3 md:p-4">
       <h2 class="card-title text-sm sm:text-base md:text-lg font-bold mb-1 line-clamp-1">{{ game.title }}</h2>
+      <!-- Status badge -->
+      <div v-if="gameStatus" class="mb-2">
+        <span class="badge text-[10px] sm:text-xs p-1.5 sm:p-2 font-semibold" :class="statusBadgeClass">
+          {{ statusBadgeText }}
+        </span>
+      </div>
       
       <div class="flex items-center text-xs sm:text-sm mb-2">
         <span class="badge badge-outline p-1 sm:p-2 h-auto">
@@ -145,16 +157,25 @@
         <span class="ml-1 sm:ml-2 text-xs sm:text-sm opacity-70">{{ game.rating || 0 }}/5</span>
       </div>
       
-      <div v-if="game.play_time" class="text-xs sm:text-sm mb-2 opacity-70">
-        <span>{{ game.play_time }} sati igranja</span>
-      </div>
-      
-      <div v-if="game.achievement_percent !== undefined && game.achievement_percent !== null" class="w-full bg-gray-700 rounded-full h-2 mb-2">
-        <div 
-          class="bg-primary h-2 rounded-full" 
-          :style="{ width: `${game.achievement_percent}%` }"
-          :title="`${game.achievement_percent}% achievementa`"
-        ></div>
+      <!-- Vrijeme igranja i Achievements -->
+      <div class="mt-3 space-y-2">
+        <div v-if="game.play_time" class="text-xs sm:text-sm opacity-70">
+          {{ game.play_time }}h igranja
+        </div>
+        <div v-if="game.progress_value && game.progress_total" class="space-y-1">
+          <!-- Progress Bar -->
+          <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div 
+              class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all"
+              :style="{ width: `${achievementPercent}%` }"
+            ></div>
+          </div>
+          <!-- Achievement Text -->
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-semibold">{{ validatedProgressValue }}/{{ game.progress_total }} {{ achievementLabel }}</span>
+            <span class="opacity-70">{{ achievementPercent }}%</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -166,6 +187,62 @@ export default {
     game: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    achievementLabel() {
+      const source = this.game?.progress_source;
+      const mode = this.game?.progress_mode;
+      
+      
+      if (source === 'PlayStation 4' || source === 'PlayStation 5') return 'PSN Trophies';
+      if (source === 'Xbox One' || source === 'Xbox Series X/S') return 'Xbox Achievements';
+      if (source === 'Steam') return 'Steam Achievements';
+      if (source === 'Nintendo Switch') return 'Achievements';
+      
+      
+      if (mode === 'trophies_psn') return 'PSN Trophies';
+      if (mode === 'trophies_xbox') return 'Xbox Achievements';
+      if (mode === 'achievements_steam') return 'Steam Achievements';
+      if (mode === 'achievements_gamecenter') return 'Game Center Achievements';
+      
+      return 'Achievements';
+    },
+    achievementPercent() {
+      if (!this.game?.progress_value || !this.game?.progress_total) return 0;
+      const value = Math.min(this.game.progress_value, this.game.progress_total);
+      return Math.round((value / this.game.progress_total) * 100);
+    },
+    validatedProgressValue() {
+      if (!this.game?.progress_value || !this.game?.progress_total) return 0;
+      return Math.min(this.game.progress_value, this.game.progress_total);
+    },
+    gameStatus() {
+      // BINTO: Support both new 'status' field and legacy 'currently_playing' !!!!!!
+      if (this.game?.status) return this.game.status;
+      if (this.game?.currently_playing) return 'playing';
+      if (this.game?.end_date) return 'completed';
+      return null;
+    },
+    statusBadgeText() {
+      const statusMap = {
+        'playing': 'Trenutno igram',
+        'paused': 'Pauzirano',
+        'completed': 'Završeno',
+        'dropped': 'Napušteno',
+        'backlog': 'Backlog'
+      };
+      return statusMap[this.gameStatus] || this.gameStatus;
+    },
+    statusBadgeClass() {
+      const classMap = {
+        'playing': 'badge-primary',
+        'paused': 'badge-warning',
+        'completed': 'badge-success',
+        'dropped': 'badge-error',
+        'backlog': 'badge-ghost'
+      };
+      return classMap[this.gameStatus] || 'badge-neutral';
     }
   },
   methods: {

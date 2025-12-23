@@ -27,7 +27,15 @@
           
           <div class="stat">
             <div class="stat-title text-xs sm:text-sm">Trenutno igram</div>
-            <div class="stat-value text-2xl sm:text-3xl">{{ currentlyPlaying.length }}</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ playingCount }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title text-xs sm:text-sm">Završene igre</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ completedCount }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title text-xs sm:text-sm">Prosječan napredak (%)</div>
+            <div class="stat-value text-2xl sm:text-3xl">{{ averageCompletion }}</div>
           </div>
         </div>
         
@@ -189,6 +197,7 @@
   import { useRouter } from 'vue-router';
   import { useUserStore } from '../stores/user';
   import { supabase } from '../supabase';
+  import { computePercent } from '../constants/progressModes';
   
   export default {
     setup() {
@@ -233,8 +242,30 @@
         return (sum / gamesWithRating.length).toFixed(1);
       });
       
-      const currentlyPlaying = computed(() => {
-        return games.value.filter(game => game.currently_playing);
+      const playingCount = computed(() => {
+        return games.value.filter(game => game.status === 'playing').length;
+      });
+
+      const completedCount = computed(() => {
+        return games.value.filter(game => game.status === 'completed').length;
+      });
+
+      const gamePercent = (game) => {
+        return computePercent({
+          progress_mode: game.progress_mode,
+          progress_value: game.progress_value,
+          progress_total: game.progress_total,
+          achievement_percent: game.achievement_percent
+        });
+      };
+
+      const averageCompletion = computed(() => {
+        const percents = games.value
+          .map(gamePercent)
+          .filter(p => typeof p === 'number');
+        if (percents.length === 0) return 0;
+        const sum = percents.reduce((a, b) => a + b, 0);
+        return Math.round(sum / percents.length);
       });
       
       const genreCounts = computed(() => {
@@ -305,7 +336,9 @@
         games,
         totalPlayTime,
         averageRating,
-        currentlyPlaying,
+        playingCount,
+        completedCount,
+        averageCompletion,
         genreCounts,
         platformCounts,
         topRatedGames,

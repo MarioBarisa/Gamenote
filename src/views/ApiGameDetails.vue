@@ -259,59 +259,101 @@
         </div>
 
         <form @submit.prevent="saveToCollection" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label font-medium">Naziv</label>
-              <input type="text" v-model="collectionForm.title" class="input input-bordered" required />
+          <div class="form-control">
+            <label class="label font-medium">Naziv</label>
+            <input type="text" v-model="collectionForm.title" class="input input-bordered" required />
+          </div>
+          
+          <div class="form-control">
+            <label class="label font-medium">Platforma</label>
+            <select v-model="collectionForm.platform" class="select select-bordered" required>
+              <option value="" disabled>Odaberi platformu</option>
+              <option v-for="platform in platforms" :key="platform" :value="platform">
+                {{ platform }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-control">
+            <label class="label font-medium">Vrijeme igranja (sati)</label>
+            <input type="number" v-model="collectionForm.play_time" class="input input-bordered" min="0" />
+          </div>
+          
+          <div class="form-control">
+            <label class="label font-medium">Ocjena (1-5)</label>
+            <div class="rating rating-lg">
+              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating" />
+              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating" />
+              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating" />
+              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating" />
+              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating" />
             </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Platforma</label>
-              <select v-model="collectionForm.platform" class="select select-bordered" required>
-                <option value="" disabled>Odaberi platformu</option>
-                <option v-for="platform in platforms" :key="platform" :value="platform">
-                  {{ platform }}
-                </option>
-              </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label font-medium">Status</label>
+            <select v-model="collectionForm.status" class="select select-bordered">
+              <option value="" disabled>Odaberi status</option>
+              <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key">{{ s.label }}</option>
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label font-medium">Game Progression</label>
+            <select v-model="collectionForm.progress_mode" class="select select-bordered">
+              <option value="" disabled>Odaberi način praćenja</option>
+              <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
+            </select>
+            <p v-if="selectedCollectionProgressMode" class="text-xs opacity-70 mt-1">
+              {{ selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies') 
+                ? '✨ Ukupan broj achievement/trofeja automatski dohvaćen iz RAWG API baze.' 
+                : 'Unesi vrijednosti prema načinu praćenja (postotak 0-100, vrijednost/ukupno za omjer, #rang za leaderboard).' }}
+            </p>
+          </div>
+          
+          <template v-if="selectedCollectionProgressMode">
+            <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
+              <label class="label font-medium">Vrijednost</label>
+              <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered" min="0" />
             </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Vrijeme igranja (sati)</label>
-              <input type="number" v-model="collectionForm.play_time" class="input input-bordered" min="0" />
+            <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
+              <label class="label font-medium">Ukupno</label>
+              <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered" min="0" />
             </div>
-            
             <div class="form-control">
-              <label class="label font-medium">Ocjena (1-5)</label>
-              <div class="rating rating-lg">
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating" />
-              </div>
+              <label class="label font-medium">Jedinica</label>
+              <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" :placeholder="selectedCollectionProgressMode.defaultUnit || 'unit'" readonly />
             </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Postotak achievementa (%)</label>
-              <input type="number" v-model="collectionForm.achievement_percent" class="input input-bordered" min="0" max="100" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Datum početka</label>
-              <input type="date" v-model="collectionForm.start_date" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Datum završetka</label>
-              <input type="date" v-model="collectionForm.end_date" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control">
-              <label class="flex items-center cursor-pointer">
-                <input type="checkbox" v-model="collectionForm.currently_playing" class="checkbox checkbox-primary" />
-                <span class="label-text ml-2">Trenutno igram</span>
-              </label>
-            </div>
+          </template>
+
+          <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+              <input type="checkbox" v-model="showGroupSelector" class="checkbox" />
+              <span class="label-text font-medium">Dodaj u grupe/kolekcije</span>
+            </label>
+          </div>
+
+          <div class="form-control" v-if="showGroupSelector">
+            <label class="label font-medium">Odaberi grupe</label>
+            <select v-model="collectionForm.group_ids" class="select select-bordered" multiple size="4">
+              <option v-for="group in groups" :key="group.id" :value="group.id">
+                {{ group.name || group.title || 'Grupa' }}
+              </option>
+            </select>
+            <p class="text-xs opacity-70 mt-1">
+              <span v-if="groupsLoading">Učitavam grupe...</span>
+              <span v-else>Koristi Ctrl/Cmd za višestruki odabir.</span>
+            </p>
+          </div>
+          
+          <div class="form-control">
+            <label class="label font-medium">Datum početka</label>
+            <input type="date" v-model="collectionForm.start_date" class="input input-bordered" />
+          </div>
+          
+          <div class="form-control">
+            <label class="label font-medium">Datum završetka</label>
+            <input type="date" v-model="collectionForm.end_date" class="input input-bordered" />
           </div>
           
           <div class="form-control">
@@ -340,6 +382,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGamesApi } from '../services/gamesApi';
 import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
+import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
+import { GAME_STATUS } from '../constants/gameStatus';
+import { listGroups, addGameToGroup } from '../services/groupsApi';
 
 export default {
   setup() {
@@ -356,23 +401,47 @@ export default {
     const selectedScreenshotIndex = ref(null);
     const showAddModal = ref(false);
     const saveLoading = ref(false);
+    const groups = ref([]);
+    const groupsLoading = ref(false);
+    const showGroupSelector = ref(false);
 
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
       'Nintendo Switch', 'iOS', 'Android', 'Other'
     ];
 
-    const collectionForm = reactive({
+    const createEmptyCollectionForm = () => ({
       title: '',
       platform: '',
       play_time: 0,
       rating: 0,
-      achievement_percent: 0,
       notes: '',
       start_date: '',
       end_date: '',
-      currently_playing: false
+      status: '',
+      progress_mode: 'completion_standard',
+      progress_value: null,
+      progress_total: null,
+      progress_unit: '%',
+      progress_source: '',
+      group_ids: []
     });
+
+    const collectionForm = reactive(createEmptyCollectionForm());
+
+    const selectedCollectionProgressMode = computed(() => PROGRESS_MODE_MAP[collectionForm.progress_mode] || null);
+
+    const loadGroups = async () => {
+      if (!userStore.user) return;
+      groupsLoading.value = true;
+      try {
+        groups.value = await listGroups(userStore.user.id);
+      } catch (groupError) {
+        console.error('Greška pri učitavanju grupa:', groupError);
+      } finally {
+        groupsLoading.value = false;
+      }
+    };
 
     const fetchGame = async () => {
       const gameId = route.params.id;
@@ -414,10 +483,19 @@ export default {
       }
     };
     
-    // gledaj za promjene rute kada dodaješ igru
+    // gledaj za promjene 
     watch(() => route.params.id, (newId, oldId) => {
       if (newId && newId !== oldId) {
         fetchGame();
+      }
+    });
+
+    // automatsko postavljanje jedinice iz progress_mode
+    watch(() => collectionForm.progress_mode, (newMode) => {
+      const mode = PROGRESS_MODE_MAP[newMode];
+      if (mode && mode.defaultUnit) {
+        collectionForm.progress_unit = mode.defaultUnit;
+        collectionForm.progress_source = collectionForm.platform || mode.badgeSource || '';
       }
     });
     
@@ -551,27 +629,47 @@ export default {
       return 'text-red-500 [--size:7rem] [--thickness:0.8rem] bg-base-200 border-red-500';
     };
     
-    const openAddToCollectionModal = () => {
+    const resetCollectionForm = () => {
+      Object.assign(collectionForm, createEmptyCollectionForm());
+    };
+
+    const openAddToCollectionModal = async () => {
       if (!userStore.user) {
         return;
       }
-      
-      // POPUNI FORMU SA PODACIMA
+      if (!groups.value.length) {
+        await loadGroups();
+      }
+      const firstPlatform = game.value?.platforms?.[0]?.platform?.name || '';
       collectionForm.title = game.value?.name || '';
+      collectionForm.platform = collectionForm.platform || firstPlatform;
+      collectionForm.progress_source = collectionForm.progress_source || collectionForm.platform || firstPlatform;
+      
+      // fetchaj achivments sa rwag
+      try {
+        const achievements = await gamesApi.getGameAchievements(route.params.id);
+        if (achievements && achievements.count > 0) {
+          const platformName = firstPlatform.toLowerCase();
+          if (platformName.includes('playstation') || platformName.includes('ps')) {
+            collectionForm.progress_mode = 'trophies_psn';
+          } else if (platformName.includes('xbox')) {
+            collectionForm.progress_mode = 'achievements_xbox';
+          } else if (platformName.includes('steam') || platformName.includes('pc')) {
+            collectionForm.progress_mode = 'achievements_steam';
+          }
+          collectionForm.progress_total = achievements.count;
+          collectionForm.progress_value = 0; 
+        }
+      } catch (err) {
+        console.warn('Could not fetch achievements:', err);
+      }
+      
       showAddModal.value = true;
     };
 
     const closeAddModal = () => {
       showAddModal.value = false;
-      Object.keys(collectionForm).forEach(key => {
-        if (typeof collectionForm[key] === 'boolean') {
-          collectionForm[key] = false;
-        } else if (typeof collectionForm[key] === 'number') {
-          collectionForm[key] = 0;
-        } else {
-          collectionForm[key] = '';
-        }
-      });
+      resetCollectionForm();
     };
 
     const saveToCollection = async () => {
@@ -594,11 +692,15 @@ export default {
           genre: game.value?.genres?.map(g => g.name).join(', ') || '',
           publisher: game.value?.publishers?.map(p => p.name).join(', ') || '',
           rating: collectionForm.rating || null,
-          achievement_percent: collectionForm.achievement_percent || null,
           notes: collectionForm.notes,
           start_date: collectionForm.start_date || null,
           end_date: collectionForm.end_date || null,
-          currently_playing: collectionForm.currently_playing,
+          status: collectionForm.status || null,
+          progress_mode: collectionForm.progress_mode || null,
+          progress_value: collectionForm.progress_value,
+          progress_total: collectionForm.progress_total,
+          progress_unit: collectionForm.progress_unit || null,
+          progress_source: collectionForm.progress_source || collectionForm.platform || null,
           game_api_id: game.value?.id?.toString() || null,
           image_url: game.value?.background_image,
           description: game.value?.description_raw,
@@ -628,11 +730,26 @@ export default {
           gameData.series_games = JSON.stringify(seriesGames);
         }
 
-        const { error } = await supabase
+        const { data: insertedGame, error } = await supabase
           .from('games')
-          .insert([gameData]);
+          .insert([gameData])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        const newGameId = insertedGame?.id;
+        if (newGameId && collectionForm.group_ids?.length) {
+          try {
+            await Promise.all(collectionForm.group_ids.map(groupId => addGameToGroup({
+              user_id: userStore.user.id,
+              group_id: groupId,
+              game_id: newGameId
+            })));
+          } catch (groupLinkError) {
+            console.error('Greška pri povezivanju igre u grupu:', groupLinkError);
+          }
+        }
 
         closeAddModal();
         router.push('/library');
@@ -646,6 +763,9 @@ export default {
     onMounted(fetchGame);
     
     return {
+      PROGRESS_MODES,
+      GAME_STATUS,
+      selectedCollectionProgressMode,
       game,
       loading,
       error,
@@ -666,6 +786,9 @@ export default {
       formatDate,
       getMetacriticColorClass,
       showAddModal,
+      groups,
+      groupsLoading,
+      showGroupSelector,
       saveLoading,
       platforms,
       collectionForm,

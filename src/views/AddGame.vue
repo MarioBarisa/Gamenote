@@ -49,87 +49,6 @@
             </div>
           </div>
         </div>
-        
-        <form v-if="selectedGame" @submit.prevent="saveGame" class="game-form">
-          <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Informacije o igri</h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <div class="form-control">
-              <label class="label font-medium">Naziv</label>
-              <input type="text" v-model="gameForm.title" class="input input-bordered" required />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Platforma</label>
-              <select v-model="gameForm.platform" class="select select-bordered" required>
-                <option value="" disabled selected>Odaberi platformu</option>
-                <option v-for="platform in platforms" :key="platform" :value="platform">
-                  {{ platform }}
-                </option>
-              </select>
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Žanr</label>
-              <input type="text" v-model="gameForm.genre" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Izdavač</label>
-              <input type="text" v-model="gameForm.publisher" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Vrijeme igranja (sati)</label>
-              <input type="number" v-model="gameForm.play_time" class="input input-bordered" min="0" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Ocjena</label>
-              <div class="rating rating-sm sm:rating-md lg:rating-lg">
-                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="gameForm.rating" />
-                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="gameForm.rating" />
-                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="gameForm.rating" />
-                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="gameForm.rating" />
-                <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="gameForm.rating" />
-              </div>
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Postotak ostvarenih achievementa (%)</label>
-              <input type="number" v-model="gameForm.achievement_percent" class="input input-bordered" min="0" max="100" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Datum početka igranja</label>
-              <input type="date" v-model="gameForm.start_date" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Datum završetka igranja</label>
-              <input type="date" v-model="gameForm.end_date" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control">
-              <label class="flex items-center cursor-pointer mt-8">
-                <input type="checkbox" v-model="gameForm.currently_playing" class="checkbox checkbox-primary" />
-                <span class="label-text ml-2 text-lg">Trenutno igram</span>
-              </label>
-            </div>
-          </div>
-          
-          <div class="form-control mt-6">
-            <label class="label font-medium">Bilješke</label>
-            <textarea v-model="gameForm.notes" class="textarea textarea-bordered h-32"></textarea>
-          </div>
-          
-          <div class="form-control mt-8">
-            <button type="submit" class="btn btn-primary btn-lg mx-auto w-full md:w-1/2" :disabled="saveLoading">
-              <span v-if="saveLoading" class="loading loading-spinner"></span>
-              <span v-else>Spremi igru</span>
-            </button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -155,7 +74,7 @@
         </div>
 
         <form @submit.prevent="saveApiGame" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4">
             <div class="form-control">
               <label class="label font-medium">Naziv</label>
               <input type="text" v-model="apiGameForm.title" class="input input-bordered" required />
@@ -188,9 +107,39 @@
             </div>
             
             <div class="form-control">
-              <label class="label font-medium">Postotak achievementa (%)</label>
-              <input type="number" v-model="apiGameForm.achievement_percent" class="input input-bordered" min="0" max="100" />
+              <label class="label font-medium">Status</label>
+              <select v-model="apiGameForm.status" class="select select-bordered">
+                <option value="" disabled>Odaberi status</option>
+                <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key">{{ s.label }}</option>
+              </select>
             </div>
+
+            <div class="form-control">
+              <label class="label font-medium">Game Progression</label>
+              <select v-model="apiGameForm.progress_mode" class="select select-bordered">
+                <option value="" disabled>Odaberi način praćenja</option>
+                <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
+              </select>
+              <p v-if="selectedApiProgressMode" class="text-xs opacity-70 mt-1">
+                {{ selectedApiProgressMode.key.includes('achievements') || selectedApiProgressMode.key.includes('trophies') 
+                  ? '✨ Ukupan broj achievement/trofeja automatski dohvaćen iz RAWG API baze.' 
+                  : 'Popuni vrijednost za odabrani način (npr. 0-100 za postotak, vrijednost/ukupno za omjer, #rang za leaderboard).' }}
+              </p>
+            </div>
+            <template v-if="selectedApiProgressMode">
+              <div class="form-control" v-if="selectedApiProgressMode.kind === 'count' || selectedApiProgressMode.kind === 'rank'">
+                <label class="label font-medium">Vrijednost</label>
+                <input type="number" v-model.number="apiGameForm.progress_value" class="input input-bordered" min="0" />
+              </div>
+              <div class="form-control" v-if="selectedApiProgressMode.requiresTotal">
+                <label class="label font-medium">Ukupno</label>
+                <input type="number" v-model.number="apiGameForm.progress_total" class="input input-bordered" min="0" />
+              </div>
+              <div class="form-control">
+                <label class="label font-medium">Jedinica</label>
+                <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" :placeholder="selectedApiProgressMode.defaultUnit || 'unit'" readonly />
+              </div>
+            </template>
             
             <div class="form-control">
               <label class="label font-medium">Datum početka</label>
@@ -202,12 +151,7 @@
               <input type="date" v-model="apiGameForm.end_date" class="input input-bordered" />
             </div>
             
-            <div class="form-control">
-              <label class="flex items-center cursor-pointer">
-                <input type="checkbox" v-model="apiGameForm.currently_playing" class="checkbox checkbox-primary" />
-                <span class="label-text ml-2">Trenutno igram</span>
-              </label>
-            </div>
+            <!-- Uklonjeno: Trenutno igram (koristi Status) -->
           </div>
           
           <div class="form-control">
@@ -231,11 +175,13 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useGamesApi } from '../services/gamesApi';
 import { supabase } from '../supabase';
+import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
+import { GAME_STATUS } from '../constants/gameStatus';
 
 export default {
   setup() {
@@ -264,11 +210,15 @@ export default {
       genre: '',
       publisher: '',
       rating: 0,
-      achievement_percent: 0,
       notes: '',
       start_date: '',
       end_date: '',
-      currently_playing: false,
+      status: '',
+      progress_mode: 'completion_standard',
+      progress_value: null,
+      progress_total: null,
+      progress_unit: '%',
+      progress_source: '',
       game_api_id: '',
       image: ''
     });
@@ -280,11 +230,74 @@ export default {
       genre: '',
       publisher: '',
       rating: 0,
-      achievement_percent: 0,
       notes: '',
       start_date: '',
       end_date: '',
-      currently_playing: false
+      status: '',
+      progress_mode: 'completion_standard',
+      progress_value: null,
+      progress_total: null,
+      progress_unit: '%',
+      progress_source: ''
+    });
+
+    const selectedProgressMode = computed(() => PROGRESS_MODE_MAP[gameForm.progress_mode] || null);
+    const selectedApiProgressMode = computed(() => PROGRESS_MODE_MAP[apiGameForm.progress_mode] || null);
+
+    // Watch za automatsko postavljanje jedinice iz progress_mode
+    watch(() => gameForm.progress_mode, (newMode) => {
+      const mode = PROGRESS_MODE_MAP[newMode];
+      if (mode && mode.defaultUnit) {
+        gameForm.progress_unit = mode.defaultUnit;
+        gameForm.progress_source = gameForm.platform || mode.badgeSource || '';
+      }
+    });
+
+    watch(() => apiGameForm.progress_mode, (newMode) => {
+      const mode = PROGRESS_MODE_MAP[newMode];
+      if (mode && mode.defaultUnit) {
+        apiGameForm.progress_unit = mode.defaultUnit;
+        apiGameForm.progress_source = apiGameForm.platform || mode.badgeSource || '';
+      }
+    });
+
+    // Auto-set progress mode based on selected platform
+    watch(() => gameForm.platform, (newPlatform) => {
+      if (!newPlatform) return;
+      const platformLower = newPlatform.toLowerCase();
+      
+      if (platformLower.includes('playstation')) {
+        gameForm.progress_mode = 'trophies_psn';
+      } else if (platformLower.includes('xbox')) {
+        gameForm.progress_mode = 'achievements_xbox';
+      } else if (platformLower.includes('steam') || platformLower === 'pc') {
+        gameForm.progress_mode = 'achievements_steam';
+      } else if (platformLower.includes('nintendo')) {
+        gameForm.progress_mode = 'completion_nintendo';
+      } else if (platformLower.includes('ios')) {
+        gameForm.progress_mode = 'achievements_gamecenter';
+      } else {
+        gameForm.progress_mode = 'completion_standard';
+      }
+    });
+
+    watch(() => apiGameForm.platform, (newPlatform) => {
+      if (!newPlatform) return;
+      const platformLower = newPlatform.toLowerCase();
+      
+      if (platformLower.includes('playstation')) {
+        apiGameForm.progress_mode = 'trophies_psn';
+      } else if (platformLower.includes('xbox')) {
+        apiGameForm.progress_mode = 'achievements_xbox';
+      } else if (platformLower.includes('steam') || platformLower === 'pc') {
+        apiGameForm.progress_mode = 'achievements_steam';
+      } else if (platformLower.includes('nintendo')) {
+        apiGameForm.progress_mode = 'completion_nintendo';
+      } else if (platformLower.includes('ios')) {
+        apiGameForm.progress_mode = 'achievements_gamecenter';
+      } else {
+        apiGameForm.progress_mode = 'completion_standard';
+      }
     });
 
     const searchGames = async () => {
@@ -310,19 +323,36 @@ export default {
     const selectGameForCollection = async (game) => {
       selectedGame.value = game;
       
-      // Dohvati više detalja o igri
       const gameDetails = await gamesApi.getGameDetails(game.id);
+      apiGameDetails.value = gameDetails;
       
       // Popuni formu s detaljima
-      gameForm.title = game.name;
-      gameForm.genre = gameDetails?.genres?.map(g => g.name).join(', ') || '';
-      gameForm.publisher = gameDetails?.publishers?.map(p => p.name).join(', ') || '';
-      gameForm.game_api_id = game.id.toString();
+      apiGameForm.title = game.name;
+      apiGameForm.genre = gameDetails?.genres?.map(g => g.name).join(', ') || '';
+      apiGameForm.publisher = gameDetails?.publishers?.map(p => p.name).join(', ') || '';
+      apiGameForm.game_api_id = game.id.toString();
+      apiGameForm.image = game.background_image;
       
-      // Sačuvaj URL slike - potreban za prikaz u GameCard i GameDetails
-      gameForm.image = game.background_image;
+      // fetchaj achv sa api
+      try {
+        const achievements = await gamesApi.getGameAchievements(game.id);
+        if (achievements && achievements.count > 0) {
+          const firstPlatform = gameDetails?.platforms?.[0]?.platform?.name?.toLowerCase() || '';
+          if (firstPlatform.includes('playstation') || firstPlatform.includes('ps')) {
+            apiGameForm.progress_mode = 'trophies_psn';
+          } else if (firstPlatform.includes('xbox')) {
+            apiGameForm.progress_mode = 'achievements_xbox';
+          } else if (firstPlatform.includes('steam') || firstPlatform.includes('pc')) {
+            apiGameForm.progress_mode = 'achievements_steam';
+          }
+          apiGameForm.progress_total = achievements.count;
+          apiGameForm.progress_value = 0; 
+        }
+      } catch (err) {
+        console.warn('Could not fetch achievements:', err);
+      }
+      showApiGameModal.value = true;
       
-      // treba maknuti jer se ne korsiti treuto
       setTimeout(() => {
         const formElement = document.querySelector('.game-form');
         if (formElement) {
@@ -356,11 +386,15 @@ export default {
           genre: gameForm.genre,
           publisher: gameForm.publisher,
           rating: gameForm.rating || null,
-          achievement_percent: gameForm.achievement_percent || null,
           notes: gameForm.notes,
           start_date: gameForm.start_date || null,
           end_date: gameForm.end_date || null,
-          currently_playing: gameForm.currently_playing,
+          status: gameForm.status || null,
+          progress_mode: gameForm.progress_mode || 'completion_standard',
+          progress_value: gameForm.progress_value,
+          progress_total: gameForm.progress_total,
+          progress_unit: gameForm.progress_unit || null,
+          progress_source: gameForm.progress_source || gameForm.platform || null,
           game_api_id: gameForm.game_api_id || null,
           image_url: gameForm.image
         };
@@ -474,11 +508,15 @@ export default {
           genre: apiGameDetails.value?.genres?.map(g => g.name).join(', ') || '',
           publisher: apiGameDetails.value?.publishers?.map(p => p.name).join(', ') || '',
           rating: apiGameForm.rating || null,
-          achievement_percent: apiGameForm.achievement_percent || null,
           notes: apiGameForm.notes,
           start_date: apiGameForm.start_date || null,
           end_date: apiGameForm.end_date || null,
-          currently_playing: apiGameForm.currently_playing,
+          status: apiGameForm.status || null,
+          progress_mode: apiGameForm.progress_mode || 'completion_standard',
+          progress_value: apiGameForm.progress_value,
+          progress_total: apiGameForm.progress_total,
+          progress_unit: apiGameForm.progress_unit || null,
+          progress_source: apiGameForm.progress_source || apiGameForm.platform || null,
           game_api_id: apiGameDetails.value?.id?.toString() || null,
           image_url: apiGameDetails.value?.background_image,
           description: apiGameDetails.value?.description_raw,
@@ -554,6 +592,10 @@ export default {
     });
     
     return {
+      PROGRESS_MODES,
+      GAME_STATUS,
+      selectedProgressMode,
+      selectedApiProgressMode,
       searchQuery,
       searchResults,
       searchLoading,
