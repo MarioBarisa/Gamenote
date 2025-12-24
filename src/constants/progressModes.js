@@ -51,14 +51,6 @@ export const PROGRESS_MODES = [
     badgeSource: 'psn'
   },
   {
-    key: 'trophies_supercell',
-    label: 'Trophies (Supercell)',
-    kind: 'count',
-    requiresTotal: false,
-    defaultUnit: 'trophies',
-    badgeSource: 'supercell'
-  },
-  {
     key: 'leaderboard_rank',
     label: 'Leaderboard rank (MP)',
     kind: 'rank',

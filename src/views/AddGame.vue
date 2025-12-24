@@ -121,25 +121,163 @@
                 <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
               </select>
               <p v-if="selectedApiProgressMode" class="text-xs opacity-70 mt-1">
-                {{ selectedApiProgressMode.key.includes('achievements') || selectedApiProgressMode.key.includes('trophies') 
-                  ? '✨ Ukupan broj achievement/trofeja automatski dohvaćen iz RAWG API baze.' 
-                  : 'Popuni vrijednost za odabrani način (npr. 0-100 za postotak, vrijednost/ukupno za omjer, #rang za leaderboard).' }}
+                <span v-if="selectedApiProgressMode.key.includes('achievements') || selectedApiProgressMode.key.includes('trophies')">
+                  ✨ Broj {{ selectedApiProgressMode.defaultUnit }} automatski dohvaćen iz RAWG baze. Ako je prazan, unesi ga ispod.
+                </span>
+                <span v-else>
+                  Unesi vrijednosti prema načinu praćenja (postotak 0-100, vrijednost/ukupno za omjer, #rang za leaderboard).
+                </span>
               </p>
             </div>
+
             <template v-if="selectedApiProgressMode">
-              <div class="form-control" v-if="selectedApiProgressMode.kind === 'count' || selectedApiProgressMode.kind === 'rank'">
-                <label class="label font-medium">Vrijednost</label>
-                <input type="number" v-model.number="apiGameForm.progress_value" class="input input-bordered" min="0" />
+              <!-- SAMO ZA ACHIEVEMENTS/TROPHIES - Posebna sekcija s jasnom uputom i alert-om -->
+              <div v-if="selectedApiProgressMode.key.includes('achievements') || selectedApiProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4">
+                <div class="alert alert-warning text-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
+                  <div>
+                    <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
+                    <div class="text-xs">Ako je prazan, unesi broj koji si provjeiro ručno.</div>
+                  </div>
+                </div>
+
+                <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
+                <div class="form-control">
+                  <label class="label font-medium">
+                    Ukupan broj {{ selectedApiProgressMode.defaultUnit }}
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="apiGameForm.progress_total" 
+                    class="input input-bordered input-lg font-bold" 
+                    min="0"
+                    placeholder="npr. 50"
+                  />
+                  <label class="label">
+                    <span class="text-xs opacity-70">Koliko {{ selectedApiProgressMode.defaultUnit }} ima ukupno u igri?</span>
+                  </label>
+                </div>
+
+                <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
+                <div class="form-control">
+                  <label class="label font-medium">
+                    Broj {{ selectedApiProgressMode.defaultUnit }} koje si ti ostvario/a
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="apiGameForm.progress_value" 
+                    class="input input-bordered input-lg font-bold text-success" 
+                    min="0"
+                    :max="apiGameForm.progress_total || undefined"
+                    placeholder="npr. 25"
+                  />
+                  <label class="label">
+                    <span class="text-xs opacity-70">
+                      Napredak: 
+                      <strong v-if="apiGameForm.progress_total > 0">
+                        {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupan broj prvi</span>
+                    </span>
+                  </label>
+                </div>
+
+                <!-- JEDINICA -->
+                <div class="form-control">
+                  <label class="label font-medium">Jedinica</label>
+                  <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" readonly />
+                </div>
               </div>
-              <div class="form-control" v-if="selectedApiProgressMode.requiresTotal">
-                <label class="label font-medium">Ukupno</label>
-                <input type="number" v-model.number="apiGameForm.progress_total" class="input input-bordered" min="0" />
+
+              <!-- POKEDEX - Dvije vrijednosti bez alert-a (ne dohvaća se iz RAWG) -->
+              <div v-else-if="selectedApiProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4">
+                <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
+                <div class="form-control">
+                  <label class="label font-medium">
+                    Koliko pokemona si ti uhvatio/a
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="apiGameForm.progress_value" 
+                    class="input input-bordered input-lg font-bold text-success" 
+                    min="0"
+                    :max="apiGameForm.progress_total || undefined"
+                    placeholder="npr. 150"
+                  />
+                  <label class="label">
+                    <span class="text-xs opacity-70">Koliko pokemona si već uhvatio/a u ovoj igri?</span>
+                  </label>
+                </div>
+
+                <!-- KOLIKO POKEMONA IMA U IGRI -->
+                <div class="form-control">
+                  <label class="label font-medium">
+                    Koliko pokemona ima u igri
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="apiGameForm.progress_total" 
+                    class="input input-bordered input-lg font-bold" 
+                    min="0"
+                    placeholder="npr. 251"
+                  />
+                  <label class="label">
+                    <span class="text-xs opacity-70">Ukupno koliko različitih pokemona je u ovoj igri?</span>
+                  </label>
+                </div>
+
+                <!-- PROGRESS % -->
+                <div class="form-control">
+                  <label class="label">
+                    <span class="text-xs opacity-70">
+                      Napredak: 
+                      <strong v-if="apiGameForm.progress_total > 0">
+                        {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupan broj pokemona prvi</span>
+                    </span>
+                  </label>
+                </div>
+
+                <!-- JEDINICA -->
+                <div class="form-control">
+                  <label class="label font-medium">Jedinica</label>
+                  <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" readonly />
+                </div>
               </div>
-              <div class="form-control">
-                <label class="label font-medium">Jedinica</label>
-                <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" :placeholder="selectedApiProgressMode.defaultUnit || 'unit'" readonly />
-              </div>
+
+              <!-- ZA OSTALE PROGRESS MODE-OVE -->
+              <template v-else>
+                <div class="form-control" v-if="selectedApiProgressMode.kind === 'count' || selectedApiProgressMode.kind === 'rank'">
+                  <label class="label font-medium">Vrijednost</label>
+                  <input type="number" v-model.number="apiGameForm.progress_value" class="input input-bordered" min="0" />
+                </div>
+                <div class="form-control" v-if="selectedApiProgressMode.requiresTotal">
+                  <label class="label font-medium">Ukupno</label>
+                  <input type="number" v-model.number="apiGameForm.progress_total" class="input input-bordered" min="0" />
+                </div>
+                <div class="form-control">
+                  <label class="label font-medium">Jedinica</label>
+                  <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" :placeholder="selectedApiProgressMode.defaultUnit || 'unit'" readonly />
+                </div>
+              </template>
             </template>
+
+            <!-- GRUPE / KOLEKCIJE -->
+            <div class="form-control" v-if="apiGameStoresList.length > 0">
+              <label class="label font-medium">Dodaj u kolekcije</label>
+              <div class="space-y-2">
+                <label v-for="group in apiGameStoresList" :key="group.id" class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-base-200">
+                  <input 
+                    type="checkbox" 
+                    :checked="apiGameForm.group_ids.includes(group.id)"
+                    @change="toggleApiGroupId(group.id)"
+                    class="checkbox checkbox-sm"
+                  />
+                  <span class="text-sm">{{ group.name }}</span>
+                </label>
+              </div>
+            </div>
             
             <div class="form-control">
               <label class="label font-medium">Datum početka</label>
@@ -179,6 +317,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useGamesApi } from '../services/gamesApi';
+import { addGameToGroup } from '../services/groupsApi';
 import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
 import { GAME_STATUS } from '../constants/gameStatus';
@@ -197,6 +336,7 @@ export default {
     const saveLoading = ref(false);
     const showApiGameModal = ref(false);
     const apiGameDetails = ref(null);
+    const apiGameStoresList = ref([]);
     
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
@@ -238,7 +378,8 @@ export default {
       progress_value: null,
       progress_total: null,
       progress_unit: '%',
-      progress_source: ''
+      progress_source: '',
+      group_ids: []
     });
 
     const selectedProgressMode = computed(() => PROGRESS_MODE_MAP[gameForm.progress_mode] || null);
@@ -322,6 +463,7 @@ export default {
     
     const selectGameForCollection = async (game) => {
       selectedGame.value = game;
+      apiGameForm.group_ids = [];
       
       const gameDetails = await gamesApi.getGameDetails(game.id);
       apiGameDetails.value = gameDetails;
@@ -351,6 +493,10 @@ export default {
       } catch (err) {
         console.warn('Could not fetch achievements:', err);
       }
+
+      // Load groups
+      await loadApiGameStores();
+      
       showApiGameModal.value = true;
       
       setTimeout(() => {
@@ -359,6 +505,28 @@ export default {
           formElement.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
+    };
+
+    const loadApiGameStores = async () => {
+      try {
+        const { data: groups } = await supabase
+          .from('groups')
+          .select('id, name')
+          .eq('user_id', userStore.user?.id);
+        
+        apiGameStoresList.value = groups || [];
+      } catch (error) {
+        console.error('Error loading groups:', error);
+      }
+    };
+
+    const toggleApiGroupId = (groupId) => {
+      const index = apiGameForm.group_ids.indexOf(groupId);
+      if (index > -1) {
+        apiGameForm.group_ids.splice(index, 1);
+      } else {
+        apiGameForm.group_ids.push(groupId);
+      }
     };
     
     const formatReleaseDate = (date) => {
@@ -476,7 +644,9 @@ export default {
       apiGameDetails.value = null;
     
       Object.keys(apiGameForm).forEach(key => {
-        if (typeof apiGameForm[key] === 'boolean') {
+        if (key === 'group_ids') {
+          apiGameForm[key] = [];
+        } else if (typeof apiGameForm[key] === 'boolean') {
           apiGameForm[key] = false;
         } else if (typeof apiGameForm[key] === 'number') {
           apiGameForm[key] = 0;
@@ -553,11 +723,30 @@ export default {
           console.warn('Could not fetch series data:', error);
         }
 
-        const { error } = await supabase
+        const { data: insertedGame, error } = await supabase
           .from('games')
-          .insert([gameData]);
+          .insert([gameData])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        const newGameId = insertedGame?.id;
+        
+        // Dodaj igru u odabrane grupe - isti način kao u GameDetails
+        if (newGameId && apiGameForm.group_ids.length > 0) {
+          for (const groupId of apiGameForm.group_ids) {
+            try {
+              await addGameToGroup({ 
+                user_id: userStore.user.id, 
+                group_id: groupId, 
+                game_id: newGameId 
+              });
+            } catch (groupError) {
+              console.error(`Greška pri dodavanju igre u grupu ${groupId}:`, groupError);
+            }
+          }
+        }
 
         closeApiGameModal();
         router.push('/library');
@@ -606,9 +795,11 @@ export default {
       platforms,
       gameForm,
       apiGameForm,
+      apiGameStoresList,
       searchGames,
       navigateToGameDetails,
       selectGameForCollection,
+      toggleApiGroupId,
       formatReleaseDate,
       saveGame,
       closeApiGameModal,

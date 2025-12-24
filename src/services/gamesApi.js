@@ -92,22 +92,39 @@ export const useGamesApi = () => {
   };
 
   const getGameAchievements = async (id) => {
+    // RAWG API /achievements endpoint ima ograničenu dostupnost.
+    // Umjesto toga, TREBA dohvatiti broj achievementa iz game detailsa.
+    // Trebam provjeriti dostupne fields u game objektu koji daje RAWG.
     try {
-      const response = await fetch(
-        `${BASE_URL}/games/${id}/achievements?key=${API_KEY}`
-      );
+      const gameDetails = await getGameDetails(id);
       
-      if (!response.ok) {
+      if (!gameDetails) {
         return { count: 0, results: [] };
       }
       
-      const data = await response.json();
+      // RAWG ima različita polja za achievements/trophies ovisno o dostupnosti:
+      // - achievements_count: broj achievementa ako su dostupni
+      // - trophies_count (ako postoji)
+      // - parent_achievements (ako igra ima achievements)
+      
+      let achievementCount = 0;
+      
+      if (gameDetails.achievements_count && gameDetails.achievements_count > 0) {
+        achievementCount = gameDetails.achievements_count;
+      }
+      
+      if (achievementCount === 0 && gameDetails.parent_achievements && gameDetails.parent_achievements.length > 0) {
+        achievementCount = gameDetails.parent_achievements.length;
+      }
+      
+      console.log(`Game: ${gameDetails.name}, Achievements count: ${achievementCount}`);
+      
       return {
-        count: data.count || 0,
-        results: data.results || []
+        count: achievementCount,
+        results: gameDetails.parent_achievements || []
       };
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching achievements:', err);
       return { count: 0, results: [] };
     }
   };
@@ -241,7 +258,6 @@ export const useGamesApi = () => {
   };
 
   const getMockGameNews = () => {
-    // Ako dosegnem rate limit korisniku reci da je ce vijesti uskoro bit dostupne
     return [
       {
         title: "Najnovije gaming vijesti dolaze uskoro!",
@@ -266,7 +282,6 @@ export const useGamesApi = () => {
       return data;
     } catch (err) {
       console.error('Game series API error:', err);
-      // Vrati prazno ali nemoj razbiti stranicu
       return { results: [] };
     }
   };

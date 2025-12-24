@@ -305,25 +305,146 @@
               <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
             </select>
             <p v-if="selectedCollectionProgressMode" class="text-xs opacity-70 mt-1">
-              {{ selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies') 
-                ? '✨ Ukupan broj achievement/trofeja automatski dohvaćen iz RAWG API baze.' 
-                : 'Unesi vrijednosti prema načinu praćenja (postotak 0-100, vrijednost/ukupno za omjer, #rang za leaderboard).' }}
+              <span v-if="selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies')">
+                ✨ Broj {{ selectedCollectionProgressMode.defaultUnit }} automatski dohvaćen iz RAWG baze. Ako je prazan, unesi ga ispod.
+              </span>
+              <span v-else>
+                Unesi vrijednosti prema načinu praćenja (postotak 0-100, vrijednost/ukupno za omjer, #rang za leaderboard).
+              </span>
             </p>
           </div>
           
           <template v-if="selectedCollectionProgressMode">
-            <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
-              <label class="label font-medium">Vrijednost</label>
-              <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered" min="0" />
+            <!-- SAMO ZA ACHIEVEMENTS/TROPHIES - Posebna sekcija s jasnom uputom i alert-om -->
+            <div v-if="selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4">
+              <div class="alert alert-warning text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
+                <div>
+                  <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
+                  <div class="text-xs">Preporučeni broj: <strong>{{ rawgAchievementCount || 'nije dostupno' }}</strong> - slobodno ga promijeni ako nije točan.</div>
+                </div>
+              </div>
+
+              <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
+              <div class="form-control">
+                <label class="label font-medium">
+                  Ukupan broj {{ selectedCollectionProgressMode.defaultUnit }}
+                </label>
+                <input 
+                  type="number" 
+                  v-model.number="collectionForm.progress_total" 
+                  class="input input-bordered input-lg font-bold" 
+                  min="0"
+                  placeholder="npr. 50"
+                />
+                <label class="label">
+                  <span class="text-xs opacity-70">Koliko {{ selectedCollectionProgressMode.defaultUnit }} ima ukupno u igri?</span>
+                </label>
+              </div>
+
+              <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
+              <div class="form-control">
+                <label class="label font-medium">
+                  Broj {{ selectedCollectionProgressMode.defaultUnit }} koje si ti ostvario/a
+                </label>
+                <input 
+                  type="number" 
+                  v-model.number="collectionForm.progress_value" 
+                  class="input input-bordered input-lg font-bold text-success" 
+                  min="0"
+                  :max="collectionForm.progress_total || undefined"
+                  placeholder="npr. 25"
+                />
+                <label class="label">
+                  <span class="text-xs opacity-70">
+                    Napredak: 
+                    <strong v-if="collectionForm.progress_total > 0">
+                      {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
+                    </strong>
+                    <span v-else class="text-warning">postavi ukupan broj prvi</span>
+                  </span>
+                </label>
+              </div>
+
+              <!-- JEDINICA -->
+              <div class="form-control">
+                <label class="label font-medium">Jedinica</label>
+                <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
+              </div>
             </div>
-            <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
-              <label class="label font-medium">Ukupno</label>
-              <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered" min="0" />
+
+            <!-- POKEDEX - Dvije vrijednosti bez alert-a (ne dohvaća se iz RAWG) -->
+            <div v-else-if="selectedCollectionProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4">
+              <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
+              <div class="form-control">
+                <label class="label font-medium">
+                  Koliko pokemona si ti uhvatio/a
+                </label>
+                <input 
+                  type="number" 
+                  v-model.number="collectionForm.progress_value" 
+                  class="input input-bordered input-lg font-bold text-success" 
+                  min="0"
+                  :max="collectionForm.progress_total || undefined"
+                  placeholder="npr. 150"
+                />
+                <label class="label">
+                  <span class="text-xs opacity-70">Koliko pokemona si već uhvatio/a u ovoj igri?</span>
+                </label>
+              </div>
+
+              <!-- KOLIKO POKEMONA IMA U IGRI -->
+              <div class="form-control">
+                <label class="label font-medium">
+                  Koliko pokemona ima u igri
+                </label>
+                <input 
+                  type="number" 
+                  v-model.number="collectionForm.progress_total" 
+                  class="input input-bordered input-lg font-bold" 
+                  min="0"
+                  placeholder="npr. 251"
+                />
+                <label class="label">
+                  <span class="text-xs opacity-70">Ukupno koliko različitih pokemona je u ovoj igri?</span>
+                </label>
+              </div>
+
+              <!-- PROGRESS % -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="text-xs opacity-70">
+                    Napredak: 
+                    <strong v-if="collectionForm.progress_total > 0">
+                      {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
+                    </strong>
+                    <span v-else class="text-warning">postavi ukupan broj pokemona prvi</span>
+                  </span>
+                </label>
+              </div>
+
+              <!-- JEDINICA -->
+              <div class="form-control">
+                <label class="label font-medium">Jedinica</label>
+                <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
+              </div>
             </div>
-            <div class="form-control">
-              <label class="label font-medium">Jedinica</label>
-              <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" :placeholder="selectedCollectionProgressMode.defaultUnit || 'unit'" readonly />
-            </div>
+
+            <!-- ZA OSTALE PROGRESS MODE-OVE -->
+            <template v-else>
+              <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
+                <label class="label font-medium">Vrijednost</label>
+                <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered" min="0" />
+              </div>
+              <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
+                <label class="label font-medium">Ukupno</label>
+                <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered" min="0" />
+              </div>
+              <div class="form-control">
+                <label class="label font-medium">Jedinica</label>
+                <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" :placeholder="selectedCollectionProgressMode.defaultUnit || 'unit'" readonly />
+              </div>
+            </template>
           </template>
 
           <div class="form-control">
@@ -380,6 +501,11 @@
         </form>
       </div>
     </div>
+    <div v-if="toast.show" class="toast toast-top toast-end">
+      <div class="alert" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
+        <span>{{ toast.message }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -412,6 +538,12 @@ export default {
     const groupsLoading = ref(false);
     const showGroupSelector = ref(false);
 
+    const toast = reactive({
+      show: false,
+      message: '',
+      type: 'success'
+    });
+
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
       'Nintendo Switch', 'iOS', 'Android', 'Other'
@@ -435,6 +567,7 @@ export default {
     });
 
     const collectionForm = reactive(createEmptyCollectionForm());
+    const rawgAchievementCount = ref(null); // Čuva original broj iz RAWG za prikaz u alert-u
 
     const selectedCollectionProgressMode = computed(() => PROGRESS_MODE_MAP[collectionForm.progress_mode] || null);
 
@@ -526,6 +659,13 @@ export default {
       } else {
         collectionForm.group_ids.push(groupId);
       }
+    };
+
+    const showToast = (message, type = 'success') => {
+      toast.message = message;
+      toast.type = type;
+      toast.show = true;
+      setTimeout(() => toast.show = false, 3000);
     };
     
     const previousGame = computed(() => {
@@ -704,7 +844,6 @@ export default {
         }
         
         collectionForm.progress_mode = newMode;
-        // Immediately set the unit based on the mode
         const modeObj = PROGRESS_MODE_MAP[newMode];
         if (modeObj && modeObj.defaultUnit) {
           collectionForm.progress_unit = modeObj.defaultUnit;
@@ -712,18 +851,19 @@ export default {
         collectionForm.progress_source = firstPlatform || '';
       }
       
-      // Fetch achievements count from RAWG
       try {
         const achievementsData = await gamesApi.getGameAchievements(route.params.id);
-        console.log('Achievements data:', achievementsData);
         
         if (achievementsData && achievementsData.count > 0) {
           collectionForm.progress_total = achievementsData.count;
+          rawgAchievementCount.value = achievementsData.count; 
           collectionForm.progress_value = 0;
-          console.log('Set progress_total to:', achievementsData.count);
+          
+        } else {
+          rawgAchievementCount.value = null;
         }
       } catch (err) {
-        console.warn('Could not fetch achievements:', err);
+        rawgAchievementCount.value = null;
       }
       
       showAddModal.value = true;
@@ -731,6 +871,7 @@ export default {
 
     const closeAddModal = () => {
       showAddModal.value = false;
+      rawgAchievementCount.value = null;
       resetCollectionForm();
     };
 
@@ -817,10 +958,12 @@ export default {
           }
         }
 
+        showToast(`${collectionForm.title} uspješno dodana u kolekciju!`);
         closeAddModal();
-        router.push('/library');
+        setTimeout(() => router.push('/library'), 1000);
       } catch (error) {
         console.error('Error saving game:', error);
+        showToast('Greška pri dodavanju igre', 'error');
       } finally {
         saveLoading.value = false;
       }
@@ -858,10 +1001,13 @@ export default {
       saveLoading,
       platforms,
       collectionForm,
+      rawgAchievementCount,
       openAddToCollectionModal,
       closeAddModal,
       saveToCollection,
-      toggleGroupId
+      toggleGroupId,
+      toast,
+      showToast
     };
   }
 };
