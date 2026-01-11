@@ -12,10 +12,10 @@
               type="text" 
               v-model="searchQuery" 
               placeholder="Unesite naziv igre..." 
-              class="input input-bordered input-md sm:input-lg flex-grow"
+              class="input input-bordered input-md sm:input-lg flex-grow w-full sm:flex-grow"
               @keyup.enter="searchGames" 
             />
-            <button @click="searchGames" class="btn btn-primary btn-md sm:btn-lg whitespace-nowrap" :disabled="searchLoading">
+            <button @click="searchGames" class="btn btn-primary btn-md sm:btn-lg whitespace-nowrap w-full sm:w-auto" :disabled="searchLoading">
               <span v-if="searchLoading" class="loading loading-spinner"></span>
               <span v-else>Pretraži</span>
             </button>

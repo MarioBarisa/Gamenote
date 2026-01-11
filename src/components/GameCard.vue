@@ -141,6 +141,25 @@
 
           <!--  <span v-else> {{ truncateText(game.genre, 12) }} </span> -->
          <!--  {{ truncateText(game.genre, 12) }} --></span>
+        <button v-if="game.notes" @click.stop="showNotesModal = true" class="ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto" title="Prikazi bilješke">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal za bilješke -->
+      <div v-if="showNotesModal" class="modal modal-open">
+        <div class="modal-box max-w-2xl">
+          <h3 class="font-bold text-lg mb-4">{{ game.title }}</h3>
+          <div class="bg-base-100 p-4 rounded mb-4 max-h-96 overflow-y-auto">
+            <p class="text-sm whitespace-pre-wrap">{{ game.notes }}</p>
+          </div>
+          <div class="modal-action">
+            <button class="btn btn-primary" @click.stop="showNotesModal = false">Zatvori</button>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop" @click.stop="showNotesModal = false"></form>
       </div>
       
       <div class="flex items-center mb-2">
@@ -183,6 +202,7 @@
 
 <script>
 import { useCardSizeStore } from '../stores/cardSize';
+import { ref } from 'vue';
 
 export default {
   props: {
@@ -193,7 +213,8 @@ export default {
   },
   setup() {
     const cardSizeStore = useCardSizeStore();
-    return { cardSizeStore };
+    const showNotesModal = ref(false);
+    return { cardSizeStore, showNotesModal };
   },
   computed: {
     achievementLabel() {

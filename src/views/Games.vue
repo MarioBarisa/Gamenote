@@ -49,11 +49,20 @@
     </div>
 
     <div v-else>
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Moje igre</h1>
+      <div class="flex flex-col gap-4 mb-6 sm:mb-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Moje igre</h1>
+        </div>
 
-        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-          <div class="dropdown dropdown-end w-full sm:w-auto">
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="Pretraži svoju zbirku" 
+          class="input input-bordered input-sm sm:input-md w-full md:w-80"
+        />
+
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+          <div class="dropdown dropdown-start w-full sm:w-auto">
             <label tabindex="0" class="btn btn-outline w-full sm:w-auto" ref="sortDropdownLabel">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -191,6 +200,7 @@ export default {
     const activeFilter = ref('all');
     const sortDropdownLabel = ref(null);
     const filterDropdownLabel = ref(null);
+    const searchQuery = ref('');
 
     const isApiGame = computed(() => !!route.query.api_id);
 
@@ -259,6 +269,7 @@ export default {
     const filteredGames = computed(() => {
       let filtered = games.value;
 
+      // Filtriraj po statusu/ocjeni
       switch (activeFilter.value) {
         case 'playing':
         case 'current':
@@ -275,6 +286,17 @@ export default {
           break;
         default:
           filtered = games.value;
+      }
+
+      // Filtriraj po search query
+      if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase();
+        filtered = filtered.filter(game => 
+          game.title.toLowerCase().includes(query) ||
+          game.genre?.toLowerCase().includes(query) ||
+          game.publisher?.toLowerCase().includes(query) ||
+          game.platform?.toLowerCase().includes(query)
+        );
       }
 
       return filtered;
@@ -341,7 +363,8 @@ export default {
       userStore,
       cardSizeStore,
       sortDropdownLabel,
-      filterDropdownLabel
+      filterDropdownLabel,
+      searchQuery
     };
   }
 };
