@@ -8,6 +8,7 @@
 import { onMounted } from 'vue';
 import { useUserStore } from './stores/user';
 import { useThemeStore } from './stores/theme';
+import { useCardSizeStore } from './stores/cardSize';
 import Layout from './components/Layout.vue';
 import { supabase } from './supabase';
 
@@ -18,9 +19,11 @@ export default {
   setup() {
     const userStore = useUserStore();
     const themeStore = useThemeStore();
+    const cardSizeStore = useCardSizeStore();
     
     onMounted(async () => {
       themeStore.initTheme();
+      cardSizeStore.initCardSize();
       await userStore.fetchUser();
       supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session) {
@@ -33,7 +36,8 @@ export default {
     
     return {
       userStore,
-      themeStore
+      themeStore,
+      cardSizeStore
     };
   }
 };

@@ -76,7 +76,7 @@
                   </li>
                   <div class="divider my-1"></div>
                   <li><router-link to="/profile" @click="closeProfileDropdown">Profil</router-link></li>
-                  <li><router-link to="/theme-settings" @click="closeProfileDropdown">🎨 Teme</router-link></li>
+                  <li><router-link to="/theme-settings" @click="closeProfileDropdown">⚙️ Postavke UI-ja</router-link></li>
                   
                   <div class="divider my-1"></div>
                   <li><a @click="logout">Odjava</a></li>
@@ -342,8 +342,7 @@ export default {
       profileDropdownLabel,
       mobileMenuLabel,
       mobileMenuDropdown,
-      profileDropdown
-      ,
+      profileDropdown,
       isActive,
       isCompact,
       circleBaseClass,

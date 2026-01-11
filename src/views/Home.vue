@@ -19,7 +19,7 @@
         <h2 class="text-2xl sm:text-3xl font-bold">Trenutno igraš</h2>
         <router-link to="/library?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+      <div :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
         <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)" class="cursor-pointer">
           <GameCard :game="game" />
         </div>
@@ -83,6 +83,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
+import { useCardSizeStore } from '../stores/cardSize';
 import { useGamesApi } from '../services/gamesApi';
 import GameCard from '../components/GameCard.vue';
 import gameN from '../components/gameN.vue';
@@ -94,6 +95,7 @@ export default {
   },
   setup() {
     const userStore = useUserStore();
+    const cardSizeStore = useCardSizeStore();
     const router = useRouter();
     const gamesApi = useGamesApi();
     
@@ -164,6 +166,7 @@ export default {
     
     return {
       userStore,
+      cardSizeStore,
       loading,
       currentlyPlaying,
       popularGames,

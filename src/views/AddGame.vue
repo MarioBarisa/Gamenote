@@ -24,7 +24,7 @@
         
         <div v-if="searchResults.length > 0" class="search-results mb-6 sm:mb-8">
           <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Rezultati pretrage</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
             <div 
               v-for="game in searchResults" 
               :key="game.id" 
@@ -316,6 +316,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
+import { useCardSizeStore } from '../stores/cardSize';
 import { useGamesApi } from '../services/gamesApi';
 import { addGameToGroup } from '../services/groupsApi';
 import { supabase } from '../supabase';
@@ -325,6 +326,7 @@ import { GAME_STATUS } from '../constants/gameStatus';
 export default {
   setup() {
     const userStore = useUserStore();
+    const cardSizeStore = useCardSizeStore();
     const router = useRouter();
     const route = useRoute();
     const gamesApi = useGamesApi();
@@ -796,6 +798,7 @@ export default {
       gameForm,
       apiGameForm,
       apiGameStoresList,
+      cardSizeStore,
       searchGames,
       navigateToGameDetails,
       selectGameForCollection,

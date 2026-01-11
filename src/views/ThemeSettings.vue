@@ -1,6 +1,13 @@
 <template>
-    <div class="max-w-6xl mx-auto">
-      <div class="mb-8">
+    <div class="max-w-6xl mx-auto space-y-8 sm:space-y-12">
+      <!-- UI Postavke Header -->
+      <div>
+        <h1 class="text-3xl font-bold mb-2">Postavke UI-ja</h1>
+        <p class="text-base opacity-70">Prilagodi izgled aplikacije prema svojim željama :)</p>
+      </div>
+
+      <!-- Teme Sekcija -->
+      <div>
         <h2 class="text-2xl font-bold mb-4">Dostupne teme</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div
@@ -53,20 +60,134 @@
         </div>
       </div>
   
+      <!-- Veličina Kartica Sekcija -->
+      <div>
+        <h2 class="text-2xl font-bold mb-4">Veličina Kartica</h2>
+        <p class="text-base opacity-70 mb-4">Izaberi kako želiš vidjeti igre - od kompaktnoga do detaljnoga prikaza</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <!-- Small Size -->
+          <div 
+            class="card bg-base-200 cursor-pointer transition-all duration-300 border-2"
+            :class="cardSizeStore.cardSize === 'small' ? 'border-primary' : 'border-transparent'"
+            @click="cardSizeStore.saveCardSize('small')"
+          >
+            <div class="card-body">
+              <h3 class="card-title text-lg">Mala</h3>
+              <p class="text-sm opacity-70">Više igara na ekranu. Kompaktan prikaz idealan za pregledavanje većeg broja igara.</p>
+              
+              <div class="mt-4 space-y-2">
+                <div class="grid grid-cols-4 gap-1">
+                  <div v-for="i in 8" :key="i" class="bg-base-300 rounded h-12 sm:h-14"></div>
+                </div>
+              </div>
+
+              <div class="mt-4 text-xs opacity-70 space-y-1">
+                <p><strong>Mobilni:</strong> 3 kartica po redu</p>
+                <p><strong>Desktop:</strong> 6-7 kartica po redu</p>
+              </div>
+
+              <div v-if="cardSizeStore.cardSize === 'small'" class="mt-4">
+                <span class="badge badge-primary">Trenutno aktivna</span>
+              </div>
+              <button 
+                v-else
+                @click="cardSizeStore.saveCardSize('small')"
+                class="btn btn-sm btn-primary mt-4 w-full"
+              >
+                Koristi ovu veličinu
+              </button>
+            </div>
+          </div>
+
+          <!-- Medium Size -->
+          <div 
+            class="card bg-base-200 cursor-pointer transition-all duration-300 border-2"
+            :class="cardSizeStore.cardSize === 'medium' ? 'border-primary' : 'border-transparent'"
+            @click="cardSizeStore.saveCardSize('medium')"
+          >
+            <div class="card-body">
+              <h3 class="card-title text-lg">Srednja</h3>
+              <p class="text-sm opacity-70">Ravnoteža veličina i dobrih detalja. Preporučena za većinu korisnika.</p>
+              
+              <div class="mt-4 space-y-2">
+                <div class="grid grid-cols-3 gap-1.5">
+                  <div v-for="i in 6" :key="i" class="bg-base-300 rounded h-16 sm:h-20"></div>
+                </div>
+              </div>
+
+              <div class="mt-4 text-xs opacity-70 space-y-1">
+                <p><strong>Mobilni:</strong> 2 kartica po redu</p>
+                <p><strong>Desktop:</strong> 5-6 kartica po redu</p>
+              </div>
+
+              <div v-if="cardSizeStore.cardSize === 'medium'" class="mt-4">
+                <span class="badge badge-primary">Trenutno aktivna</span>
+              </div>
+              <button 
+                v-else
+                @click="cardSizeStore.saveCardSize('medium')"
+                class="btn btn-sm btn-primary mt-4 w-full"
+              >
+                Koristi ovu veličinu
+              </button>
+            </div>
+          </div>
+
+          <!-- Large Size -->
+          <div 
+            class="card bg-base-200 cursor-pointer transition-all duration-300 border-2"
+            :class="cardSizeStore.cardSize === 'large' ? 'border-primary' : 'border-transparent'"
+            @click="cardSizeStore.saveCardSize('large')"
+          >
+            <div class="card-body">
+              <h3 class="card-title text-lg">Velika</h3>
+              <p class="text-sm opacity-70">Velika kartica s puno detalja. Idealna za fokusirani prikaz.</p>
+              
+              <div class="mt-4 space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                  <div v-for="i in 4" :key="i" class="bg-base-300 rounded h-20 sm:h-24"></div>
+                </div>
+              </div>
+
+              <div class="mt-4 text-xs opacity-70 space-y-1">
+                <p><strong>Mobilni:</strong> 1 kartica po redu</p>
+                <p><strong>Desktop:</strong> 3-4 kartica po redu</p>
+              </div>
+
+              <div v-if="cardSizeStore.cardSize === 'large'" class="mt-4">
+                <span class="badge badge-primary">Trenutno aktivna</span>
+              </div>
+              <button 
+                v-else
+                @click="cardSizeStore.saveCardSize('large')"
+                class="btn btn-sm btn-primary mt-4 w-full"
+              >
+                Koristi ovu veličinu
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="alert">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span><strong>💡 Savjet:</strong> Tvoja tema se automatski sprema u pregledniku.</span>
+        <div>
+          <span><strong>💡 Savjet:</strong> Sve tvoje postavke se automatski spremaju u pregledniku.</span>
+          <div class="text-xs opacity-75 mt-1">Tema i veličina kartica će biti dostupne kad god se vratiš u aplikaciju.</div>
+        </div>
       </div>
     </div>
   </template>
   
   <script setup>
   import { useThemeStore } from '../stores/theme';
+  import { useCardSizeStore } from '../stores/cardSize';
   
   const themeStore = useThemeStore();
+  const cardSizeStore = useCardSizeStore();
   
   const getCurrentThemeLabel = () => {
     const theme = themeStore.availableThemes.find(t => t.name === themeStore.currentTheme);

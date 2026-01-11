@@ -131,7 +131,7 @@
       </div>
 
       <div v-else-if="filteredGames.length > 0"
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+        :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
         <div v-for="game in filteredGames" :key="game.id" @click="navigateToGame(game.id)" class="cursor-pointer">
           <GameCard :game="game" />
         </div>
@@ -166,6 +166,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
+import { useCardSizeStore } from '../stores/cardSize';
 import { useGamesApi } from '../services/gamesApi';
 import { supabase } from '../supabase';
 import GameCard from '../components/GameCard.vue';
@@ -176,6 +177,7 @@ export default {
   },
   setup() {
     const userStore = useUserStore();
+    const cardSizeStore = useCardSizeStore();
     const route = useRoute();
     const router = useRouter();
     const gamesApi = useGamesApi();
@@ -337,6 +339,7 @@ export default {
       navigateToAddGame,
       goBack,
       userStore,
+      cardSizeStore,
       sortDropdownLabel,
       filterDropdownLabel
     };

@@ -1,7 +1,7 @@
 <!-- src/components/GameCard.vue -->
 <template>
   <div class="game-card card bg-base-200 shadow-xl overflow-hidden h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-    <figure class="relative h-36 sm:h-40 md:h-48 overflow-hidden">
+    <figure :class="`relative ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).imageHeight} overflow-hidden`">
       <img 
         :src="getGameImage(game)" 
         :alt="game.title" 
@@ -17,11 +17,11 @@
         </div>
       </div>
     </figure>
-    <div class="card-body p-2 sm:p-3 md:p-4">
-      <h2 class="card-title text-sm sm:text-base md:text-lg font-bold mb-1 line-clamp-1">{{ game.title }}</h2>
+    <div :class="`card-body ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).cardBody}`">
+      <h2 :class="`card-title ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).titleSize} font-bold mb-1 line-clamp-1`">{{ game.title }}</h2>
       <!-- Status badge -->
       <div v-if="gameStatus" class="mb-2">
-        <span class="badge text-[10px] sm:text-xs p-1.5 sm:p-2 font-semibold" :class="statusBadgeClass">
+        <span :class="[`badge ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).badgeSize} p-1.5 sm:p-2 font-semibold`, statusBadgeClass]">
           {{ statusBadgeText }}
         </span>
       </div>
@@ -182,12 +182,18 @@
 </template>
 
 <script>
+import { useCardSizeStore } from '../stores/cardSize';
+
 export default {
   props: {
     game: {
       type: Object,
       required: true
     }
+  },
+  setup() {
+    const cardSizeStore = useCardSizeStore();
+    return { cardSizeStore };
   },
   computed: {
     achievementLabel() {
