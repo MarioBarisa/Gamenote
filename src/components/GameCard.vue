@@ -220,19 +220,17 @@ export default {
     achievementLabel() {
       const source = this.game?.progress_source;
       const mode = this.game?.progress_mode;
-      
-      
+
+      if (mode === 'trophies_psn') return 'PSN Trophies';
+      if (mode === 'achievements_xbox' || mode === 'trophies_xbox') return 'Xbox Achievements';
+      if (mode === 'achievements_steam') return 'Steam Achievements';
+      if (mode === 'achievements_gamecenter' || mode === 'achievements_gamecentre') return 'Game Center Achievements';
+      if (mode === 'pokedex') return 'Pokédex';
       if (source === 'PlayStation 4' || source === 'PlayStation 5') return 'PSN Trophies';
       if (source === 'Xbox One' || source === 'Xbox Series X/S') return 'Xbox Achievements';
       if (source === 'Steam') return 'Steam Achievements';
       if (source === 'Nintendo Switch') return 'Achievements';
-      
-      
-      if (mode === 'trophies_psn') return 'PSN Trophies';
-      if (mode === 'trophies_xbox') return 'Xbox Achievements';
-      if (mode === 'achievements_steam') return 'Steam Achievements';
-      if (mode === 'achievements_gamecenter') return 'Game Center Achievements';
-      
+
       return 'Achievements';
     },
     achievementPercent() {
