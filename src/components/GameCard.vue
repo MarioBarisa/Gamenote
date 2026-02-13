@@ -1,4 +1,3 @@
-<!-- src/components/GameCard.vue -->
 <template>
   <div class="game-card card bg-base-200 shadow-xl overflow-hidden h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
     <figure :class="`relative ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).imageHeight} overflow-hidden`">
