@@ -52,7 +52,7 @@
       </div>
     </section>-->
 
-    <!-- Nedavno objavljene - za sve korisnike, RAWG API 
+    <!-- Vratiti??? Nedavno objavljene - za sve korisnike, RAWG API 
     <section class="mb-12">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold">Nedavno objavljene</h2>
