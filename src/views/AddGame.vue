@@ -319,6 +319,7 @@ import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
 import { useGamesApi } from '../services/gamesApi';
 import { addGameToGroup } from '../services/groupsApi';
+import { getOrCreateCatalogEntry } from '../services/gameCatalog';
 import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
 import { GAME_STATUS } from '../constants/gameStatus';
@@ -614,6 +615,28 @@ export default {
           }
         }
 
+        // ── game_catalog helper ──
+        if (gameData.game_api_id) {
+          const staticData = {
+            title: gameData.title ?? null,
+            description: gameData.description ?? null,
+            background_image: gameData.background_image ?? null,
+            release_date: gameData.release_date ?? null,
+            metacritic_score: gameData.metacritic_score ?? null,
+            esrb_rating: gameData.esrb_rating ?? null,
+            website_url: gameData.website_url ?? null,
+            genre: gameData.genre ?? null,
+            publisher: gameData.publisher ?? null,
+            developers: gameData.developers ?? null,
+            genres_list: gameData.genres_list ?? null,
+            platforms_list: gameData.platforms_list ?? null,
+            publishers_list: gameData.publishers_list ?? null,
+            screenshot_urls: gameData.screenshot_urls ?? null,
+            series_games: gameData.series_games ?? null,
+          };
+          gameData.catalog_id = await getOrCreateCatalogEntry(gameData.game_api_id, staticData);
+        }
+
         const { data, error } = await supabase
           .from('games')
           .insert([gameData])
@@ -723,6 +746,28 @@ export default {
           }
         } catch (error) {
           console.warn('Could not fetch series data:', error);
+        }
+
+        // ── game_catalog helper ──
+        if (gameData.game_api_id) {
+          const staticData = {
+            title: gameData.title ?? null,
+            description: gameData.description ?? null,
+            background_image: gameData.background_image ?? null,
+            release_date: gameData.release_date ?? null,
+            metacritic_score: gameData.metacritic_score ?? null,
+            esrb_rating: gameData.esrb_rating ?? null,
+            website_url: gameData.website_url ?? null,
+            genre: gameData.genre ?? null,
+            publisher: gameData.publisher ?? null,
+            developers: gameData.developers ?? null,
+            genres_list: gameData.genres_list ?? null,
+            platforms_list: gameData.platforms_list ?? null,
+            publishers_list: gameData.publishers_list ?? null,
+            screenshot_urls: gameData.screenshot_urls ?? null,
+            series_games: gameData.series_games ?? null,
+          };
+          gameData.catalog_id = await getOrCreateCatalogEntry(gameData.game_api_id, staticData);
         }
 
         const { data: insertedGame, error } = await supabase

@@ -18,13 +18,13 @@ function computeExpiryIso(seconds) {
   return new Date(Date.now() + (Number(seconds) || 0) * 1000 - 30_000).toISOString();
 }
 
-async function getAuthorization() {
-  const {
-    exchangeNpssoForAccessCode,
-    exchangeAccessCodeForAuthTokens,
-    exchangeRefreshTokenForAuthTokens
-  } = await import('psn-api');
+const {
+  exchangeNpssoForAccessCode,
+  exchangeAccessCodeForAuthTokens,
+  exchangeRefreshTokenForAuthTokens
+} = require('psn-api');
 
+async function getAuthorization() {
   const supabase = getSupabaseAdmin();
   const row = await readTokenRow(supabase);
 

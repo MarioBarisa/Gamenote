@@ -1,4 +1,5 @@
 const { getAuthorization } = require('./_psnAuth.js');
+const { makeUniversalSearch, getUserPlayedGames, getUserTitles } = require('psn-api');
 
 function json(statusCode, body) {
   return {
@@ -27,8 +28,6 @@ exports.handler = async (event) => {
     const payload = event.body ? JSON.parse(event.body) : {};
     const psnUsername = String(payload.psnUsername || '').trim();
     if (!psnUsername) return json(400, { error: 'Missing psnUsername' });
-
-    const { makeUniversalSearch, getUserPlayedGames, getUserTitles } = await import('psn-api');
 
     const authorization = await getAuthorization();
 
