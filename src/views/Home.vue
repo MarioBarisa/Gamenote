@@ -1,8 +1,8 @@
 <!-- src/views/Home.vue -->
 <template>
   <div class="home">
-  <!-- Hero dio -->
-  <section v-if="!userStore.isLoggedIn" class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
+    <!-- Hero dio -->
+    <section v-if="!userStore.isLoggedIn" class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
       <div class="text-center px-4">
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">Gamenote</h1>
         <p class="text-lg sm:text-xl mb-6">Prati, dijeli i otkrivaj svoje omiljene videoigre</p>
@@ -10,17 +10,21 @@
       </div>
     </section>
 
-    <section v-if="userStore.isLoggedIn" class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
-      <gameN></gameN>
+    <section v-if="userStore.isLoggedIn && themeStore.showNewsWidget"
+      class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
+      <gameN />
     </section>
+
     <!-- Trenutno igraš -> samo za ulogirane -->
     <section v-if="userStore.isLoggedIn && currentlyPlaying.length > 0" class="mb-8 sm:mb-12">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
         <h2 class="text-2xl sm:text-3xl font-bold">Trenutno igraš</h2>
         <router-link to="/library?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
       </div>
-      <div :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
-        <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)" class="cursor-pointer">
+      <div
+        :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
+        <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)"
+          class="cursor-pointer">
           <GameCard :game="game" />
         </div>
       </div>
@@ -85,6 +89,7 @@ import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
 import { useGamesApi } from '../services/gamesApi';
+import { useThemeStore } from '../stores/theme';
 import GameCard from '../components/GameCard.vue';
 import gameN from '../components/gameN.vue';
 
@@ -98,43 +103,45 @@ export default {
     const cardSizeStore = useCardSizeStore();
     const router = useRouter();
     const gamesApi = useGamesApi();
-    
+
+    const themeStore = useThemeStore();
+
     const loading = ref(true);
     const currentlyPlaying = ref([]);
     const popularGames = ref([]);
     const recentGames = ref([]);
-    
+
     const fetchUserGames = async () => {
       // Ako korisnik nije prijavljen, ne dohvaćaj korisničke igre
       if (!userStore.isLoggedIn || !userStore.user) {
         return;
       }
-      
+
       try {
         const userId = userStore.user.id;
-        
-          // Dohvati samo trenutno igrane igre iz baze
-          const { data: currentGames, error } = await supabase
-            .from('games')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('status', 'playing')
+
+        // Dohvati samo trenutno igrane igre iz baze
+        const { data: currentGames, error } = await supabase
+          .from('games')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'playing')
           .order('updated_at', { ascending: false });
-        
+
         currentlyPlaying.value = currentGames || [];
       } catch (error) {
         console.error('Greška pri dohvaćanju korisničkih igara:', error);
       }
     };
-    
+
     const fetchApiGames = async () => {
       loading.value = true;
-      
+
       try {
         // Dohvati popularne igre s RAWG API-ja -> NERADI DOBRO ZATO COMMENT
         const popularnigre = await gamesApi.getPopularGames();
         popularGames.value = popularnigre;
-        
+
         // Dohvati nedavno objavljene igre s RAWG API-ja -> NERADI DOBRO ZATO COMMENT
         const nedavnigre = await gamesApi.getRecentGames();
         recentGames.value = nedavnigre;
@@ -144,26 +151,26 @@ export default {
         loading.value = false;
       }
     };
-    
+
     const navigateToUserGame = (id) => {
       router.push(`/game/${id}`);
     };
-    
+
     const navigateToApiGame = (id) => {
       // Preusmjeri na API game details view
       router.push(`/api-games/${id}`);
     };
-    
+
     const formatDate = (dateString) => {
       if (!dateString) return 'Nepoznat datum';
       return new Date(dateString).toLocaleDateString('hr-HR');
     };
-    
+
     onMounted(async () => {
       await fetchUserGames();
       await fetchApiGames();
     });
-    
+
     return {
       userStore,
       cardSizeStore,
@@ -173,7 +180,8 @@ export default {
       recentGames,
       navigateToUserGame,
       navigateToApiGame,
-      formatDate
+      formatDate,
+      themeStore
     };
   }
 };

@@ -11,6 +11,8 @@ import Profile from '../views/Profile.vue';
 import ThemeSettings from '../views/ThemeSettings.vue';
 import Groups from '../views/Groups.vue';
 import GroupDetails from '../views/GroupDetails.vue';
+import Importers from '../views/Importers.vue';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -100,6 +102,11 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       redirect: '/'
+    },
+    {
+      path: '/importers',
+      name: 'importers',
+      component: Importers
     }
   ]
 });

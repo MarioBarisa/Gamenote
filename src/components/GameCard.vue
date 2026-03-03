@@ -16,7 +16,7 @@
         </div>
       </div>
     </figure>
-    <div :class="`card-body ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).cardBody}`">
+    <div :class="`card-body ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).cardBody} flex flex-col`">
       <h2 :class="`card-title ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).titleSize} font-bold mb-1 line-clamp-1`">{{ game.title }}</h2>
       <!-- Status badge -->
       <div v-if="gameStatus" class="mb-2">
@@ -175,26 +175,48 @@
         <span class="ml-1 sm:ml-2 text-xs sm:text-sm opacity-70">{{ game.rating || 0 }}/5</span>
       </div>
       
-      <!-- Vrijeme igranja i Achievements -->
-      <div class="mt-3 space-y-2">
-        <div v-if="game.play_time" class="text-xs sm:text-sm opacity-70">
-          {{ game.play_time }}h igranja
-        </div>
-        <div v-if="game.progress_value && game.progress_total" class="space-y-1">
-          <!-- Progress Bar -->
-          <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-            <div 
-              class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all"
-              :style="{ width: `${achievementPercent}%` }"
-            ></div>
-          </div>
-          <!-- Achievement Text -->
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-semibold">{{ validatedProgressValue }}/{{ game.progress_total }} {{ achievementLabel }}</span>
-            <span class="opacity-70">{{ achievementPercent }}%</span>
-          </div>
-        </div>
-      </div>
+
+      <div class="mt-auto space-y-2 pt-2">
+
+
+<!-- Datumi -->
+<div v-if="(game.start_date || game.end_date) && gameStatus !== 'playing'" class="flex items-center gap-1.5 text-xs opacity-60">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+  </svg>
+  <span v-if="game.start_date">{{ formatDate(game.start_date) }}</span>
+  <template v-if="game.start_date && game.end_date">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+    </svg>
+    <span>{{ formatDate(game.end_date) }}</span>
+  </template>
+  <template v-else-if="!game.start_date && game.end_date">
+    <span>do {{ formatDate(game.end_date) }}</span>
+  </template>
+</div>
+
+<!-- Play time -->
+<div v-if="game.play_time" class="text-xs sm:text-sm opacity-70">
+  {{ game.play_time }}h igranja
+</div>
+
+<!-- Progress -->
+<div v-if="game.progress_value && game.progress_total" class="space-y-1">
+  <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+    <div
+      class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all"
+      :style="{ width: `${achievementPercent}%` }"
+    ></div>
+  </div>
+  <div class="flex justify-between items-center text-xs">
+    <span class="font-semibold">{{ validatedProgressValue }}/{{ game.progress_total }} {{ achievementLabel }}</span>
+    <span class="opacity-70">{{ achievementPercent }}%</span>
+  </div>
+</div>
+
+</div>
+
     </div>
   </div>
 </template>
@@ -297,7 +319,12 @@ export default {
         stars.push(i <= rating);
       }
       return stars;
-    }
+    },
+    formatDate(dateStr) {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
   }
 };
 </script>

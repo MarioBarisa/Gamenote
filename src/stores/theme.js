@@ -38,6 +38,7 @@ export const useThemeStore = defineStore('theme', () => {
   ];
 
   const currentTheme = ref('dark');
+  const showNewsWidget = ref(true); 
   // Funkcija za postavljanje teme
   const setTheme = (themeName) => {
     console.log('🔄 Postavljam temu:', themeName);
@@ -71,18 +72,24 @@ export const useThemeStore = defineStore('theme', () => {
   const getThemeByName = (name) => {
     return availableThemes.find(t => t.name === name);
   };
+  
+  const setShowNewsWidget = (value) => {
+    showNewsWidget.value = !!value;
+  };
 
   return {
     availableThemes,
     currentTheme,
+    showNewsWidget,  
     setTheme,
     initTheme,
-    getThemeByName
+    getThemeByName,
+    setShowNewsWidget  
   };
 }, {
   persist: {
     key: 'gamenote-theme',
     storage: localStorage,
-    paths: ['currentTheme'] // Samo spremi currentTheme
+    paths: ['currentTheme', 'showNewsWidget'] // Samo spremi currentTheme
   }
 });

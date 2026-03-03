@@ -76,7 +76,9 @@
                   </li>
                   <div class="divider my-1"></div>
                   <li><router-link to="/profile" @click="closeProfileDropdown">Profil</router-link></li>
-                  <li><router-link to="/theme-settings" @click="closeProfileDropdown">⚙️ Postavke UI-ja</router-link></li>
+                  <li><router-link to="/theme-settings" @click="closeProfileDropdown"> Postavke UI-ja</router-link></li>
+                  <li><router-link to="/importers" @click="closeProfileDropdown">Import</router-link></li>
+
                   
                   <div class="divider my-1"></div>
                   <li><a @click="logout">Odjava</a></li>
