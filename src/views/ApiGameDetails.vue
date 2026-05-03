@@ -23,6 +23,16 @@
     </div>
 
     <div v-else>
+      <!-- Banner ako je igra već u kolekciji -->
+      <div v-if="gameInLibraryId" class="alert bg-gradient-to-r from-sky-400 via-blue-500 to-sky-600 text-white shadow-xl relative overflow-hidden border-2 border-sky-300 mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-8 h-8 drop-shadow-md"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+          <h3 class="font-bold text-lg drop-shadow">Ova igra je već u tvojoj kolekciji!</h3>
+          <div class="text-sm text-sky-100 drop-shadow-sm">Možeš je urediti ili pogledati detalje u svojoj biblioteci.</div>
+        </div>
+        <router-link :to="`/game/${gameInLibraryId}`" class="btn btn-sm bg-white text-blue-600 hover:bg-sky-50 border-none ml-auto shadow-md">Prikaži u biblioteci</router-link>
+      </div>
+
       <div class="flex flex-col md:flex-row gap-4 mb-6">
         <div class="flex-none">
           <div class="card bg-base-200 shadow-xl" style="width: 300px;">
@@ -258,235 +268,217 @@
           </div>
         </div>
 
-        <form @submit.prevent="saveToCollection" class="space-y-4">
-          <div class="form-control">
-            <label class="label font-medium">Naziv</label>
-            <input type="text" v-model="collectionForm.title" class="input input-bordered" required />
-          </div>
-          
-          <div class="form-control">
-            <label class="label font-medium">Platforma</label>
-            <select v-model="collectionForm.platform" class="select select-bordered" required>
-              <option value="" disabled>Odaberi platformu</option>
-              <option v-for="platform in platforms" :key="platform" :value="platform">
-                {{ platform }}
-              </option>
-            </select>
-          </div>
-          
-          <div class="form-control">
-            <label class="label font-medium">Vrijeme igranja (sati)</label>
-            <input type="number" v-model="collectionForm.play_time" class="input input-bordered" min="0" />
-          </div>
-          
-          <div class="form-control">
-            <label class="label font-medium">Ocjena (1-5)</label>
-            <div class="rating rating-lg">
-              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating" />
-              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating" />
-              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating" />
-              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating" />
-              <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating" />
+        <form @submit.prevent="saveToCollection" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label font-medium">Naziv</label>
+              <input type="text" v-model="collectionForm.title" class="input input-bordered" required />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Platforma</label>
+              <select v-model="collectionForm.platform" class="select select-bordered" required>
+                <option value="" disabled>Odaberi platformu</option>
+                <option v-for="platform in platforms" :key="platform" :value="platform">
+                  {{ platform }}
+                </option>
+              </select>
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Vrijeme igranja (sati)</label>
+              <input type="number" v-model="collectionForm.play_time" class="input input-bordered" min="0" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Ocjena (1-5)</label>
+              <div class="rating rating-sm sm:rating-md lg:rating-lg pt-3">
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating" />
+              </div>
+            </div>
+
+            <div class="form-control">
+              <label class="label font-medium">Status</label>
+              <select v-model="collectionForm.status" class="select select-bordered">
+                <option value="" disabled>Odaberi status</option>
+                <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key">{{ s.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-control">
+              <label class="label font-medium">Game Progression</label>
+              <select v-model="collectionForm.progress_mode" class="select select-bordered">
+                <option value="" disabled>Odaberi način praćenja</option>
+                <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-control">
+              <label class="label font-medium">Datum početka</label>
+              <input type="date" v-model="collectionForm.start_date" class="input input-bordered" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Datum završetka</label>
+              <input type="date" v-model="collectionForm.end_date" class="input input-bordered" />
             </div>
           </div>
 
-          <div class="form-control">
-            <label class="label font-medium">Status</label>
-            <select v-model="collectionForm.status" class="select select-bordered">
-              <option value="" disabled>Odaberi status</option>
-              <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key">{{ s.label }}</option>
-            </select>
-          </div>
-
-          <div class="form-control">
-            <label class="label font-medium">Game Progression</label>
-            <select v-model="collectionForm.progress_mode" class="select select-bordered">
-              <option value="" disabled>Odaberi način praćenja</option>
-              <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
-            </select>
-            <p v-if="selectedCollectionProgressMode" class="text-xs opacity-70 mt-1">
-              <span v-if="selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies')">
-                ✨ Broj {{ selectedCollectionProgressMode.defaultUnit }} automatski dohvaćen iz RAWG baze. Ako je prazan, unesi ga ispod.
-              </span>
-              <span v-else>
-                Unesi vrijednosti prema načinu praćenja (postotak 0-100, vrijednost/ukupno za omjer, #rang za leaderboard).
-              </span>
-            </p>
-          </div>
-          
           <template v-if="selectedCollectionProgressMode">
             <!-- SAMO ZA ACHIEVEMENTS/TROPHIES - Posebna sekcija s jasnom uputom i alert-om -->
             <div v-if="selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4">
-              <div class="alert alert-warning text-sm">
+              <div class="alert alert-warning text-sm mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
                 <div>
                   <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
-                  <div class="text-xs">Preporučeni broj: <strong>{{ rawgAchievementCount || 'nije dostupno' }}</strong> - slobodno ga promijeni ako nije točan.</div>
+                  <div class="text-xs">Preporučeni broj: <strong>{{ rawgAchievementCount || 'nije dostupno' }}</strong> - slobodno ga promijeni.</div>
                 </div>
               </div>
 
-              <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
-              <div class="form-control">
-                <label class="label font-medium">
-                  Ukupan broj {{ selectedCollectionProgressMode.defaultUnit }}
-                </label>
-                <input 
-                  type="number" 
-                  v-model.number="collectionForm.progress_total" 
-                  class="input input-bordered input-lg font-bold" 
-                  min="0"
-                  placeholder="npr. 50"
-                />
-                <label class="label">
-                  <span class="text-xs opacity-70">Koliko {{ selectedCollectionProgressMode.defaultUnit }} ima ukupno u igri?</span>
-                </label>
-              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
+                <div class="form-control">
+                  <label class="label font-medium text-sm">
+                    Ukupan broj {{ selectedCollectionProgressMode.defaultUnit }}
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="collectionForm.progress_total" 
+                    class="input input-bordered font-bold" 
+                    min="0"
+                    placeholder="npr. 50"
+                  />
+                </div>
 
-              <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
-              <div class="form-control">
-                <label class="label font-medium">
-                  Broj {{ selectedCollectionProgressMode.defaultUnit }} koje si ti ostvario/a
-                </label>
-                <input 
-                  type="number" 
-                  v-model.number="collectionForm.progress_value" 
-                  class="input input-bordered input-lg font-bold text-success" 
-                  min="0"
-                  :max="collectionForm.progress_total || undefined"
-                  placeholder="npr. 25"
-                />
-                <label class="label">
-                  <span class="text-xs opacity-70">
-                    Napredak: 
-                    <strong v-if="collectionForm.progress_total > 0">
-                      {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
-                    </strong>
-                    <span v-else class="text-warning">postavi ukupan broj prvi</span>
-                  </span>
-                </label>
-              </div>
+                <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
+                <div class="form-control">
+                  <label class="label font-medium text-sm">
+                    Ostvareni {{ selectedCollectionProgressMode.defaultUnit }}
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="collectionForm.progress_value" 
+                    class="input input-bordered font-bold text-success" 
+                    min="0"
+                    :max="collectionForm.progress_total || undefined"
+                    placeholder="npr. 25"
+                  />
+                  <label class="label">
+                    <span class="text-xs opacity-70">
+                      Napredak: 
+                      <strong v-if="collectionForm.progress_total > 0">
+                        {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupno</span>
+                    </span>
+                  </label>
+                </div>
 
-              <!-- JEDINICA -->
-              <div class="form-control">
-                <label class="label font-medium">Jedinica</label>
-                <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
+                <!-- JEDINICA -->
+                <div class="form-control">
+                  <label class="label font-medium text-sm">Jedinica</label>
+                  <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
+                </div>
               </div>
             </div>
 
             <!-- POKEDEX - Dvije vrijednosti bez alert-a (ne dohvaća se iz RAWG) -->
             <div v-else-if="selectedCollectionProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4">
-              <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
-              <div class="form-control">
-                <label class="label font-medium">
-                  Koliko pokemona si ti uhvatio/a
-                </label>
-                <input 
-                  type="number" 
-                  v-model.number="collectionForm.progress_value" 
-                  class="input input-bordered input-lg font-bold text-success" 
-                  min="0"
-                  :max="collectionForm.progress_total || undefined"
-                  placeholder="npr. 150"
-                />
-                <label class="label">
-                  <span class="text-xs opacity-70">Koliko pokemona si već uhvatio/a u ovoj igri?</span>
-                </label>
-              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- KOLIKO POKEMONA IMA U IGRI -->
+                <div class="form-control">
+                  <label class="label font-medium text-sm">
+                    Ukupno pokemona u igri
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="collectionForm.progress_total" 
+                    class="input input-bordered font-bold" 
+                    min="0"
+                    placeholder="npr. 251"
+                  />
+                </div>
 
-              <!-- KOLIKO POKEMONA IMA U IGRI -->
-              <div class="form-control">
-                <label class="label font-medium">
-                  Koliko pokemona ima u igri
-                </label>
-                <input 
-                  type="number" 
-                  v-model.number="collectionForm.progress_total" 
-                  class="input input-bordered input-lg font-bold" 
-                  min="0"
-                  placeholder="npr. 251"
-                />
-                <label class="label">
-                  <span class="text-xs opacity-70">Ukupno koliko različitih pokemona je u ovoj igri?</span>
-                </label>
-              </div>
+                <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
+                <div class="form-control">
+                  <label class="label font-medium text-sm">
+                    Uhvaćenih pokemona
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="collectionForm.progress_value" 
+                    class="input input-bordered font-bold text-success" 
+                    min="0"
+                    :max="collectionForm.progress_total || undefined"
+                    placeholder="npr. 150"
+                  />
+                  <label class="label">
+                    <span class="text-xs opacity-70">
+                      Napredak: 
+                      <strong v-if="collectionForm.progress_total > 0">
+                        {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupno</span>
+                    </span>
+                  </label>
+                </div>
 
-              <!-- PROGRESS % -->
-              <div class="form-control">
-                <label class="label">
-                  <span class="text-xs opacity-70">
-                    Napredak: 
-                    <strong v-if="collectionForm.progress_total > 0">
-                      {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
-                    </strong>
-                    <span v-else class="text-warning">postavi ukupan broj pokemona prvi</span>
-                  </span>
-                </label>
-              </div>
-
-              <!-- JEDINICA -->
-              <div class="form-control">
-                <label class="label font-medium">Jedinica</label>
-                <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
+                <!-- JEDINICA -->
+                <div class="form-control">
+                  <label class="label font-medium text-sm">Jedinica</label>
+                  <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
+                </div>
               </div>
             </div>
 
             <!-- ZA OSTALE PROGRESS MODE-OVE -->
-            <template v-else>
+            <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-300/30 p-4 rounded-box border border-base-300">
               <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
-                <label class="label font-medium">Vrijednost</label>
+                <label class="label font-medium text-sm">Vrijednost</label>
                 <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered" min="0" />
               </div>
               <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
-                <label class="label font-medium">Ukupno</label>
+                <label class="label font-medium text-sm">Ukupno</label>
                 <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered" min="0" />
               </div>
               <div class="form-control">
-                <label class="label font-medium">Jedinica</label>
+                <label class="label font-medium text-sm">Jedinica</label>
                 <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" :placeholder="selectedCollectionProgressMode.defaultUnit || 'unit'" readonly />
               </div>
-            </template>
+            </div>
           </template>
 
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-4">
+          <!-- Grupe/Kolekcije -->
+          <div class="form-control bg-base-200/50 p-4 rounded-box border border-base-300">
+            <label class="label cursor-pointer justify-start gap-4 mb-2">
               <input type="checkbox" v-model="showGroupSelector" class="checkbox" />
-              <span class="label-text font-medium">Dodaj u grupe/kolekcije</span>
+              <span class="label-text font-medium text-base">Dodaj u grupe/kolekcije</span>
             </label>
-          </div>
 
-          <div class="form-control" v-if="showGroupSelector">
-            <label class="label font-medium">Odaberi grupe</label>
-            <div v-if="groupsLoading" class="text-sm opacity-70">Učitavam grupe...</div>
-            <div v-else-if="groups.length === 0" class="text-sm opacity-70">Nema dostupnih grupa. Kreiraj prvu!</div>
-            <div v-else class="space-y-2">
-              <label v-for="group in groups" :key="group.id" class="label cursor-pointer flex items-center justify-start gap-3 p-3 border border-base-300 rounded-lg hover:bg-base-300/30 transition-colors">
-                <input 
-                  type="checkbox" 
-                  class="checkbox checkbox-sm" 
-                  :checked="collectionForm.group_ids.includes(group.id)"
-                  @change="toggleGroupId(group.id)"
-                />
-                <span class="label-text flex-1">
-                  <span class="font-medium">{{ group.name }}</span>
-                  <span class="text-xs opacity-60 ml-2">({{ group.type }})</span>
-                </span>
-              </label>
+            <div v-if="showGroupSelector" class="mt-2">
+              <div v-if="groupsLoading" class="text-sm opacity-70">Učitavam grupe...</div>
+              <div v-else-if="groups.length === 0" class="text-sm opacity-70">Nema dostupnih grupa. Kreiraj prvu!</div>
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <label v-for="group in groups" :key="group.id" class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-base-300 bg-base-100 hover:border-primary transition-colors">
+                  <input 
+                    type="checkbox" 
+                    class="checkbox checkbox-primary checkbox-sm" 
+                    :checked="collectionForm.group_ids.includes(group.id)"
+                    @change="toggleGroupId(group.id)"
+                  />
+                  <span class="text-sm font-medium">{{ group.name }} <span class="opacity-60 font-normal text-xs ml-1">({{ group.type }})</span></span>
+                </label>
+              </div>
             </div>
           </div>
           
           <div class="form-control">
-            <label class="label font-medium">Datum početka</label>
-            <input type="date" v-model="collectionForm.start_date" class="input input-bordered" />
-          </div>
-          
-          <div class="form-control">
-            <label class="label font-medium">Datum završetka</label>
-            <input type="date" v-model="collectionForm.end_date" class="input input-bordered" />
-          </div>
-          
-          <div class="form-control">
             <label class="label font-medium">Bilješke</label>
-            <textarea v-model="collectionForm.notes" class="textarea textarea-bordered h-24"></textarea>
+            <textarea v-model="collectionForm.notes" class="textarea textarea-bordered h-24 w-full"></textarea>
           </div>
           
           <div class="modal-action">
@@ -527,6 +519,7 @@ export default {
     const userStore = useUserStore();
     
     const game = ref(null);
+    const gameInLibraryId = ref(null);
     const loading = ref(true);
     const error = ref(null);
     const screenshots = ref([]);
@@ -598,6 +591,26 @@ export default {
         }
         
         game.value = gameDetails;
+
+        // Check if game is already in user's library
+        if (userStore.user) {
+          try {
+            const { data } = await supabase
+              .from('games')
+              .select('id')
+              .eq('user_id', userStore.user.id)
+              .eq('game_api_id', gameId.toString())
+              .limit(1);
+              
+            if (data && data.length > 0) {
+              gameInLibraryId.value = data[0].id;
+            } else {
+              gameInLibraryId.value = null;
+            }
+          } catch (err) {
+            console.error('Error checking library status:', err);
+          }
+        }
         
         try {
           const screenshotsData = await gamesApi.getGameScreenshots(gameId);
@@ -976,6 +989,7 @@ export default {
       GAME_STATUS,
       selectedCollectionProgressMode,
       game,
+      gameInLibraryId,
       loading,
       error,
       screenshots,

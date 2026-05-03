@@ -8,8 +8,19 @@
           </svg>
           Natrag
         </button>
-
         <h1 class="text-4xl font-bold">{{ apiGameDetails.name }}</h1>
+      </div>
+
+      <div v-if="existingGameId" class="alert alert-info shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <h3 class="font-bold text-sm sm:text-base">Ova igra je već u vašoj kolekciji!</h3>
+          </div>
+        </div>
+        <button @click="navigateToGame(existingGameId)" class="btn btn-sm btn-primary w-full sm:w-auto mt-2 sm:mt-0 shadow-sm">Otvori u kolekciji</button>
       </div>
 
       <div class="card bg-base-100 shadow-xl">
@@ -25,7 +36,14 @@
                 <div>
                   <p><strong>Datum izdavanja:</strong> {{ apiGameDetails.released || 'N/A' }}</p>
                   <p><strong>Metacritic ocjena:</strong> {{ apiGameDetails.metacritic || 'N/A' }}</p>
-                  <p><strong>ESRB:</strong> {{ apiGameDetails.esrb_rating?.name || 'N/A' }}</p>
+                  <div class="mt-4">
+                    <img v-if="apiGameDetails.esrb_rating?.name == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-12 h-auto" />
+                    <p v-else-if="apiGameDetails.esrb_rating?.name"><strong>ESRB:</strong> {{ apiGameDetails.esrb_rating.name }}</p>
+                  </div>
                 </div>
                 <div>
                   <p><strong>Žanrovi:</strong> {{ apiGameDetails.genres?.map(g => g.name).join(', ') || 'N/A' }}</p>
@@ -54,56 +72,56 @@
           <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Moje igre</h1>
         </div>
 
-        <input 
-          type="text" 
-          v-model="searchQuery" 
-          placeholder="Pretraži svoju zbirku" 
-          class="input input-bordered input-sm sm:input-md w-full md:w-80"
-        />
+        <!-- Filter Tabs -->
+        <div class="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div class="flex flex-nowrap gap-2 min-w-max">
+            <button class="btn btn-sm" :class="activeFilter === 'all' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('all')">Sve</button>
+            <button class="btn btn-sm" :class="(activeFilter === 'playing' || activeFilter === 'current') ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('playing')">Igram</button>
+            <button class="btn btn-sm" :class="activeFilter === 'completed' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('completed')">Završeno</button>
+            <button class="btn btn-sm" :class="activeFilter === 'backlog' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('backlog')">Backlog</button>
+            <button class="btn btn-sm" :class="activeFilter === 'dropped' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('dropped')">Napušteno</button>
+            <button class="btn btn-sm" :class="activeFilter === 'wishlist' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('wishlist')">Wishlist</button>
+            <button class="btn btn-sm" :class="activeFilter === 'rated-5' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('rated-5')">5/5</button>
+            <button class="btn btn-sm" :class="activeFilter === 'rated-4' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('rated-4')">4/5+</button>
+          </div>
+        </div>
 
-        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
-          <div class="dropdown dropdown-start w-full sm:w-auto">
-            <label tabindex="0" class="btn btn-outline w-full sm:w-auto" ref="sortDropdownLabel">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+        <!-- Toolbar -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full bg-base-200 p-4 rounded-box shadow-sm">
+          
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div class="relative w-full sm:w-64">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Sortiraj
-            </label>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
-              @click="closeDropdown('sort')">
-              <li><a @click="sortGames('title', 'asc')">Naziv (A-Ž)</a></li>
-              <li><a @click="sortGames('title', 'desc')">Naziv (Ž-A)</a></li>
-              <li><a @click="sortGames('rating', 'desc')">Ocjena (najviša)</a></li>
-              <li><a @click="sortGames('rating', 'asc')">Ocjena (najniža)</a></li>
-              <li><a @click="sortGames('play_time', 'desc')">Vrijeme igranja (najviše)</a></li>
-              <li><a @click="sortGames('created_at', 'desc')">Nedavno dodano</a></li>
-            </ul>
+              <input 
+                type="text" 
+                v-model="searchQuery" 
+                placeholder="Pretraži svoju zbirku..." 
+                class="input input-bordered input-sm sm:input-md w-full pl-10"
+              />
+            </div>
+            
+            <div class="dropdown dropdown-bottom sm:dropdown-end w-full sm:w-auto">
+              <label tabindex="0" class="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto" ref="sortDropdownLabel">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+                Sortiraj
+              </label>
+              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-1" @click="closeDropdown('sort')">
+                <li><a @click="sortGames('title', 'asc')">Naziv (A-Ž)</a></li>
+                <li><a @click="sortGames('title', 'desc')">Naziv (Ž-A)</a></li>
+                <li><a @click="sortGames('rating', 'desc')">Ocjena (najviša)</a></li>
+                <li><a @click="sortGames('rating', 'asc')">Ocjena (najniža)</a></li>
+                <li><a @click="sortGames('play_time', 'desc')">Vrijeme igranja (najviše)</a></li>
+                <li><a @click="sortGames('created_at', 'desc')">Nedavno dodano</a></li>
+              </ul>
+            </div>
           </div>
 
-          <div class="dropdown dropdown-end w-full sm:w-auto">
-            <label tabindex="0" class="btn btn-outline w-full sm:w-auto" ref="filterDropdownLabel">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              Filtriraj
-            </label>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
-              @click="closeDropdown('filter')">
-              <li><a @click="filterGames('all')">Sve igre</a></li>
-              <li><a @click="filterGames('current')">Trenutno igram</a></li>
-              <li><a @click="filterGames('completed')">Završene</a></li>
-              <li><a @click="filterGames('rated-5')">Ocjena 5/5</a></li>
-              <li><a @click="filterGames('rated-4')">Ocjena 4/5 ili više</a></li>
-            </ul>
-          </div>
-
-          <router-link to="/add-game" class="btn btn-primary w-full sm:w-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
+          <router-link to="/add-game" class="btn btn-primary btn-sm sm:btn-md w-full md:w-auto shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Dodaj igru
@@ -201,15 +219,30 @@ export default {
     const sortDropdownLabel = ref(null);
     const filterDropdownLabel = ref(null);
     const searchQuery = ref('');
+    const existingGameId = ref(null);
 
     const isApiGame = computed(() => !!route.query.api_id);
 
     const fetchApiGameDetails = async (apiId) => {
       loading.value = true;
       error.value = null;
+      existingGameId.value = null;
       try {
         const details = await gamesApi.getGameDetails(apiId);
         apiGameDetails.value = details;
+
+        if (userStore.isLoggedIn && userStore.user?.id) {
+          const { data } = await supabase
+            .from('games')
+            .select('id')
+            .eq('user_id', userStore.user.id)
+            .eq('game_api_id', apiId)
+            .single();
+            
+          if (data) {
+            existingGameId.value = data.id;
+          }
+        }
       } catch (err) {
         console.error('Greška pri dohvaćanju API igre:', err);
         error.value = 'Greška pri učitavanju detalja igre. Pokušaj ponovno.';
@@ -364,7 +397,8 @@ export default {
       cardSizeStore,
       sortDropdownLabel,
       filterDropdownLabel,
-      searchQuery
+      searchQuery,
+      existingGameId
     };
   }
 };

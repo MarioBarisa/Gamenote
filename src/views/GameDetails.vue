@@ -23,7 +23,7 @@
       <router-link to="/library" class="btn btn-primary mt-4">Natrag na biblioteku</router-link>
     </div>
 
-    <div v-else-if="!editMode">
+    <div v-else-if="game">
       <!-- 100% Completion Banner -->
       <div v-if="progressPercent === 100" class="mb-6 completion-celebration">
         <div class="alert bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-black shadow-2xl border-4 border-yellow-300 relative overflow-hidden">
@@ -43,229 +43,263 @@
         </div>
       </div>
 
-      <div class="flex flex-col lg:flex-row gap-4 mb-6">
-        <div class="flex-none">
-          <div class="card bg-base-200 shadow-xl w-full lg:w-80">
-            <figure>
-              <img :src="game.background_image || game.image_url || 'https://placehold.co/600x400?text=No+Image'" :alt="game.title" class="w-full h-auto" />
-            </figure>
-            <div class="card-body p-4">
-              <h2 class="card-title text-lg sm:text-xl">{{ game.title }}</h2>
+      <!-- 1. Hero header -->
+      <div class="hero min-h-[220px] sm:min-h-[400px] md:min-h-[450px] lg:min-h-[500px] mb-6 rounded-box overflow-hidden relative shadow-xl" 
+           :style="`background-image: url(${game.background_image || game.image_url || 'https://placehold.co/1200x400?text=No+Image'}); background-position: center; background-size: cover;`">
+        <div class="hero-overlay bg-gradient-to-t from-base-100 to-transparent opacity-90"></div>
+        <div class="hero-content text-neutral-content w-full h-full flex flex-col justify-between items-start !p-4 sm:!p-8">
+          <div class="flex w-full justify-start items-start">
+            <router-link to="/library" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">❮ Natrag</router-link>
+          </div>
+          <div class="mt-auto w-full">
+            <div class="flex flex-wrap gap-2 mb-2">
+              <span v-if="gameStatus" class="badge font-semibold shadow-sm" :class="statusBadgeClass">{{ statusBadgeText }}</span>
+              <span class="badge badge-outline bg-black/30 text-white backdrop-blur-sm border-white/20 shadow-sm max-w-[180px] sm:max-w-[400px] truncate inline-block">{{ getPlatforms() }}</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg mb-2">{{ game.title }}</h1>
+            <p class="text-white/80 text-sm font-medium drop-shadow">{{ getGenres() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column: User Data & Screenshots -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+          
+          <!-- User Data Card -->
+          <div class="card bg-base-200 shadow-xl">
+            <div class="card-body p-4 sm:p-6">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-base-300 pb-3 gap-3">
+                <h2 class="card-title text-xl m-0">Vaši podaci</h2>
+                <div class="flex gap-2">
+                  <button @click="enterEditMode" class="btn btn-sm btn-outline btn-primary">Uredi</button>
+                  <button @click="confirmDelete" class="btn btn-sm btn-outline btn-error">Obriši</button>
+                </div>
+              </div>
               
-              <div v-if="gameStatus" class="mt-1 mb-2">
-                <span class="badge text-xs p-2 font-semibold" :class="statusBadgeClass">
-                  {{ statusBadgeText }}
-                </span>
-              </div>
-              <p><strong>Platforma:</strong> {{ getPlatforms() }}</p>
-              <p><strong>Žanr:</strong> {{ getGenres() }}</p>
-              <p><strong>Izdavač:</strong> {{ getPublishers() }}</p>
-
-              <div class="mt-2" v-if="game.metacritic_score">
-                <p><strong>Metacritic ocjena:</strong></p>
-                <div class="radial-progress font-bold m-2" 
-                  :class="getMetacriticColorClass(game.metacritic_score)"
-                  :style="`--value:${game.metacritic_score || 0}`" 
-                  :aria-valuenow="game.metacritic_score" 
-                  role="progressbar">{{ game.metacritic_score }} / 100</div>
-              </div>
-
-              <div class="mt-2">
-                <p><strong>Vaša ocjena:</strong></p>
-                <div class="flex items-center">
-                  <div class="flex">
-                    <template v-for="star in 5" :key="star">
-                      <svg class="w-4 h-4 sm:w-5 sm:h-5" 
-                           :class="star <= (game.rating || 0) ? 'text-orange-400' : 'text-gray-400'"
-                           fill="currentColor" 
-                           viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    </template>
+              <div class="flex flex-wrap gap-4 sm:gap-6 mb-6">
+                <div class="flex flex-col">
+                  <span class="text-sm opacity-70 font-semibold mb-1">Ocjena</span>
+                  <div class="flex items-center gap-2">
+                    <div class="rating rating-sm sm:rating-md pointer-events-none">
+                      <input type="radio" class="mask mask-star-2 bg-warning" :checked="game.rating === 1" disabled />
+                      <input type="radio" class="mask mask-star-2 bg-warning" :checked="game.rating === 2" disabled />
+                      <input type="radio" class="mask mask-star-2 bg-warning" :checked="game.rating === 3" disabled />
+                      <input type="radio" class="mask mask-star-2 bg-warning" :checked="game.rating === 4" disabled />
+                      <input type="radio" class="mask mask-star-2 bg-warning" :checked="game.rating === 5" disabled />
+                    </div>
+                    <span class="font-bold">{{ game.rating || 0 }}/5</span>
                   </div>
-                  <span class="ml-2 text-sm opacity-70">{{ game.rating || 0 }}/5</span>
                 </div>
-              </div>
 
-              <div class="mt-2" v-if="game.play_time">
-                <p><strong>Vrijeme igranja:</strong> {{ game.play_time }} sati</p>
-              </div>
+                <div class="flex flex-col" v-if="game.play_time">
+                  <span class="text-sm opacity-70 font-semibold mb-1">Vrijeme igranja</span>
+                  <span class="font-bold flex items-center gap-1">
+                    {{ game.play_time }} sati
+                  </span>
+                </div>
 
-              <div class="mt-4" v-if="progressMode && (progressMode.kind === 'ratio' || progressMode.kind === 'count') && game.progress_value != null && game.progress_total != null">
-                <div class="card bg-gradient-to-br from-blue-500/10 to-pink-500/10 border border-blue-500/20">
-                  <div class="card-body p-4">
-                    <p class="text-sm font-bold">{{ progressMode.label }}</p>
-                    <div class="mt-3 space-y-1">
-                      <div class="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                        <div 
-                          class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2.5 rounded-full transition-all" 
-                          :style="{ width: `${progressPercent}%` }"
-                        ></div>
-                      </div>
-                      <div class="flex justify-between items-center text-xs opacity-75 mt-1">
-                        <span><strong>{{ validatedProgressValue }}/{{ game.progress_total }} {{ progressMode.defaultUnit }}</strong></span>
-                        <span>{{ progressPercent }}%</span>
-                      </div>
-                    </div>
-                    <div class="mt-3 text-sm space-y-1">
-                      <p v-if="remainingCount > 0"><strong>Nedostaje:</strong> {{ remainingCount }} {{ progressMode.defaultUnit }}</p>
-                      <p v-else class="text-success font-bold">✨ Sve {{ progressMode.defaultUnit }} zaključene!</p>
-                    </div>
+                <div class="flex flex-col">
+                  <span class="text-sm opacity-70 font-semibold mb-1">Period igranja</span>
+                  <div class="flex flex-wrap gap-2 items-center">
+                    <span class="badge badge-sm sm:badge-md" v-if="game.start_date">Od {{ formatDate(game.start_date) }}</span>
+                    <span v-if="game.start_date && game.end_date" class="text-xs opacity-50">-</span>
+                    <span class="badge badge-sm sm:badge-md" v-if="game.end_date">Do {{ formatDate(game.end_date) }}</span>
+                    <span class="text-xs opacity-50 italic" v-if="!game.start_date && !game.end_date">Nije uneseno</span>
                   </div>
                 </div>
               </div>
 
-              <div class="card-actions justify-between mt-4 flex-col sm:flex-row gap-2">
-                <button @click="enterEditMode" class="btn btn-primary w-full sm:w-auto">Uredi</button>
-                <button @click="confirmDelete" class="btn btn-error w-full sm:w-auto">Obriši</button>
+              <div v-if="progressMode && (progressMode.kind === 'ratio' || progressMode.kind === 'count') && game.progress_value != null && game.progress_total != null" class="mb-6">
+                <span class="text-sm opacity-70 font-semibold mb-2 block">{{ progressMode.label }}</span>
+                <div class="flex items-center gap-4">
+                  <progress class="progress progress-primary w-full" :value="progressPercent" max="100"></progress>
+                  <span class="font-bold shrink-0">{{ progressPercent }}%</span>
+                </div>
+                <div class="flex justify-between text-xs mt-1 opacity-70">
+                  <span>{{ validatedProgressValue }} / {{ game.progress_total }} {{ progressMode.defaultUnit }}</span>
+                  <span v-if="remainingCount > 0">Nedostaje: {{ remainingCount }}</span>
+                  <span v-else class="text-success font-bold">Završeno!</span>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-sm opacity-70 font-semibold mb-2 block">Bilješke</span>
+                <div v-if="game.notes" class="bg-base-300 rounded-lg p-4 italic text-sm">
+                  {{ game.notes }}
+                </div>
+                <div v-else class="text-sm opacity-50 italic">
+                  Nemaš bilješka za ovu igru.
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Screenshots -->
+          <div v-if="screenshots.length > 0" class="card bg-base-200 shadow-xl">
+            <div class="card-body p-4 sm:p-6">
+              <h3 class="card-title text-xl mb-4 border-b border-base-300 pb-2">Slike igre</h3>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div v-for="(screenshot, index) in screenshots" :key="index" class="relative">
+                  <img 
+                    :src="screenshot" 
+                    :alt="`Screenshot ${index + 1}`" 
+                    class="w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity object-cover aspect-video"
+                    @click="openScreenshotModal(index)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <div class="flex-1">
-          <div class="card bg-base-200 shadow-xl h-full">
-            <div class="mt-8">
-              <h2 class="text-2xl font-bold mb-4 ml-4">Dodatne informacije</h2>
+        <!-- Right Column: API Info, Groups, Series -->
+        <div class="flex flex-col gap-6">
 
-              <div class="card bg-base-200 shadow-xl">
-                <div class="card-body">
-                  <div class="grid grid-cols-1 gap-4">
-                    <div>
-                      <h3 class="text-lg font-bold">Opis</h3>
-                      <p>{{ game.description || game.notes || 'Nema opisa.' }}</p>
-                    </div>
+          <!-- Groups -->
+          <div class="card bg-base-200 shadow-xl">
+            <div class="card-body p-4 sm:p-6">
+              <h3 class="card-title text-xl mb-4 border-b border-base-300 pb-2">Kolekcije</h3>
+              <div v-if="gameGroups.length === 0" class="text-sm opacity-70 mb-2">Nema dodanih grupa.</div>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span v-for="gg in gameGroups" :key="gg.id" class="badge badge-outline">
+                  <router-link :to="`/groups/${gg.groups?.id}`" class="link link-hover">{{ gg.groups?.name }}</router-link>
+                  <button class="ml-2 text-error" @click="removeFromGroup(gg.groups?.id)">✕</button>
+                </span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <select v-model="newGroupId" class="select select-bordered select-sm w-full">
+                  <option value="" disabled>Odaberi grupu</option>
+                  <option v-for="g in allGroups" :key="g.id" :value="g.id">{{ g.name }} ({{ g.type }})</option>
+                </select>
+                <button class="btn btn-sm btn-primary w-full" @click="assignToGroup">Dodaj u grupu</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- API Info -->
+          <div class="card bg-base-200 shadow-xl">
+            <div class="card-body p-4 sm:p-6">
+              <h3 class="card-title text-xl mb-4 border-b border-base-300 pb-2">Informacije</h3>
+              <div class="flex flex-col gap-4">
+                <div v-if="game.metacritic_score" class="flex items-center gap-4 bg-base-300 p-3 rounded-lg w-full justify-between">
+                  <span class="font-bold">Metacritic</span>
+                  <div class="radial-progress font-bold text-lg" 
+                    :class="getMetacriticColorClass(game.metacritic_score)"
+                    :style="`--value:${game.metacritic_score || 0}; --size:4rem;`" 
+                    :aria-valuenow="game.metacritic_score" 
+                    role="progressbar">{{ game.metacritic_score }}</div>
+                </div>
+                <p v-if="getPublishers()" class="text-sm"><strong>Izdavač:</strong><br/>{{ getPublishers() }}</p>
+                
+                <div v-if="game.esrb_rating" class="text-sm flex flex-col gap-1">
+                  <strong>ESRB:</strong>
+                  <img v-if="game.esrb_rating == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="w-12 h-auto" />
+                  <img v-else-if="game.esrb_rating == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="w-12 h-auto" />
+                  <img v-else-if="game.esrb_rating == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="w-12 h-auto" />
+                  <img v-else-if="game.esrb_rating == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="w-12 h-auto" />
+                  <img v-else-if="game.esrb_rating == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="w-12 h-auto" />
+                  <span v-else>{{ game.esrb_rating }}</span>
+                </div>
+
+                <div v-if="game.description" class="mt-2">
+                  <h4 class="font-bold mb-1 text-sm">Opis:</h4>
+                  <p class="text-xs opacity-80 leading-relaxed">{{ game.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Series -->
+          <div v-if="seriesGames.length > 0" class="card bg-base-200 shadow-xl">
+            <div class="card-body p-4 sm:p-6">
+              <h3 class="card-title text-xl mb-4 border-b border-base-300 pb-2">Serija igara</h3>
+              <div class="flex flex-col gap-3">
+                <div v-if="previousGame" class="flex gap-3 items-center bg-base-300 p-2 rounded-lg cursor-pointer hover:bg-base-300/80 transition-colors">
+                  <img :src="previousGame.background_image || 'https://placehold.co/100x100?text=No+Image'" class="w-16 h-16 object-cover rounded" />
+                  <div>
+                    <h4 class="text-sm font-bold leading-tight">{{ previousGame.name }}</h4>
+                    <p class="text-xs opacity-60">Prethodna</p>
                   </div>
-
-                  <div class="mt-6" v-if="seriesGames.length > 0">
-                    <h3 class="text-lg font-bold mb-2">Serija igara</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
-                      <div v-if="previousGame" class="card bg-base-100 shadow-sm">
-                        <figure class="px-4 pt-4">
-                          <img 
-                            :src="previousGame.background_image || 'https://placehold.co/300x200?text=No+Image'" 
-                            :alt="previousGame.name" 
-                            class="rounded-lg w-full h-32 object-cover"
-                          />
-                        </figure>
-                        <div class="card-body p-4">
-                          <h4 class="card-title text-sm">{{ previousGame.name }}</h4>
-                          <p class="text-xs text-gray-500">Prethodna igra • {{ formatDate(previousGame.released) }}</p>
-                        </div>
-                      </div>
-                      
-                      <div v-if="nextGame" class="card bg-base-100 shadow-sm">
-                        <figure class="px-4 pt-4">
-                          <img 
-                            :src="nextGame.background_image || 'https://placehold.co/300x200?text=No+Image'" 
-                            :alt="nextGame.name" 
-                            class="rounded-lg w-full h-32 object-cover"
-                          />
-                        </figure>
-                        <div class="card-body p-4">
-                          <h4 class="card-title text-sm">{{ nextGame.name }}</h4>
-                          <p class="text-xs text-gray-500">Sljedeća igra • {{ formatDate(nextGame.released) }}</p>
-                        </div>
-                      </div>
-
-                      <div v-if="!previousGame" class="card bg-base-100 shadow-sm">
-                        <div class="card-body p-4 text-center">
-                          <p class="text-sm text-gray-500">Nema prethodne igre u seriji</p>
-                        </div>
-                      </div>
-                      
-                      <div v-if="!nextGame" class="card bg-base-100 shadow-sm">
-                        <div class="card-body p-4 text-center">
-                          <p class="text-sm text-gray-500">Ova igra je najnovija u seriji! 😊</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-6" v-if="screenshots.length > 0">
-                    <h3 class="text-lg font-bold mb-2">Slike igre</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div v-for="(screenshot, index) in screenshots" :key="index" class="relative">
-                        <img 
-                          :src="screenshot" 
-                          :alt="`Screenshot ${index + 1}`" 
-                          class="w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                          @click="openScreenshotModal(index)"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
-                    <div class="modal-box max-w-5xl">
-                      <div class="relative">
-                        <img :src="screenshots[selectedScreenshotIndex]" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
-                        
-                        <button 
-                          v-if="screenshots.length > 1"
-                          @click="previousScreenshot" 
-                          class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
-                        >
-                          ❮
-                        </button>
-                        
-                        <button 
-                          v-if="screenshots.length > 1"
-                          @click="nextScreenshot" 
-                          class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
-                        >
-                          ❯
-                        </button>
-                        
-                        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                          {{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}
-                        </div>
-                      </div>
-                      
-                      <div class="modal-action">
-                        <button @click="closeScreenshotModal" class="btn">Zatvori</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-6">
-                    <h3 class="text-lg font-bold mb-2">Grupe</h3>
-                    <div v-if="gameGroups.length === 0" class="text-sm opacity-70">Nema dodanih grupa.</div>
-                    <div class="flex flex-wrap gap-2 mb-3">
-                      <span v-for="gg in gameGroups" :key="gg.id" class="badge badge-outline">
-                        <router-link :to="`/groups/${gg.groups?.id}`" class="link link-hover">{{ gg.groups?.name }}</router-link>
-                        <button class="ml-2 text-error" @click="removeFromGroup(gg.groups?.id)">✕</button>
-                      </span>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                      <select v-model="newGroupId" class="select select-bordered select-sm w-full max-w-xs">
-                        <option value="" disabled>Odaberi grupu</option>
-                        <option v-for="g in allGroups" :key="g.id" :value="g.id">{{ g.name }} ({{ g.type }})</option>
-                      </select>
-                      <button class="btn btn-sm btn-primary" @click="assignToGroup">Dodaj</button>
-                    </div>
+                </div>
+                <div v-if="nextGame" class="flex gap-3 items-center bg-base-300 p-2 rounded-lg cursor-pointer hover:bg-base-300/80 transition-colors">
+                  <img :src="nextGame.background_image || 'https://placehold.co/100x100?text=No+Image'" class="w-16 h-16 object-cover rounded" />
+                  <div>
+                    <h4 class="text-sm font-bold leading-tight">{{ nextGame.name }}</h4>
+                    <p class="text-xs opacity-60">Sljedeća</p>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Screenshot modal (keep existing logic) -->
+      <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
+        <div class="modal-box max-w-5xl">
+          <div class="relative">
+            <img :src="screenshots[selectedScreenshotIndex]" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
+            
+            <button 
+              v-if="screenshots.length > 1"
+              @click="previousScreenshot" 
+              class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
+            >
+              ❮
+            </button>
+            
+            <button 
+              v-if="screenshots.length > 1"
+              @click="nextScreenshot" 
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
+            >
+              ❯
+            </button>
+            
+            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+              {{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}
+            </div>
+          </div>
+          
+          <div class="modal-action">
+            <button @click="closeScreenshotModal" class="btn">Zatvori</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-else>
-      <div class="card bg-base-200 shadow-xl">
-        <div class="card-body">
-          <h2 class="text-2xl font-bold mb-6 text-center">Uredi igru</h2>
-          
-          <form @submit.prevent="saveGame" class="game-form">
-            <div class="form-control mb-6">
+    <div v-if="editMode" class="modal modal-open">
+      <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-2xl mb-4">Uredi igru</h3>
+        
+        <div class="mb-6">
+          <div class="flex gap-4 mb-4">
+            <img 
+              :src="game.background_image || game.image_url || 'https://placehold.co/150x200?text=No+Image'" 
+              :alt="game.title" 
+              class="w-24 h-32 object-cover rounded"
+            />
+            <div>
+              <h4 class="text-xl font-bold">{{ game.title }}</h4>
+              <p class="text-sm opacity-70" v-if="game.release_date">{{ formatDate(game.release_date) }}</p>
+              <p class="text-sm"><strong>Platforma:</strong> {{ game.platform }}</p>
+            </div>
+          </div>
+        </div>
+
+        <form @submit.prevent="saveGame" class="space-y-6 game-form">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-control">
               <label class="label font-medium">Naziv</label>
               <input type="text" v-model="editForm.title" class="input input-bordered" required />
             </div>
             
-            <div class="form-control mb-6">
+            <div class="form-control">
               <label class="label font-medium">Platforma</label>
               <select v-model="editForm.platform" class="select select-bordered" required>
                 <option value="" disabled>Odaberi platformu</option>
@@ -275,14 +309,14 @@
               </select>
             </div>
 
-            <div class="form-control mb-6">
+            <div class="form-control">
               <label class="label font-medium">Vrijeme igranja (sati)</label>
               <input type="number" v-model.number="editForm.play_time" class="input input-bordered" min="0" />
             </div>
 
-            <div class="form-control mb-6">
+            <div class="form-control">
               <label class="label font-medium">Ocjena (1-5)</label>
-              <div class="rating rating-lg">
+              <div class="rating rating-sm sm:rating-md lg:rating-lg pt-3">
                 <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model.number="editForm.rating" />
                 <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model.number="editForm.rating" />
                 <input type="radio" name="edit-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model.number="editForm.rating" />
@@ -291,7 +325,7 @@
               </div>
             </div>
 
-            <div class="form-control mb-6">
+            <div class="form-control">
               <label class="label font-medium">Status</label>
               <select v-model="editForm.status" class="select select-bordered">
                 <option value="" disabled>Odaberi status</option>
@@ -299,59 +333,60 @@
               </select>
             </div>
 
-            <div class="form-control mb-6">
+            <div class="form-control">
               <label class="label font-medium">Game Progression</label>
               <select v-model="editForm.progress_mode" class="select select-bordered">
                 <option value="" disabled>Odaberi način praćenja</option>
                 <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
               </select>
-              <p v-if="selectedProgressMode" class="text-xs opacity-70 mt-1">
-                <span v-if="selectedProgressMode.key.includes('achievements') || selectedProgressMode.key.includes('trophies')">
-                  ✨ Broj {{ selectedProgressMode.defaultUnit }} automatski dohvaćen iz RAWG baze. Ako je prazan, unesi ga ispod.
-                </span>
-                <span v-else>
-                  Unesi vrijednosti prema načinu praćenja (postotak 0-100, vrijednost/ukupno za omjer, #rang za leaderboard).
-                </span>
-              </p>
             </div>
 
-            <template v-if="selectedProgressMode">
-              <!-- SAMO ZA ACHIEVEMENTS/TROPHIES - Posebna sekcija s jasnom uputom i alert-om -->
-              <div v-if="selectedProgressMode.key.includes('achievements') || selectedProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4 mb-6">
-                <div class="alert alert-warning text-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
-                  <div>
-                    <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
-                    <div class="text-xs">Ako je prazan, unesi broj koji si provjeiro ručno.</div>
-                  </div>
-                </div>
+            <div class="form-control">
+              <label class="label font-medium">Datum početka</label>
+              <input type="date" v-model="editForm.start_date" class="input input-bordered" />
+            </div>
+            
+            <div class="form-control">
+              <label class="label font-medium">Datum završetka</label>
+              <input type="date" v-model="editForm.end_date" class="input input-bordered" />
+            </div>
+          </div>
 
+          <template v-if="selectedProgressMode">
+            <!-- SAMO ZA ACHIEVEMENTS/TROPHIES - Posebna sekcija s jasnom uputom i alert-om -->
+            <div v-if="selectedProgressMode.key.includes('achievements') || selectedProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4">
+              <div class="alert alert-warning text-sm mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
+                <div>
+                  <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
+                  <div class="text-xs">Provjerite ukupan broj {{ selectedProgressMode.defaultUnit }}.</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
                 <div class="form-control">
-                  <label class="label font-medium">
+                  <label class="label font-medium text-sm">
                     Ukupan broj {{ selectedProgressMode.defaultUnit }}
                   </label>
                   <input 
                     type="number" 
                     v-model.number="editForm.progress_total" 
-                    class="input input-bordered input-lg font-bold" 
+                    class="input input-bordered font-bold" 
                     min="0"
                     placeholder="npr. 50"
                   />
-                  <label class="label">
-                    <span class="text-xs opacity-70">Koliko {{ selectedProgressMode.defaultUnit }} ima ukupno u igri?</span>
-                  </label>
                 </div>
 
                 <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
                 <div class="form-control">
-                  <label class="label font-medium">
-                    Broj {{ selectedProgressMode.defaultUnit }} koje si ti ostvario/a
+                  <label class="label font-medium text-sm">
+                    Ostvareni {{ selectedProgressMode.defaultUnit }}
                   </label>
                   <input 
                     type="number" 
                     v-model.number="editForm.progress_value" 
-                    class="input input-bordered input-lg font-bold text-success" 
+                    class="input input-bordered font-bold text-success" 
                     min="0"
                     :max="editForm.progress_total || undefined"
                     placeholder="npr. 25"
@@ -362,147 +397,124 @@
                       <strong v-if="editForm.progress_total > 0">
                         {{ Math.round((editForm.progress_value / editForm.progress_total) * 100) }}%
                       </strong>
-                      <span v-else class="text-warning">postavi ukupan broj prvi</span>
+                      <span v-else class="text-warning">postavi ukupno</span>
                     </span>
                   </label>
                 </div>
 
                 <!-- JEDINICA -->
                 <div class="form-control">
-                  <label class="label font-medium">Jedinica</label>
+                  <label class="label font-medium text-sm">Jedinica</label>
                   <input type="text" v-model="editForm.progress_unit" class="input input-bordered" readonly />
                 </div>
               </div>
+            </div>
 
-              <!-- POKEDEX - Dvije vrijednosti bez alert-a (ne dohvaća se iz RAWG) -->
-              <div v-else-if="selectedProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4 mb-6">
-                <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
-                <div class="form-control">
-                  <label class="label font-medium">
-                    Koliko pokemona si ti uhvatio/a
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="editForm.progress_value" 
-                    class="input input-bordered input-lg font-bold text-success" 
-                    min="0"
-                    :max="editForm.progress_total || undefined"
-                    placeholder="npr. 150"
-                  />
-                  <label class="label">
-                    <span class="text-xs opacity-70">Koliko pokemona si već uhvatio/a u ovoj igri?</span>
-                  </label>
-                </div>
-
+            <!-- POKEDEX - Dvije vrijednosti bez alert-a (ne dohvaća se iz RAWG) -->
+            <div v-else-if="selectedProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- KOLIKO POKEMONA IMA U IGRI -->
                 <div class="form-control">
-                  <label class="label font-medium">
-                    Koliko pokemona ima u igri
+                  <label class="label font-medium text-sm">
+                    Ukupno pokemona u igri
                   </label>
                   <input 
                     type="number" 
                     v-model.number="editForm.progress_total" 
-                    class="input input-bordered input-lg font-bold" 
+                    class="input input-bordered font-bold" 
                     min="0"
                     placeholder="npr. 251"
                   />
-                  <label class="label">
-                    <span class="text-xs opacity-70">Ukupno koliko različitih pokemona je u ovoj igri?</span>
-                  </label>
                 </div>
-
-                <!-- PROGRESS % -->
+                
+                <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
                 <div class="form-control">
+                  <label class="label font-medium text-sm">
+                    Uhvaćenih pokemona
+                  </label>
+                  <input 
+                    type="number" 
+                    v-model.number="editForm.progress_value" 
+                    class="input input-bordered font-bold text-success" 
+                    min="0"
+                    :max="editForm.progress_total || undefined"
+                    placeholder="npr. 150"
+                  />
                   <label class="label">
                     <span class="text-xs opacity-70">
                       Napredak: 
                       <strong v-if="editForm.progress_total > 0">
                         {{ Math.round((editForm.progress_value / editForm.progress_total) * 100) }}%
                       </strong>
-                      <span v-else class="text-warning">postavi ukupan broj pokemona prvi</span>
+                      <span v-else class="text-warning">postavi ukupno</span>
                     </span>
                   </label>
                 </div>
 
                 <!-- JEDINICA -->
                 <div class="form-control">
-                  <label class="label font-medium">Jedinica</label>
+                  <label class="label font-medium text-sm">Jedinica</label>
                   <input type="text" v-model="editForm.progress_unit" class="input input-bordered" readonly />
                 </div>
               </div>
-
-              <!-- ZA OSTALE PROGRESS MODE-OVE -->
-              <template v-else>
-                <div class="form-control mb-6" v-if="selectedProgressMode.kind === 'count' || selectedProgressMode.kind === 'rank'">
-                  <label class="label font-medium">Vrijednost</label>
-                  <input type="number" v-model.number="editForm.progress_value" class="input input-bordered" min="0" />
-                </div>
-                <div class="form-control mb-6" v-if="selectedProgressMode.requiresTotal">
-                  <label class="label font-medium">Ukupno</label>
-                  <input type="number" v-model.number="editForm.progress_total" class="input input-bordered" min="0" />
-                </div>
-                <div class="form-control mb-6">
-                  <label class="label font-medium">Jedinica</label>
-                  <input type="text" v-model="editForm.progress_unit" class="input input-bordered" :placeholder="selectedProgressMode.defaultUnit || 'unit'" readonly />
-                </div>
-              </template>
-            </template>
-
-            <div class="form-control mb-6">
-              <label class="label font-medium">Datum početka</label>
-              <input type="date" v-model="editForm.start_date" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control mb-6">
-              <label class="label font-medium">Datum završetka</label>
-              <input type="date" v-model="editForm.end_date" class="input input-bordered" />
-            </div>
-            
-            <div class="form-control mb-6">
-              <label class="label font-medium">Bilješke</label>
-              <textarea v-model="editForm.notes" class="textarea textarea-bordered h-32"></textarea>
             </div>
 
-            <div class="divider mt-6">Grupe/Kolekcije</div>
-
-            <div class="form-control mb-6">
-              <label class="label cursor-pointer justify-start gap-4">
-                <input type="checkbox" v-model="showGroupSelector" class="checkbox" />
-                <span class="label-text font-medium">Dodaj u grupe/kolekcije</span>
-              </label>
+            <!-- ZA OSTALE PROGRESS MODE-OVE -->
+            <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-300/30 p-4 rounded-box border border-base-300">
+              <div class="form-control" v-if="selectedProgressMode.kind === 'count' || selectedProgressMode.kind === 'rank'">
+                <label class="label font-medium text-sm">Vrijednost</label>
+                <input type="number" v-model.number="editForm.progress_value" class="input input-bordered" min="0" />
+              </div>
+              <div class="form-control" v-if="selectedProgressMode.requiresTotal">
+                <label class="label font-medium text-sm">Ukupno</label>
+                <input type="number" v-model.number="editForm.progress_total" class="input input-bordered" min="0" />
+              </div>
+              <div class="form-control">
+                <label class="label font-medium text-sm">Jedinica</label>
+                <input type="text" v-model="editForm.progress_unit" class="input input-bordered" :placeholder="selectedProgressMode.defaultUnit || 'unit'" readonly />
+              </div>
             </div>
+          </template>
 
-            <div class="form-control mb-6" v-if="showGroupSelector">
-              <label class="label font-medium">Odaberi grupe</label>
+          <!-- Grupe/Kolekcije -->
+          <div class="form-control bg-base-200/50 p-4 rounded-box border border-base-300">
+            <label class="label cursor-pointer justify-start gap-4 mb-2">
+              <input type="checkbox" v-model="showGroupSelector" class="checkbox" />
+              <span class="label-text font-medium text-base">Dodaj u kolekcije</span>
+            </label>
+
+            <div v-if="showGroupSelector" class="mt-2">
               <div v-if="groupsLoading" class="text-sm opacity-70">Učitavam grupe...</div>
               <div v-else-if="allGroups.length === 0" class="text-sm opacity-70">Nema dostupnih grupa. Kreiraj prvu!</div>
-              <div v-else class="space-y-2">
-                <label v-for="group in allGroups" :key="group.id" class="label cursor-pointer flex items-center justify-start gap-3 p-3 border border-base-300 rounded-lg hover:bg-base-300/30 transition-colors">
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <label v-for="group in allGroups" :key="group.id" class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-base-300 bg-base-100 hover:border-primary transition-colors">
                   <input 
                     type="checkbox" 
-                    class="checkbox checkbox-sm" 
+                    class="checkbox checkbox-primary checkbox-sm" 
                     :checked="editForm.group_ids.includes(group.id)"
                     @change="toggleGroupId(group.id)"
                   />
-                  <span class="label-text flex-1">
-                    <span class="font-medium">{{ group.name }}</span>
-                    <span class="text-xs opacity-70 block">({{ group.type }})</span>
-                  </span>
+                  <span class="text-sm font-medium">{{ group.name }} <span class="opacity-60 font-normal text-xs ml-1">({{ group.type }})</span></span>
                 </label>
               </div>
             </div>
-
-            <div class="flex gap-4 mt-8 justify-center">
-              <button type="submit" class="btn btn-primary" :disabled="saveLoading">
-                <span v-if="saveLoading" class="loading loading-spinner"></span>
-                <span v-else>Spremi promjene</span>
-              </button>
-              <button type="button" @click="cancelEdit" class="btn btn-secondary">
-                Odustani
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+          
+          <div class="form-control">
+            <label class="label font-medium">Bilješke</label>
+            <textarea v-model="editForm.notes" class="textarea textarea-bordered h-24 w-full"></textarea>
+          </div>
+          
+          <div class="modal-action">
+            <button type="submit" class="btn btn-primary" :disabled="saveLoading">
+              <span v-if="saveLoading" class="loading loading-spinner"></span>
+              <span v-else>Spremi promjene</span>
+            </button>
+            <button type="button" @click="cancelEdit" class="btn btn-secondary">
+              Odustani
+            </button>
+          </div>
+        </form>
       </div>
     </div>
     <div v-if="showDeleteModal" class="modal modal-open">

@@ -208,6 +208,10 @@ export default {
 
     const resetAllDropdowns = () => {
       try {
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+        
         if (mobileMenuLabel.value) {
           mobileMenuLabel.value.removeAttribute('tabindex');
           setTimeout(() => {
