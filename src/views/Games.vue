@@ -76,8 +76,9 @@
         <div class="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
           <div class="flex flex-nowrap gap-2 min-w-max">
             <button class="btn btn-sm" :class="activeFilter === 'all' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('all')">Sve</button>
-            <button class="btn btn-sm" :class="(activeFilter === 'playing' || activeFilter === 'current') ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('playing')">Igram</button>
+            <button class="btn btn-sm" :class="activeFilter === 'playing' || activeFilter === 'current' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('playing')">Igram</button>
             <button class="btn btn-sm" :class="activeFilter === 'completed' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('completed')">Završeno</button>
+            <button class="btn btn-sm" :class="activeFilter === 'paused' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('paused')">Pauzirano</button>
             <button class="btn btn-sm" :class="activeFilter === 'backlog' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('backlog')">Backlog</button>
             <button class="btn btn-sm" :class="activeFilter === 'dropped' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('dropped')">Napušteno</button>
             <button class="btn btn-sm" :class="activeFilter === 'wishlist' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('wishlist')">Wishlist</button>
@@ -173,12 +174,12 @@
           </svg>
         </div>
         <h3 class="text-xl font-bold mb-2">
-          {{ activeFilter.value !== 'all' ? 'Nema igara za odabrani filter' : 'Nema igara za prikaz' }}
+          {{ activeFilter !== 'all' ? 'Nema igara za odabrani filter' : 'Nema igara za prikaz' }}
         </h3>
         <p class="text-gray-400 mb-6">
-          {{ activeFilter.value !== 'all' ? 'Pokušaj promijeniti filter' : 'Dodaj svoju prvu igru da bi se prikazala ovdje' }}
+          {{ activeFilter !== 'all' ? 'Pokušaj promijeniti filter' : 'Dodaj svoju prvu igru da bi se prikazala ovdje' }}
         </p>
-        <button v-if="activeFilter.value !== 'all'" @click="filterGames('all')" class="btn btn-outline mr-2">
+        <button v-if="activeFilter !== 'all'" @click="filterGames('all')" class="btn btn-outline mr-2">
           Poništi filter
         </button>
         <router-link to="/add-game" class="btn btn-primary">
@@ -310,6 +311,18 @@ export default {
           break;
         case 'completed':
           filtered = games.value.filter(game => game.status === 'completed');
+          break;
+        case 'backlog':
+          filtered = games.value.filter(game => game.status === 'backlog');
+          break;
+        case 'dropped':
+          filtered = games.value.filter(game => game.status === 'dropped');
+          break;
+        case 'paused':
+          filtered = games.value.filter(game => game.status === 'paused');
+          break;
+        case 'wishlist':
+          filtered = games.value.filter(game => game.status === 'wishlist');
           break;
         case 'rated-5':
           filtered = games.value.filter(game => game.rating === 5);

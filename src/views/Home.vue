@@ -17,13 +17,8 @@
 
     <!-- Logged in korisnici -->
     <template v-if="userStore.isLoggedIn">
-      <!-- Stats Strip -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
-        <router-link to="/library" class="stat bg-base-200 rounded-box shadow hover:bg-base-300 transition-colors cursor-pointer p-3 sm:p-4">
-          <div class="stat-title text-xs sm:text-sm">Trenutno igram</div>
-          <div class="stat-value text-primary text-xl sm:text-2xl lg:text-3xl">{{ currentlyPlaying.length }}</div>
-          <div class="stat-desc text-xs mt-1">Aktivne igre</div>
-        </router-link>
+      <!-- Stats Strip (3 statova) -->
+      <div class="grid grid-cols-3 gap-2 mb-6">
         <router-link to="/library" class="stat bg-base-200 rounded-box shadow hover:bg-base-300 transition-colors cursor-pointer p-3 sm:p-4">
           <div class="stat-title text-xs sm:text-sm">Ukupno igara</div>
           <div class="stat-value text-secondary text-xl sm:text-2xl lg:text-3xl">{{ totalGames }}</div>
@@ -48,11 +43,15 @@
           <router-link v-if="currentlyPlaying.length > 0" to="/library?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
         </div>
 
-        <div v-if="currentlyPlaying.length === 0" class="alert alert-info">
-          <span>Trenutno nisi u nijednoj igri.</span>
+        <!-- Skeleton loading -->
+        <div v-if="userGamesLoading" :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
+          <div v-for="n in 3" :key="n" class="skeleton rounded-2xl" style="aspect-ratio: 3/4;"></div>
+        </div>
+
+        <div v-else-if="currentlyPlaying.length === 0" class="alert alert-info">
+          <span>Trenutno ne igraš niti jednu igru.</span>
         </div>
         <div v-else>
-          <!-- Responsive Grid -->
           <div :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
             <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)" class="cursor-pointer">
               <GameCard :game="game" />
@@ -67,7 +66,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-secondary" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
           </svg>
-          Izvučeno iz Backloga
+          Jump back in.
         </h2>
         <div class="card bg-base-200 shadow-xl overflow-hidden relative" :style="todaysPick.image_url ? `background-image: url(${todaysPick.image_url}); background-position: center; background-size: cover;` : ''">
           <div v-if="todaysPick.image_url" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></div>
@@ -81,7 +80,7 @@
             <div class="flex-grow text-center sm:text-left">
               <div class="badge badge-secondary mb-3 shadow-sm border-none font-bold uppercase tracking-wider text-xs p-3">Today's Pick</div>
               <h3 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 text-base-content drop-shadow-md">{{ todaysPick.title }}</h3>
-              <p class="opacity-80 text-sm sm:text-base max-w-xl mb-6 font-medium">{{ todaysPick.platform }} • U backlogu</p>
+              <p class="opacity-80 text-sm sm:text-base max-w-xl mb-6 font-medium">{{ todaysPick.platform }} • {{ todaysPick._statusLabel }}</p>
               <div class="card-actions justify-center sm:justify-start">
                 <button @click="navigateToUserGame(todaysPick.id)" class="btn btn-primary shadow-xl hover:scale-105 transition-transform text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -173,6 +172,7 @@ export default {
     const themeStore = useThemeStore();
 
     const loading = ref(true);
+    const userGamesLoading = ref(true);
     const currentlyPlaying = ref([]);
     const todaysPick = ref(null);
     const totalGames = ref(0);
@@ -200,11 +200,15 @@ export default {
         if (allGames) {
           currentlyPlaying.value = allGames.filter(g => g.status === 'playing');
           
-          // Izvuci nasumičnu igru iz backloga
-          const backlogGames = allGames.filter(g => g.status === 'backlog');
-          if (backlogGames.length > 0) {
-            const randomIndex = Math.floor(Math.random() * backlogGames.length);
-            todaysPick.value = backlogGames[randomIndex];
+          // Izvuci nasumičnu igru iz backloga ili pauzirano
+          const pickCandidates = allGames.filter(g => g.status === 'backlog' || g.status === 'paused');
+          if (pickCandidates.length > 0) {
+            const randomIndex = Math.floor(Math.random() * pickCandidates.length);
+            const picked = pickCandidates[randomIndex];
+            todaysPick.value = {
+              ...picked,
+              _statusLabel: picked.status === 'paused' ? 'Pauzirano' : 'U backlogu'
+            };
           } else {
             todaysPick.value = null;
           }
@@ -215,6 +219,8 @@ export default {
         }
       } catch (error) {
         console.error('Greška pri dohvaćanju korisničkih igara:', error);
+      } finally {
+        userGamesLoading.value = false;
       }
     };
 
@@ -259,6 +265,7 @@ export default {
       userStore,
       cardSizeStore,
       loading,
+      userGamesLoading,
       currentlyPlaying,
       todaysPick,
       totalGames,
