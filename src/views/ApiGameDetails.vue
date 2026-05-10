@@ -35,7 +35,7 @@
 
       <div class="flex flex-col md:flex-row gap-4 mb-6">
         <div class="flex-none">
-          <div class="card bg-base-200 shadow-xl" style="width: 300px;">
+          <div class="card bg-base-200 shadow-xl w-full md:w-[300px]">
             <figure>
               <img :src="game.background_image || 'https://placehold.co/600x400?text=No+Image'" :alt="game.name" class="w-full h-auto" />
             </figure>
@@ -77,8 +77,12 @@
                 </p>
               </div>
 
-              <div class="card-actions justify-end mt-4">
-                <button @click="openAddToCollectionModal" class="btn btn-primary">
+              <div class="flex flex-nowrap gap-2 mt-4 justify-between">
+                <button @click="shareGame" class="btn btn-sm flex-1 btn-ghost border border-base-300 gap-1 px-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                  Podijeli
+                </button>
+                <button @click="openAddToCollectionModal" class="btn btn-primary btn-sm flex-1 px-1">
                   Dodaj u kolekciju
                 </button>
               </div>
@@ -493,8 +497,9 @@
         </form>
       </div>
     </div>
-    <div v-if="toast.show" class="toast toast-top toast-end">
-      <div class="alert" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
+    <div v-if="toast.show" class="toast toast-top toast-end z-50">
+      <div class="alert shadow-lg" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
+        <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         <span>{{ toast.message }}</span>
       </div>
     </div>
@@ -679,6 +684,26 @@ export default {
       toast.type = type;
       toast.show = true;
       setTimeout(() => toast.show = false, 3000);
+    };
+    
+    const shareGame = async () => {
+      if (!game.value) return;
+      try {
+        const shareData = {
+          title: game.value.name,
+          image: game.value.background_image || 'https://placehold.co/1200x400?text=No+Image',
+          notes: game.value.description_raw || '',
+          apiId: game.value.id,
+          id: null,
+          isLibrary: false
+        };
+        const encoded = btoa(encodeURIComponent(JSON.stringify(shareData)));
+        const shareUrl = `${window.location.origin}/shared?data=${encoded}`;
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('Link je kopiran u međuspremnik!');
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
     };
     
     const previousGame = computed(() => {
@@ -1021,7 +1046,8 @@ export default {
       saveToCollection,
       toggleGroupId,
       toast,
-      showToast
+      showToast,
+      shareGame
     };
   }
 };

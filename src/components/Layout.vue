@@ -1,6 +1,6 @@
 <template>
   <div class="app-container min-h-screen flex flex-col bg-base-100">
-    <header class="bg-base-200 sticky top-0 z-50 shadow-lg">
+    <header v-if="isLoggedIn" class="bg-base-200 sticky top-0 z-50 shadow-lg">
       <div class="container mx-auto px-2 sm:px-4">
         <div class="navbar py-2 sm:py-3">
           <div class="navbar-start">
@@ -90,12 +90,13 @@
       </div>
     </header>
 
-    <main class="container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-full pb-28 lg:pb-0">
+    <main :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-full pb-28 lg:pb-0' : 'flex-grow'">
       <slot />
     </main>
     
     <!-- MOBILNA NAVIGACIJA -->
     <nav
+      v-if="isLoggedIn"
       class="btm-nav lg:hidden z-50 fixed left-0 right-0 bg-base-200/90 backdrop-blur border border-base-300 grid grid-flow-col auto-cols-fr transition-all duration-300 ease-in-out overflow-visible p-2 gap-2 items-center"
       :class="isCompact ? 'mx-3 rounded-[32px] shadow-2xl h-14' : 'mx-4 rounded-[32px] shadow-2xl h-20'"
       :style="navStyle"
@@ -155,7 +156,7 @@
         </div>
       </router-link>
     </nav>
-    <div>
+    <div v-if="isLoggedIn">
       <div class="flex items-center gap-2 pl-2">
         <router-link to="/">
           <img src="../assets/gamenote.png" class="h-22 w-auto" alt="Gamenote">

@@ -48,8 +48,12 @@
            :style="`background-image: url(${game.background_image || game.image_url || 'https://placehold.co/1200x400?text=No+Image'}); background-position: center; background-size: cover;`">
         <div class="hero-overlay bg-gradient-to-t from-base-100 to-transparent opacity-90"></div>
         <div class="hero-content text-neutral-content w-full h-full flex flex-col justify-between items-start !p-4 sm:!p-8">
-          <div class="flex w-full justify-start items-start">
+          <div class="flex w-full justify-between items-start">
             <router-link to="/library" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">❮ Natrag</router-link>
+            <button @click="shareGame" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              Podijeli
+            </button>
           </div>
           <div class="mt-auto w-full">
             <div class="flex flex-wrap gap-2 mb-2">
@@ -591,6 +595,12 @@
         </div>
       </div>
     </div>
+    <div v-if="toast.show" class="toast toast-top toast-end z-50">
+      <div class="alert alert-success shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{{ toast.message }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -628,6 +638,33 @@ export default {
     const newGroupId = ref('');
     const showGroupSelector = ref(false);
     const groupsLoading = ref(false);
+    const toast = reactive({ show: false, message: '' });
+
+    const showToast = (msg) => {
+      toast.message = msg;
+      toast.show = true;
+      setTimeout(() => { toast.show = false; }, 3000);
+    };
+
+    const shareGame = async () => {
+      if (!game.value) return;
+      try {
+        const shareData = {
+          title: game.value.title,
+          image: game.value.background_image || game.value.image_url,
+          notes: game.value.notes || '',
+          apiId: game.value.game_api_id,
+          id: game.value.id,
+          isLibrary: true
+        };
+        const encoded = btoa(encodeURIComponent(JSON.stringify(shareData)));
+        const shareUrl = `${window.location.origin}/shared?data=${encoded}`;
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('Link je kopiran u međuspremnik!');
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
+    };
     
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
@@ -1156,7 +1193,9 @@ export default {
       groupsLoading,
       assignToGroup,
       removeFromGroup,
-      toggleGroupId
+      toggleGroupId,
+      shareGame,
+      toast
     };
   }
 };

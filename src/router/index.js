@@ -12,6 +12,8 @@ import ThemeSettings from '../views/ThemeSettings.vue';
 import Groups from '../views/Groups.vue';
 import GroupDetails from '../views/GroupDetails.vue';
 import Importers from '../views/Importers.vue';
+import ResetPasswordView from '../views/ResetPasswordView.vue';
+import SharedGameView from '../views/SharedGameView.vue';
 
 
 const router = createRouter({
@@ -99,6 +101,11 @@ const router = createRouter({
       component: ThemeSettings
     },
     {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPasswordView
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       redirect: '/'
@@ -107,6 +114,11 @@ const router = createRouter({
       path: '/importers',
       name: 'importers',
       component: Importers
+    },
+    {
+      path: '/shared',
+      name: 'shared-game',
+      component: SharedGameView
     }
   ]
 });

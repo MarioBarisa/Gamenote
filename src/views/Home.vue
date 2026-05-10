@@ -1,23 +1,13 @@
-<!-- src/views/Home.vue -->
 <template>
   <div class="home">
-    <!-- Hero dio -->
-    <section v-if="!userStore.isLoggedIn" class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
-      <div class="text-center px-4">
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">Gamenote</h1>
-        <p class="text-lg sm:text-xl mb-6">Prati, dijeli i otkrivaj svoje omiljene videoigre</p>
-        <router-link to="/add-game" class="btn btn-primary btn-md sm:btn-lg">Dodaj svoju prvu igru</router-link>
-      </div>
-    </section>
+    <LandingView v-if="!userStore.isLoggedIn" />
 
-    <section v-if="userStore.isLoggedIn && themeStore.showNewsWidget"
-      class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
-      <gameN />
-    </section>
-
-    <!-- Logged in korisnici -->
     <template v-if="userStore.isLoggedIn">
-      <!-- Stats Strip (3 statova) -->
+      <section v-if="themeStore.showNewsWidget"
+        class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
+        <gameN />
+      </section>
+
       <div class="grid grid-cols-3 gap-2 mb-6">
         <router-link to="/library" class="stat bg-base-200 rounded-box shadow hover:bg-base-300 transition-colors cursor-pointer p-3 sm:p-4">
           <div class="stat-title text-xs sm:text-sm">Ukupno igara</div>
@@ -36,14 +26,12 @@
         </router-link>
       </div>
 
-      <!-- Trenutno igraš -->
       <section class="mb-8 sm:mb-12">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
           <h2 class="text-2xl sm:text-3xl font-bold">Trenutno igraš</h2>
           <router-link v-if="currentlyPlaying.length > 0" to="/library?filter=current" class="btn btn-sm btn-ghost">Prikaži sve</router-link>
         </div>
 
-        <!-- Skeleton loading -->
         <div v-if="userGamesLoading" :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
           <div v-for="n in 3" :key="n" class="skeleton rounded-2xl" style="aspect-ratio: 3/4;"></div>
         </div>
@@ -60,7 +48,6 @@
         </div>
       </section>
 
-      <!-- Backlog Today's Pick -->
       <section v-if="todaysPick" class="mb-8 sm:mb-12">
         <h2 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 flex items-center gap-3">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-secondary" viewBox="0 0 20 20" fill="currentColor">
@@ -94,56 +81,6 @@
         </div>
       </section>
     </template>
-    <!-- Popularne igre - za sve korisnike , RAWG API 
-    <section class="mb-8 sm:mb-12">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
-        <h2 class="text-2xl sm:text-3xl font-bold">Popularne igre (zadnja godina)</h2>
-        <a href="https://rawg.io" target="_blank" class="btn btn-sm btn-ghost">Powered by RAWG</a>
-      </div>
-      <div v-if="loading" class="flex justify-center py-8 sm:py-12">
-        <span class="loading loading-spinner loading-lg"></span>
-      </div>
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4 md:gap-6">
-        <div v-for="game in popularGames" :key="game.id" class="cursor-pointer" @click="navigateToApiGame(game.id)">
-          <div class="card bg-base-100 shadow-xl h-full">
-            <figure v-if="game.background_image" class="h-32 sm:h-40">
-              <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover">
-            </figure>
-            <div class="card-body p-2 sm:p-4">
-              <h3 class="card-title text-sm sm:text-md">{{ game.name }}</h3>
-              <p class="text-xs sm:text-sm opacity-70">
-                <span v-if="game.metacritic" class="badge badge-success text-xs">{{ game.metacritic }}% Metacritic</span>
-                <span v-else>Bez ocene</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>-->
-
-    <!-- Vratiti??? Nedavno objavljene - za sve korisnike, RAWG API 
-    <section class="mb-12">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-bold">Nedavno objavljene</h2>
-        <a href="https://rawg.io" target="_blank" class="btn btn-sm btn-ghost">Powered by RAWG</a>
-      </div>
-      <div v-if="loading" class="flex justify-center py-12">
-        <span class="loading loading-spinner loading-lg"></span>
-      </div>
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-        <div v-for="game in recentGames" :key="game.id" class="cursor-pointer" @click="navigateToApiGame(game.id)">
-          <div class="card bg-base-100 shadow-xl h-full">
-            <figure v-if="game.background_image" class="h-40">
-              <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover">
-            </figure>
-            <div class="card-body p-4">
-              <h3 class="card-title text-md">{{ game.name }}</h3>
-              <p class="text-sm opacity-70">Objavljeno: {{ formatDate(game.released) }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>-->
   </div>
 </template>
 
@@ -157,18 +94,19 @@ import { useGamesApi } from '../services/gamesApi';
 import { useThemeStore } from '../stores/theme';
 import GameCard from '../components/GameCard.vue';
 import gameN from '../components/gameN.vue';
+import LandingView from './LandingView.vue';
 
 export default {
   components: {
     GameCard,
-    gameN
+    gameN,
+    LandingView
   },
   setup() {
     const userStore = useUserStore();
     const cardSizeStore = useCardSizeStore();
     const router = useRouter();
     const gamesApi = useGamesApi();
-
     const themeStore = useThemeStore();
 
     const loading = ref(true);
@@ -182,7 +120,6 @@ export default {
     const recentGames = ref([]);
 
     const fetchUserGames = async () => {
-      // Ako korisnik nije prijavljen, ne dohvaćaj korisničke igre
       if (!userStore.isLoggedIn || !userStore.user) {
         return;
       }
@@ -190,7 +127,6 @@ export default {
       try {
         const userId = userStore.user.id;
 
-        // Dohvati sve igre iz baze za statistiku
         const { data: allGames, error } = await supabase
           .from('games')
           .select('*')
@@ -199,8 +135,7 @@ export default {
 
         if (allGames) {
           currentlyPlaying.value = allGames.filter(g => g.status === 'playing');
-          
-          // Izvuci nasumičnu igru iz backloga ili pauzirano
+
           const pickCandidates = allGames.filter(g => g.status === 'backlog' || g.status === 'paused');
           if (pickCandidates.length > 0) {
             const randomIndex = Math.floor(Math.random() * pickCandidates.length);
@@ -218,7 +153,7 @@ export default {
           totalHours.value = allGames.reduce((sum, g) => sum + (Number(g.play_time) || 0), 0);
         }
       } catch (error) {
-        console.error('Greška pri dohvaćanju korisničkih igara:', error);
+        console.error('Error fetching user games:', error);
       } finally {
         userGamesLoading.value = false;
       }
@@ -228,15 +163,13 @@ export default {
       loading.value = true;
 
       try {
-        // Dohvati popularne igre s RAWG API-ja -> NERADI DOBRO ZATO COMMENT
         const popularnigre = await gamesApi.getPopularGames();
         popularGames.value = popularnigre;
 
-        // Dohvati nedavno objavljene igre s RAWG API-ja -> NERADI DOBRO ZATO COMMENT
         const nedavnigre = await gamesApi.getRecentGames();
         recentGames.value = nedavnigre;
       } catch (error) {
-        console.error('Greška pri dohvaćanju API igara:', error);
+        console.error('Error fetching API games:', error);
       } finally {
         loading.value = false;
       }
@@ -247,7 +180,6 @@ export default {
     };
 
     const navigateToApiGame = (id) => {
-      // Preusmjeri na API game details view
       router.push(`/api-games/${id}`);
     };
 
