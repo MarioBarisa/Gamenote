@@ -689,16 +689,7 @@ export default {
     const shareGame = async () => {
       if (!game.value) return;
       try {
-        const shareData = {
-          title: game.value.name,
-          image: game.value.background_image || 'https://placehold.co/1200x400?text=No+Image',
-          notes: game.value.description_raw || '',
-          apiId: game.value.id,
-          id: null,
-          isLibrary: false
-        };
-        const encoded = btoa(encodeURIComponent(JSON.stringify(shareData)));
-        const shareUrl = `${window.location.origin}/shared?data=${encoded}`;
+        const shareUrl = `${window.location.origin}/shared?id=${game.value.id}`;
         await navigator.clipboard.writeText(shareUrl);
         showToast('Link je kopiran u međuspremnik!');
       } catch (err) {

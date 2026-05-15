@@ -250,31 +250,40 @@ export default {
 
     onMounted(async () => {
       try {
+        const idParam = route.query.id;
         const dataParam = route.query.data;
-        if (!dataParam) {
+        
+        let apiIdToFetch = null;
+
+        if (idParam) {
+          apiIdToFetch = idParam;
+          // Set a minimal sharedData object so redirectLoggedUser works properly
+          sharedData.value = { apiId: idParam, isLibrary: false };
+        } else if (dataParam) {
+          // Decode base64
+          const decodedString = decodeURIComponent(atob(dataParam));
+          sharedData.value = JSON.parse(decodedString);
+          apiIdToFetch = sharedData.value.apiId;
+        } else {
           error.value = 'Nedostaju podaci u poveznici.';
           return;
         }
 
-        // Decode base64
-        const decodedString = decodeURIComponent(atob(dataParam));
-        sharedData.value = JSON.parse(decodedString);
-        
         // Fetch extra API info if we have apiId
-        if (sharedData.value.apiId) {
+        if (apiIdToFetch) {
           isLoadingApi.value = true;
           try {
-            apiGame.value = await gamesApi.getGameDetails(sharedData.value.apiId);
+            apiGame.value = await gamesApi.getGameDetails(apiIdToFetch);
             
             try {
-              const screenshotsData = await gamesApi.getGameScreenshots(sharedData.value.apiId);
+              const screenshotsData = await gamesApi.getGameScreenshots(apiIdToFetch);
               screenshots.value = screenshotsData || [];
             } catch (screenshotError) {
               console.warn('Screenshots not available:', screenshotError);
             }
 
             try {
-              const gameSeriesData = await gamesApi.getGameSeries(sharedData.value.apiId);
+              const gameSeriesData = await gamesApi.getGameSeries(apiIdToFetch);
               gameSeries.value = gameSeriesData.results || [];
             } catch (seriesError) {
               console.warn('Game series data not available:', seriesError);

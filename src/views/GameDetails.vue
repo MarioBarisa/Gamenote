@@ -170,11 +170,11 @@
                 <span class="text-xs opacity-50">{{ (selectedScreenshotIndex ?? 0) + 1 }} / {{ screenshots.length }}</span>
               </div>
               <!-- Main carousel image -->
-              <div class="relative rounded-xl overflow-hidden aspect-video bg-base-300">
+              <div class="relative rounded-xl overflow-hidden aspect-video bg-base-300 mx-auto w-full md:w-4/5 lg:w-3/4 max-w-2xl">
                 <img
                   :src="screenshots[selectedScreenshotIndex ?? 0]"
                   :alt="`Screenshot ${(selectedScreenshotIndex ?? 0) + 1}`"
-                  class="w-full h-full object-cover cursor-pointer"
+                  class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                   @click="openScreenshotModal(selectedScreenshotIndex ?? 0)"
                 />
                 <button
@@ -189,13 +189,13 @@
                 >❯</button>
               </div>
               <!-- Thumbnail strip -->
-              <div v-if="screenshots.length > 1" class="flex gap-2 mt-3 overflow-x-auto pb-1">
+              <div v-if="screenshots.length > 1" class="flex gap-2 mt-4 overflow-x-auto pb-2 justify-center">
                 <img
                   v-for="(shot, i) in screenshots"
                   :key="i"
                   :src="shot"
                   :alt="`Screenshot ${i + 1}`"
-                  class="w-16 h-10 object-cover rounded cursor-pointer shrink-0 transition-all"
+                  class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded cursor-pointer shrink-0 transition-all hover:scale-105"
                   :class="(selectedScreenshotIndex ?? 0) === i ? 'ring-2 ring-primary opacity-100' : 'opacity-50 hover:opacity-80'"
                   @click="openScreenshotModal(i)"
                 />
@@ -649,16 +649,7 @@ export default {
     const shareGame = async () => {
       if (!game.value) return;
       try {
-        const shareData = {
-          title: game.value.title,
-          image: game.value.background_image || game.value.image_url,
-          notes: game.value.notes || '',
-          apiId: game.value.game_api_id,
-          id: game.value.id,
-          isLibrary: true
-        };
-        const encoded = btoa(encodeURIComponent(JSON.stringify(shareData)));
-        const shareUrl = `${window.location.origin}/shared?data=${encoded}`;
+        const shareUrl = `${window.location.origin}/shared?id=${game.value.game_api_id}`;
         await navigator.clipboard.writeText(shareUrl);
         showToast('Link je kopiran u međuspremnik!');
       } catch (err) {
