@@ -10,7 +10,8 @@ export default defineConfig({
         target: 'https://api.rawg.io/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/rawg/, ''),
-        secure: false,
+         secure: false,
+      },
     }
   }
 });
