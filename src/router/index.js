@@ -135,41 +135,38 @@ router.afterEach((to, from) => {
           label.setAttribute('tabindex', '0');
         }, 0);
       } catch (e) {
+        console.error('Error blurring labels:', e);
       }
     });
   }, 50);
 });
 
-let authCheckPromise = null;
 let lastAuthCheck = 0;
-const AUTH_CHECK_INTERVAL = 5000; 
+const AUTH_CHECK_INTERVAL = 5000;
 
 router.beforeEach(async (to, from, next) => {
   try {
     const userStore = await import('../stores/user').then(module => module.useUserStore());
-    
+
     const now = Date.now();
     const shouldFetchUser = !lastAuthCheck || (now - lastAuthCheck) > AUTH_CHECK_INTERVAL;
-    
+
     if (shouldFetchUser) {
-      if (!authCheckPromise) {
-        authCheckPromise = userStore.fetchUser();
-      }
-      await authCheckPromise;
+      await userStore.fetchUser();
       lastAuthCheck = now;
-      authCheckPromise = null;
     }
-    
+
     const isAuthenticated = userStore.isLoggedIn;
     const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings', 'groups', 'group-details'];
-    
+
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
       next({ name: 'login' });
     } else {
       next();
     }
   } catch (error) {
-    next('/login');
+    console.error('Auth guard error:', error);
+    next();
   }
 });
 

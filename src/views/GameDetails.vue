@@ -794,10 +794,12 @@ export default {
           });
 
           if (data.start_date) {
-            editForm.start_date = new Date(data.start_date).toISOString().split('T')[0];
+            const sd = new Date(data.start_date);
+            if (!isNaN(sd.getTime())) editForm.start_date = sd.toISOString().split('T')[0];
           }
           if (data.end_date) {
-            editForm.end_date = new Date(data.end_date).toISOString().split('T')[0];
+            const ed = new Date(data.end_date);
+            if (!isNaN(ed.getTime())) editForm.end_date = ed.toISOString().split('T')[0];
           }
         }
 
@@ -811,6 +813,7 @@ export default {
             editForm.group_ids = gameGroups.value.map(gg => gg.group_id) || [];
           }
         } catch (e) {
+          console.error('Error loading groups:', e);
         }
       } catch (fetchError) {
         console.error('Error fetching game:', fetchError);
@@ -940,6 +943,7 @@ export default {
         gameGroups.value = await listGameGroups(game.value.id, userStore.user.id);
         newGroupId.value = '';
       } catch (e) {
+        console.error('Error assigning group:', e);
       }
     };
 
@@ -949,6 +953,7 @@ export default {
         await removeGameFromGroup({ user_id: userStore.user.id, group_id: groupId, game_id: game.value.id });
         gameGroups.value = await listGameGroups(game.value.id, userStore.user.id);
       } catch (e) {
+        console.error('Error removing group:', e);
       }
     };
 
@@ -1124,7 +1129,9 @@ export default {
     
     const formatDate = (dateString) => {
       if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('hr-HR');
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return 'N/A';
+      return d.toLocaleDateString('hr-HR');
     };
     
     // Watch for route parameter changes (when user navigates to different game)

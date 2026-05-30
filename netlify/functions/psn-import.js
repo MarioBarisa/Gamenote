@@ -1,5 +1,5 @@
 const { getAuthorization } = require('./_psnAuth.js');
-const { makeUniversalSearch, getUserPlayedGames, getUserTitles } = require('psn-api');
+const { makeUniversalSearch, getUserPlayedGames, getUserTitles, getUserTrophyProfileSummary } = require('psn-api');
 
 function json(statusCode, body) {
   return {
@@ -10,7 +10,7 @@ function json(statusCode, body) {
 }
 
 function normalizeTitle(s) {
-  return String(s || '').toLowerCase()
+  return String(s || '').normalize('NFD').toLowerCase()
     .replace(/[™®©]/g, '').replace(/[:\-–—_]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
@@ -32,21 +32,38 @@ exports.handler = async (event) => {
     const authorization = await getAuthorization();
 
     const search = await makeUniversalSearch(authorization, psnUsername, 'SocialAllAccounts');
-    const accountId = search?.domainResponses?.[0]?.results?.[0]?.socialMetadata?.accountId;
+    const firstResult = search?.domainResponses?.[0]?.results?.[0];
+    const socialMeta = firstResult?.socialMetadata;
+    const accountId = socialMeta?.accountId;
     if (!accountId) return json(404, { error: `Korisnik "${psnUsername}" nije pronađen ili je profil privatan.` });
 
-    const [playedResp, titlesResp] = await Promise.all([
-      getUserPlayedGames(authorization, accountId, { limit: 200, categories: 'ps4_game,ps5_native_game' }),
-      getUserTitles(authorization, accountId, { limit: 200 })
-    ]);
+    const trophySummary = await getUserTrophyProfileSummary(authorization, accountId);
+
+    let allPlayedGames = [];
+    let offset = 0;
+    for (;;) {
+      const resp = await getUserPlayedGames(authorization, accountId, { limit: 200, offset, categories: 'ps4_game,ps5_native_game' });
+      allPlayedGames = allPlayedGames.concat(resp?.titles || []);
+      if (resp?.nextOffset == null || resp.nextOffset <= offset) break;
+      offset = resp.nextOffset;
+    }
+
+    let allTrophyTitles = [];
+    offset = 0;
+    for (;;) {
+      const resp = await getUserTitles(authorization, accountId, { limit: 200, offset });
+      allTrophyTitles = allTrophyTitles.concat(resp?.trophyTitles || []);
+      if (resp?.nextOffset == null || resp.nextOffset <= offset) break;
+      offset = resp.nextOffset;
+    }
 
     const trophyMap = new Map();
-    for (const t of (titlesResp?.trophyTitles || [])) {
+    for (const t of allTrophyTitles) {
       const key = normalizeTitle(t?.trophyTitleName);
       if (key && !trophyMap.has(key)) trophyMap.set(key, t);
     }
 
-    const games = (playedResp?.titles || []).map(g => {
+    const games = allPlayedGames.map(g => {
       const name = g?.localizedName || g?.name;
       const t = trophyMap.get(normalizeTitle(name));
       const earned = t?.earnedTrophies
@@ -70,7 +87,15 @@ exports.handler = async (event) => {
     });
 
     games.sort((a, b) => new Date(b.lastPlayed || 0) - new Date(a.lastPlayed || 0));
-    return json(200, { psnUsername, count: games.length, games });
+    return json(200, {
+      psnUsername,
+      count: games.length,
+      games,
+      profile: {
+        avatarUrl: socialMeta?.avatarUrl || null,
+        trophyLevel: trophySummary?.trophyLevel ? Number(trophySummary.trophyLevel) : null
+      }
+    });
     } catch (e) {
     console.error('[psn-import] Error:', e?.message, e?.stack);
     return json(500, { error: e?.message || 'Server error' });

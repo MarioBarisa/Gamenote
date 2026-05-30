@@ -276,7 +276,8 @@ export default {
         'paused': 'Pauzirano',
         'completed': 'Završeno',
         'dropped': 'Napušteno',
-        'backlog': 'Backlog'
+        'backlog': 'Backlog',
+        'wishlist': 'Wishlist'
       };
       return statusMap[this.gameStatus] || this.gameStatus;
     },
@@ -286,7 +287,8 @@ export default {
         'paused': 'badge-warning',
         'completed': 'badge-success',
         'dropped': 'badge-error',
-        'backlog': 'badge-ghost'
+        'backlog': 'badge-ghost',
+        'wishlist': 'badge-accent'
       };
       return classMap[this.gameStatus] || 'badge-neutral';
     }
@@ -302,12 +304,8 @@ export default {
       if (game.background_image) return game.background_image;
       
       
-      if (game.game_api_id) {
-        
-        const apiId = parseInt(game.game_api_id);
-        if (!isNaN(apiId)) {
-          return `https://api.rawg.io/media/games/${apiId}/media/screenshots/1.jpg`;
-        }
+      if (game.game_api_id && game.background_image) {
+        return game.background_image;
       }
       
       
@@ -322,7 +320,9 @@ export default {
     },
     formatDate(dateStr) {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
   }

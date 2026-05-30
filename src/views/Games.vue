@@ -293,9 +293,9 @@ export default {
     };
 
     const closeDropdown = (type) => {
-      const labelRef = type === 'sort' ? sortDropdownLabel : filterDropdownLabel;
-      if (labelRef.value) {
-        labelRef.value.blur();
+      const ref = type === 'sort' ? sortDropdownLabel : null;
+      if (ref?.value) {
+        ref.value.blur();
         document.activeElement?.blur();
       }
     };

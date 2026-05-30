@@ -39,6 +39,7 @@ async function getAuthorization() {
     await upsertTokenRow(supabase, {
       access_token: auth.accessToken,
       access_token_expires_at: computeExpiryIso(auth.expiresIn),
+      refresh_token: auth.refreshToken,
       updated_at: new Date().toISOString()
     });
     return { accessToken: auth.accessToken };

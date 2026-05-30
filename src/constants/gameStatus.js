@@ -3,7 +3,8 @@ export const GAME_STATUS = [
   { key: 'playing', label: 'Playing' },
   { key: 'completed', label: 'Completed' },
   { key: 'paused', label: 'Paused' },
-  { key: 'dropped', label: 'Dropped' }
+  { key: 'dropped', label: 'Dropped' },
+  { key: 'wishlist', label: 'Wishlist' }
 ];
 
 export const GAME_STATUS_MAP = GAME_STATUS.reduce((acc, s) => {

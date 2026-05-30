@@ -159,7 +159,7 @@
     <div v-if="isLoggedIn">
       <div class="flex items-center gap-2 pl-2">
         <router-link to="/">
-          <img src="../assets/gamenote.png" class="h-22 w-auto" alt="Gamenote">
+          <img src="../assets/gamenote.png" class="h-12 w-auto" alt="Gamenote">
         </router-link>
         <a href="https://github.com/MarioBarisa/Gamenote" target="_blank" rel="noopener noreferrer" class="link link-hover pt-1">O aplikaciji</a>
         <a href="mailto:mario@barisa.me" class="link link-hover pt-1">Kontakt</a>
@@ -242,6 +242,7 @@ export default {
           }
         });
       } catch (error) {
+        console.error('Error resetting dropdowns:', error);
       }
     };
 
@@ -260,6 +261,7 @@ export default {
         }
       
       } catch (error) {
+        console.error('Error closing mobile menu:', error);
       }
     };
 
@@ -276,7 +278,8 @@ export default {
             }
           }, 0);
         }
-      } catch (error) {;
+      } catch (error) {
+        console.error('Error closing profile dropdown:', error);
       }
     };
     

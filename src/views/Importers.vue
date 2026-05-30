@@ -640,7 +640,7 @@
               progress_value: g.trophiesEarned != null ? Math.round(g.trophiesEarned) : null,
               progress_total: g.trophiesTotal != null ? Math.round(g.trophiesTotal) : null,
               progress_unit: 'trophies',
-              progress_source: 'psn',
+              progress_source: mapPlatformFull(g.platformCategory),
               achievement_percent: g.trophyPercent != null ? Math.round(g.trophyPercent) : null,
               game_api_id: null,
               image_url: g.imageUrl ?? null,
@@ -674,7 +674,7 @@
                   try {
                     const screenshots = await gamesApi.getGameScreenshots(firstResult.id);
                     gameData.screenshot_urls = JSON.stringify(screenshots?.map(s => s.image) || []);
-                  } catch { /* nije kritično */ }
+                  } catch (e) { console.error('[Importers] screenshots failed:', e); }
                   try {
                     const seriesData = await gamesApi.getGameSeries(firstResult.id);
                     const seriesGames = seriesData?.results || [];
@@ -688,10 +688,10 @@
                         }))
                       );
                     }
-                  } catch { /* nije kritično */ }
+                  } catch (e) { console.error('[Importers] series failed:', e); }
                 }
               }
-            } catch { /* RAWG fallback */ }
+            } catch (e) { console.error('[Importers] RAWG enrichment failed:', e); }
   
             const { data: inserted, error } = await supabase.from('games').insert([gameData]).select('id').single();
             if (error) throw new Error(`${g.name}: ${error.message}`);
@@ -701,7 +701,7 @@
                 user_id: userId,
                 game_id: inserted.id,
                 group_id: extras.groupId
-              }]).then(() => {}).catch(() => {});
+              }]).catch(e => console.error('[Importers] group insert failed:', e));
             }
   
             done++;
@@ -738,6 +738,17 @@
           for (const g of toUpdate) {
             importProgress.value = `Sync: ${g.name}`;
             importDone.value = done;
+            const normalizedName = normalizeTitle(g.name);
+            const { data: existingGames } = await supabase
+              .from('games')
+              .select('id')
+              .eq('user_id', userId);
+            const match = (existingGames || []).find(x => normalizeTitle(x.title) === normalizedName);
+            if (!match) {
+              done++;
+              importDone.value = done;
+              continue;
+            }
             const { error } = await supabase.from('games').update({
               play_time: g.hoursPlayed != null ? Math.round(g.hoursPlayed) : null,
               achievement_percent: g.trophyPercent != null ? Math.round(g.trophyPercent) : null,
@@ -745,9 +756,9 @@
               progress_total: g.trophiesTotal != null ? Math.round(g.trophiesTotal) : null,
               progress_mode: 'trophies_psn',
               progress_unit: 'trophies',
-              progress_source: 'psn',
+              progress_source: mapPlatformFull(g.platformCategory),
               updated_at: new Date().toISOString()
-            }).eq('user_id', userId).ilike('title', g.name);
+            }).eq('id', match.id);
             if (error) throw new Error(`${g.name}: ${error.message}`);
             done++;
             importDone.value = done;
@@ -785,7 +796,7 @@
         hasSynced.value = true;
         await markExisting();
       }
-    } catch { /* fallback na inicijal */ }
+    } catch (e) { console.error('[Importers] onMounted auto-sync failed:', e); }
   }
 });
 
