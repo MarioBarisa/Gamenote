@@ -1,4 +1,4 @@
-const { getAuthorization } = require('./_psnAuth.js');
+const { getAuthorization } = require('./lib/_psnAuth.js');
 const { makeUniversalSearch, getUserPlayedGames, getUserTitles, getUserTrophyProfileSummary } = require('psn-api');
 
 function json(statusCode, body) {
