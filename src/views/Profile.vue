@@ -115,6 +115,32 @@
               <span v-if="deletingAccount" class="loading loading-spinner"></span>
               <span v-else>Obriši račun</span>
             </button>
+
+            <!-- Backup -->
+            <div class="divider">Backup</div>
+
+            <button @click="exportBackup" class="btn btn-outline btn-info w-full" :disabled="backupLoading">
+              <span v-if="backupLoading" class="loading loading-spinner"></span>
+              <span v-else class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Preuzmi backup
+              </span>
+            </button>
+
+            <div class="mt-2">
+              <label class="btn btn-outline btn-warning w-full cursor-pointer" :class="{ 'btn-disabled': importing }">
+                <span v-if="importing" class="loading loading-spinner"></span>
+                <span v-else class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Uvezi backup
+                </span>
+                <input type="file" accept=".json" hidden @change="importBackup" :disabled="importing" />
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -255,6 +281,28 @@
       </div>
     </div>
 
+    <!-- Modal za uvoz backupa -->
+    <div v-if="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div class="card bg-base-200 w-full max-w-md mx-4 shadow-2xl">
+        <div class="card-body p-6">
+          <h3 class="text-xl font-bold text-warning">Uvezi backup</h3>
+          <p class="text-sm leading-relaxed mt-2">
+            Ovo će <strong>zamijeniti</strong> sve tvoje trenutne podatke
+            (igre, grupe, pratitelje) podacima iz backup datoteke.
+          </p>
+          <p class="text-sm text-base-content/60 mt-1">Jesi li siguran da želiš nastaviti?</p>
+
+          <div class="flex gap-2 mt-6">
+            <button @click="closeImportModal" class="btn btn-ghost flex-1">Odustani</button>
+            <button @click="confirmImport" class="btn btn-warning flex-1">
+              <span v-if="importing" class="loading loading-spinner"></span>
+              <span v-else>Uvezi backup</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal za brisanje računa -->
     <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div class="card bg-base-200 w-full max-w-md mx-4 shadow-2xl">
@@ -366,6 +414,12 @@ export default {
     const reauthEmail = ref('');
     const reauthPassword = ref('');
     const reauthError = ref('');
+
+    // Backup state
+    const backupLoading = ref(false);
+    const importing = ref(false);
+    const showImportModal = ref(false);
+    const importFileData = ref(null);
     
     
     const profileImageUrl = computed(() => {
@@ -1041,6 +1095,127 @@ export default {
       }
     };
 
+    const exportBackup = async () => {
+      backupLoading.value = true;
+
+      try {
+        const uid = userStore.user.id;
+
+        const [gamesRes, groupsRes, gameGroupsRes] = await Promise.all([
+          supabase.from('games').select('*').eq('user_id', uid),
+          supabase.from('groups').select('*').eq('user_id', uid),
+          supabase.from('game_groups').select('*').eq('user_id', uid)
+        ]);
+
+        if (gamesRes.error) throw gamesRes.error;
+        if (groupsRes.error) throw groupsRes.error;
+        if (gameGroupsRes.error) throw gameGroupsRes.error;
+
+        const backup = {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          games: gamesRes.data || [],
+          groups: groupsRes.data || [],
+          gameGroups: gameGroupsRes.data || []
+        };
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gamenote-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('Backup preuzet!');
+      } catch (error) {
+        console.error('Greška pri backupu:', error);
+        showToast(error.message || 'Greška pri izradi backupa', 'error');
+      } finally {
+        backupLoading.value = false;
+      }
+    };
+
+    const importBackup = async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!data.version || !Array.isArray(data.games) || !Array.isArray(data.groups) || !Array.isArray(data.gameGroups)) {
+          throw new Error('Neispravan format backup datoteke.');
+        }
+
+        if (data.version !== 1) {
+          throw new Error('Nepodržana verzija backupa.');
+        }
+
+        importFileData.value = data;
+        showImportModal.value = true;
+      } catch (error) {
+        console.error('Greška pri čitanju backupa:', error);
+        showToast(error.message || 'Neispravna datoteka', 'error');
+      }
+
+      event.target.value = '';
+    };
+
+    const closeImportModal = () => {
+      showImportModal.value = false;
+      importFileData.value = null;
+    };
+
+    const confirmImport = async () => {
+      if (!importFileData.value) return;
+
+      importing.value = true;
+      showImportModal.value = false;
+
+      try {
+        const data = importFileData.value;
+
+        if (data.games.length === 0 && data.groups.length === 0 && data.gameGroups.length === 0) {
+          throw new Error('Backup datoteka ne sadrži podatke (svi nizovi su prazni).');
+        }
+
+        const mappedGames = data.games.map(g => ({
+          ...g,
+          catalog_id: null,
+          play_time: g.play_time != null ? Number(g.play_time) : null,
+          rating: g.rating != null ? Number(g.rating) : null,
+          achievement_percent: g.achievement_percent != null ? Number(g.achievement_percent) : null,
+          metacritic_score: g.metacritic_score != null ? Number(g.metacritic_score) : null,
+          progress_value: g.progress_value != null ? Number(g.progress_value) : null,
+          progress_total: g.progress_total != null ? Number(g.progress_total) : null,
+        }));
+        const mappedGroups = data.groups;
+        const mappedGameGroups = data.gameGroups;
+
+        const { data: result, error } = await supabase.rpc('import_user_backup', {
+          p_games: JSON.parse(JSON.stringify(mappedGames)),
+          p_groups: JSON.parse(JSON.stringify(mappedGroups)),
+          p_game_groups: JSON.parse(JSON.stringify(mappedGameGroups))
+        });
+
+        if (error) throw error;
+        if (!result?.ok) throw new Error(result?.error || 'Nepoznata greška pri uvozu.');
+
+        importFileData.value = null;
+        await fetchGames();
+        showToast(`Backup uspješno uvezen! (${result.inserted.games} igara, ${result.inserted.groups} grupa)`);
+      } catch (error) {
+        console.error('Greška pri uvozu backupa:', error);
+        showToast(error.message || 'Greška pri uvozu backupa. Tvoji podaci su obrisani. Uvezi backup ponovno.', 'error');
+        importFileData.value = null;
+      } finally {
+        importing.value = false;
+      }
+    };
+
     return {
       userStore,
       loading,
@@ -1067,6 +1242,13 @@ export default {
       reauthEmail,
       reauthPassword,
       reauthError,
+      backupLoading,
+      importing,
+      showImportModal,
+      exportBackup,
+      importBackup,
+      confirmImport,
+      closeImportModal,
       formatDate,
       statistics,
       recentGames,
