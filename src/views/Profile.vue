@@ -108,6 +108,13 @@
             <button @click="logout" class="btn btn-outline btn-error w-full">
               Odjavi se
             </button>
+
+            <!-- Brisanje računa -->
+            <div class="divider">Brisanje računa</div>
+            <button @click="showDeleteModal = true" class="btn btn-error w-full" :disabled="deletingAccount">
+              <span v-if="deletingAccount" class="loading loading-spinner"></span>
+              <span v-else>Obriši račun</span>
+            </button>
           </div>
         </div>
       </div>
@@ -247,6 +254,67 @@
         <span>{{ toast.message }}</span>
       </div>
     </div>
+
+    <!-- Modal za brisanje računa -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div class="card bg-base-200 w-full max-w-md mx-4 shadow-2xl">
+        <div class="card-body p-6">
+
+          <!-- Gamenote logo -->
+          <div class="flex justify-center mb-4">
+            <img src="../assets/gamenote.png" class="h-12 w-auto opacity-80" alt="Gamenote" />
+          </div>
+
+          <h3 class="text-xl font-bold text-center text-error">Obriši račun</h3>
+
+          <div class="mt-4 p-4 bg-error/10 rounded-lg border border-error/30">
+            <p class="text-sm leading-relaxed">
+              Ova radnja će trajno obrisati vaš korisnički račun i sve povezane podatke.
+              Ovo se <strong>ne može poništiti</strong>.
+            </p>
+          </div>
+
+          <!-- Re-auth forma ako je sesija istekla -->
+          <div v-if="needsReauth" class="mt-4 p-3 bg-warning/20 rounded-lg border border-warning/40">
+            <p class="text-sm font-medium mb-2">Sesija je istekla — prijavite se ponovno:</p>
+            <input v-model="reauthEmail" type="email" class="input input-bordered w-full mb-2" placeholder="Email" />
+            <input v-model="reauthPassword" type="password" class="input input-bordered w-full mb-2" placeholder="Lozinka" />
+            <p v-if="reauthError" class="text-error text-sm mb-2">{{ reauthError }}</p>
+            <button @click="handleReauthAndDelete" class="btn btn-warning w-full" :disabled="deletingAccount">
+              <span v-if="deletingAccount" class="loading loading-spinner"></span>
+              <span v-else>Prijavi se i obriši račun</span>
+            </button>
+          </div>
+
+          <!-- Normalna potvrda (bez re-auth) -->
+          <div v-else class="mt-4">
+            <label class="label">
+              <span class="label-text">Upišite <span class="font-mono font-bold">DELETE</span> za potvrdu:</span>
+            </label>
+            <input
+              v-model="deleteConfirmInput"
+              type="text"
+              class="input input-bordered w-full text-center font-mono text-lg tracking-widest"
+              placeholder="DELETE"
+              @keyup.enter="handleDeleteAccount"
+            />
+          </div>
+
+          <div class="flex gap-2 mt-6">
+            <button @click="closeDeleteModal" class="btn btn-ghost flex-1" :disabled="deletingAccount">Odustani</button>
+            <button
+              v-if="!needsReauth"
+              @click="handleDeleteAccount"
+              class="btn btn-error flex-1"
+              :disabled="deleteConfirmInput !== 'DELETE' || deletingAccount"
+            >
+              <span v-if="deletingAccount" class="loading loading-spinner"></span>
+              <span v-else>Obriši račun</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -289,6 +357,15 @@ export default {
       message: '',
       type: 'success'
     });
+
+    // Delete account state
+    const showDeleteModal = ref(false);
+    const deleteConfirmInput = ref('');
+    const deletingAccount = ref(false);
+    const needsReauth = ref(false);
+    const reauthEmail = ref('');
+    const reauthPassword = ref('');
+    const reauthError = ref('');
     
     
     const profileImageUrl = computed(() => {
@@ -898,6 +975,72 @@ export default {
 };
 
     
+    const closeDeleteModal = () => {
+      showDeleteModal.value = false;
+      deleteConfirmInput.value = '';
+      needsReauth.value = false;
+      reauthEmail.value = '';
+      reauthPassword.value = '';
+      reauthError.value = '';
+    };
+
+    const handleDeleteAccount = async () => {
+      if (deleteConfirmInput.value !== 'DELETE' || deletingAccount.value) return;
+
+      deletingAccount.value = true;
+
+      try {
+        const { error } = await supabase.rpc('delete_user_account');
+
+        if (error) {
+          if (error.message?.includes('JWT') || error.code === 'PGRST301') {
+            needsReauth.value = true;
+            deletingAccount.value = false;
+            return;
+          }
+          throw error;
+        }
+
+        await userStore.logout();
+        router.push('/login');
+      } catch (error) {
+        console.error('Greška pri brisanju računa:', error);
+        showToast(error.message || 'Greška pri brisanju računa', 'error');
+        deletingAccount.value = false;
+      }
+    };
+
+    const handleReauthAndDelete = async () => {
+      if (deletingAccount.value) return;
+      reauthError.value = '';
+
+      deletingAccount.value = true;
+
+      try {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: reauthEmail.value,
+          password: reauthPassword.value
+        });
+
+        if (signInError) {
+          reauthError.value = 'Pogrešna e-mail adresa ili lozinka.';
+          deletingAccount.value = false;
+          return;
+        }
+
+        const { error } = await supabase.rpc('delete_user_account');
+
+        if (error) throw error;
+
+        await userStore.logout();
+        router.push('/login');
+      } catch (error) {
+        console.error('Greška pri brisanju računa:', error);
+        showToast(error.message || 'Greška pri brisanju računa', 'error');
+        deletingAccount.value = false;
+      }
+    };
+
     return {
       userStore,
       loading,
@@ -914,6 +1057,16 @@ export default {
       logout,
       handleImageError,
       handleFileUpload,
+      handleDeleteAccount,
+      handleReauthAndDelete,
+      closeDeleteModal,
+      showDeleteModal,
+      deleteConfirmInput,
+      deletingAccount,
+      needsReauth,
+      reauthEmail,
+      reauthPassword,
+      reauthError,
       formatDate,
       statistics,
       recentGames,
@@ -952,35 +1105,6 @@ export default {
 
 .card-body {
   padding: 24px;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 16px;
-}
-
-.stat {
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-}
-
-.stat-title {
-  font-size: 14px;
-  color: #666;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.badge {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
 }
 
 .toast {

@@ -74,13 +74,13 @@
                   <li class="menu-title">
                     <span class="text-base-content/70 text-xs">{{ userStore.user?.email }}</span>
                   </li>
-                  <div class="divider my-1"></div>
+                  <li><hr class="my-1" /></li>
                   <li><router-link to="/profile" @click="closeProfileDropdown">Profil</router-link></li>
                   <li><router-link to="/theme-settings" @click="closeProfileDropdown"> Postavke UI-ja</router-link></li>
                   <li><router-link to="/importers" @click="closeProfileDropdown">Import</router-link></li>
 
                   
-                  <div class="divider my-1"></div>
+                  <li><hr class="my-1" /></li>
                   <li><a @click="logout">Odjava</a></li>
                 </ul>
               </div>
@@ -163,6 +163,8 @@
         </router-link>
         <a href="https://github.com/MarioBarisa/Gamenote" target="_blank" rel="noopener noreferrer" class="link link-hover pt-1">O aplikaciji</a>
         <a href="mailto:mario@barisa.me" class="link link-hover pt-1">Kontakt</a>
+        <router-link to="/privacy" class="link link-hover pt-1">Privatnost</router-link>
+        <router-link to="/tos" class="link link-hover pt-1">Uvjeti korištenja</router-link>
       </div>
 
     
@@ -321,12 +323,12 @@ export default {
       lastY = y;
     };
     onMounted(() => {
-      const routerBeforeEach = router.beforeEach((to, from, next) => {
+      router.beforeEach((to, from, next) => {
         resetAllDropdowns();
         next();
       });
 
-      const routerAfterEach = router.afterEach(() => {
+      router.afterEach(() => {
         setTimeout(() => {
           resetAllDropdowns();
         }, 100);

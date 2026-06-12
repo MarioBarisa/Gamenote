@@ -39,3 +39,6 @@ coverage
 
 # Local Netlify folder
 .netlify
+
+#other
+Database.Md

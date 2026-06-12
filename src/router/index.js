@@ -14,6 +14,8 @@ import GroupDetails from '../views/GroupDetails.vue';
 import Importers from '../views/Importers.vue';
 import ResetPasswordView from '../views/ResetPasswordView.vue';
 import SharedGameView from '../views/SharedGameView.vue';
+import PrivacyPolicy from '../views/PrivacyPolicy.vue';
+import TermsOfService from '../views/TermsOfService.vue';
 
 
 const router = createRouter({
@@ -119,12 +121,22 @@ const router = createRouter({
       path: '/shared',
       name: 'shared-game',
       component: SharedGameView
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: PrivacyPolicy
+    },
+    {
+      path: '/tos',
+      name: 'tos',
+      component: TermsOfService
     }
   ]
 });
 
 
-router.afterEach((to, from) => {
+router.afterEach(() => {
   setTimeout(() => {
     const labels = document.querySelectorAll('label[tabindex]');
     labels.forEach(label => {
