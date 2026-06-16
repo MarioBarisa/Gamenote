@@ -323,7 +323,7 @@ export default {
     
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
-      'Nintendo Switch', 'iOS', 'Android', 'Other'
+      'Nintendo Switch', 'Nintendo Switch 2', 'iOS', 'Android', 'Other'
     ];
     
     const gameForm = reactive({
