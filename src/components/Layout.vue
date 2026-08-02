@@ -64,9 +64,9 @@
                   class="btn btn-ghost btn-circle avatar"
                   ref="profileDropdownLabel"
                 >
-                  <div class="w-12 sm:w-10 rounded-full">
+                  <span class="w-12 sm:w-10 rounded-full block aspect-square overflow-hidden">
                     <img :src="profileImageUrl" alt="Avatar" />
-                  </div>
+                  </span>
                 </label>
                 <ul 
                   tabindex="0"
@@ -74,14 +74,30 @@
                   <li class="menu-title">
                     <span class="text-base-content/70 text-xs">{{ userStore.user?.email }}</span>
                   </li>
-                  <li><hr class="my-1" /></li>
-                  <li><router-link to="/profile" @click="closeProfileDropdown">Profil</router-link></li>
-                  <li><router-link to="/theme-settings" @click="closeProfileDropdown"> Postavke UI-ja</router-link></li>
-                  <li><router-link to="/importers" @click="closeProfileDropdown">Import</router-link></li>
-
-                  
-                  <li><hr class="my-1" /></li>
-                  <li><a @click="logout">Odjava</a></li>
+                  <li>
+                    <router-link to="/profile" @click="closeProfileDropdown">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Profil
+                    </router-link>
+                  </li>
+                  <li>
+                    <router-link to="/theme-settings" @click="closeProfileDropdown">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                      Postavke UI-ja
+                    </router-link>
+                  </li>
+                  <li>
+                    <router-link to="/importers" @click="closeProfileDropdown">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Import
+                    </router-link>
+                  </li>
+                  <li>
+                    <a @click="openLogoutModal" class="text-error">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                      Odjava
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -171,6 +187,20 @@
     <div class="p-2 text-left">
         <p>© 2026 Gamenote - Mario Bariša. Sva prava pridržana.</p>
       </div></div>
+
+    <dialog class="modal" :class="{ 'modal-open': showLogoutModal }">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Odjava</h3>
+        <p class="text-base-content/60 text-sm mt-1">Jeste li sigurni da se želite odjaviti?</p>
+        <div class="modal-action">
+          <button class="btn" @click="closeLogoutModal">Odustani</button>
+          <button class="btn btn-error" @click="confirmLogout">Odjavi se</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop" @click="closeLogoutModal">
+        <button>zatvori</button>
+      </form>
+    </dialog>
   </div>
 </template>
 
@@ -191,6 +221,7 @@ export default {
     const mobileMenuDropdown = ref(null);
     const profileDropdown = ref(null);
     const isCompact = ref(false);
+    const showLogoutModal = ref(false);
     let lastY = 0;
     
     const isLoggedIn = computed(() => userStore.isLoggedIn);
@@ -290,6 +321,20 @@ export default {
       router.push('/login');
     };
 
+    const openLogoutModal = () => {
+      closeProfileDropdown();
+      showLogoutModal.value = true;
+    };
+
+    const closeLogoutModal = () => {
+      showLogoutModal.value = false;
+    };
+
+    const confirmLogout = async () => {
+      closeLogoutModal();
+      await logout();
+    };
+
     const isActive = (path) => {
       if (path === '/') return route.path === '/';
       if (path === '/library' || path === '/games') {
@@ -348,6 +393,10 @@ export default {
       userStore,
       themeStore,
       logout,
+      openLogoutModal,
+      closeLogoutModal,
+      confirmLogout,
+      showLogoutModal,
       closeProfileDropdown,
       closeMobileMenu,
       resetAllDropdowns,

@@ -284,11 +284,11 @@
                   </div>
                   <div v-if="game.esrb_rating" class="flex items-center gap-1">
                     <span class="text-xs opacity-60">ESRB</span>
-                    <img v-if="game.esrb_rating == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="M" class="w-10 h-auto" />
-                    <img v-else-if="game.esrb_rating == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="E" class="w-10 h-auto" />
-                    <img v-else-if="game.esrb_rating == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="T" class="w-10 h-auto" />
-                    <img v-else-if="game.esrb_rating == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="E10+" class="w-10 h-auto" />
-                    <img v-else-if="game.esrb_rating == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="AO" class="w-10 h-auto" />
+                    <img v-if="game.esrb_rating === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="M" class="w-10 h-auto" />
+                    <img v-else-if="game.esrb_rating === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="E" class="w-10 h-auto" />
+                    <img v-else-if="game.esrb_rating === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="T" class="w-10 h-auto" />
+                    <img v-else-if="game.esrb_rating === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="E10+" class="w-10 h-auto" />
+                    <img v-else-if="game.esrb_rating === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="AO" class="w-10 h-auto" />
                     <span v-else class="text-xs">{{ game.esrb_rating }}</span>
                   </div>
                 </div>
@@ -608,7 +608,7 @@
 import { ref, onMounted, reactive, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '../supabase';
-import { PROGRESS_MODES, PROGRESS_MODE_MAP, computePercent, progressLabel } from '../constants/progressModes';
+import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
 import { GAME_STATUS } from '../constants/gameStatus';
 import { useUserStore } from '../stores/user';
 import { listGroups, listGameGroups, addGameToGroup, removeGameFromGroup } from '../services/groupsApi';
@@ -780,8 +780,9 @@ export default {
           .single();
 
         if (fetchError) {
+          console.error('Error fetching game:', fetchError);
           error.value = 'Igra nije pronađena u bazi podataka';
-          throw fetchError;
+          return;
         }
         
         game.value = data;
@@ -817,7 +818,7 @@ export default {
         }
       } catch (fetchError) {
         console.error('Error fetching game:', fetchError);
-        error.value = error.value || 'Greška pri učitavanju igre';
+        error.value = 'Greška pri učitavanju igre';
       } finally {
         loading.value = false;
       }
@@ -879,7 +880,10 @@ export default {
           .update(updateData)
           .eq('id', game.value.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating game:', error);
+          return;
+        }
 
         game.value = { ...game.value, ...updateData };
 
@@ -925,7 +929,10 @@ export default {
           .delete()
           .eq('id', game.value.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error deleting game:', error);
+          return;
+        }
 
         router.push('/library');
       } catch (error) {

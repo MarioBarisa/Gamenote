@@ -4,10 +4,10 @@
     <div class="bg-base-100 text-base-content border-b border-base-300 shadow-sm sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
         <div class="flex items-center justify-between w-full sm:w-auto">
-          <div class="flex items-center gap-2">
+          <a href="https://gamenote.eu" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2">
             <img src="/apple-touch-icon.png" alt="Gamenote Logo" class="w-6 h-6 rounded" />
             <span class="font-bold text-sm sm:text-base">Gamenote</span>
-          </div>
+          </a>
           <div class="flex gap-2 sm:hidden">
             <router-link to="/register" class="btn btn-xs btn-primary">Registracija</router-link>
             <router-link to="/login" class="btn btn-xs btn-outline">Prijava</router-link>
@@ -64,11 +64,11 @@
 
               <div class="mt-2">
                 <p><strong>ESRB ocjena:</strong></p>
-                <img v-if="apiGame.esrb_rating?.name == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-auto h-auto p-4" />
-                <img v-else-if="apiGame.esrb_rating?.name == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-auto h-auto p-4" />
-                <img v-else-if="apiGame.esrb_rating?.name == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-auto h-auto p-4" />
-                <img v-else-if="apiGame.esrb_rating?.name == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-auto h-auto p-4" />
-                <img v-else-if="apiGame.esrb_rating?.name == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-auto h-auto p-4" />
+                <img v-if="apiGame.esrb_rating?.name === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-auto h-auto p-4" />
+                <img v-else-if="apiGame.esrb_rating?.name === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-auto h-auto p-4" />
+                <img v-else-if="apiGame.esrb_rating?.name === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-auto h-auto p-4" />
+                <img v-else-if="apiGame.esrb_rating?.name === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-auto h-auto p-4" />
+                <img v-else-if="apiGame.esrb_rating?.name === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-auto h-auto p-4" />
                 <span v-else class="text-gray-500">N/A</span>
               </div>
 

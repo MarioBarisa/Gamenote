@@ -56,11 +56,11 @@
 
               <div class="mt-2">
                 <p><strong>ESRB ocjena:</strong></p>
-                <img v-if="game.esrb_rating?.name == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-auto h-auto p-4" />
+                <img v-if="game.esrb_rating?.name === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-auto h-auto p-4" />
+                <img v-else-if="game.esrb_rating?.name === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-auto h-auto p-4" />
+                <img v-else-if="game.esrb_rating?.name === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-auto h-auto p-4" />
+                <img v-else-if="game.esrb_rating?.name === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-auto h-auto p-4" />
+                <img v-else-if="game.esrb_rating?.name === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-auto h-auto p-4" />
                 <span v-else class="text-gray-500">N/A</span>
               </div>
 
@@ -968,7 +968,11 @@ export default {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error saving game:', error);
+          showToast('Greška pri dodavanju igre', 'error');
+          return;
+        }
 
         const newGameId = insertedGame?.id;
         

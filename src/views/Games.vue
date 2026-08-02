@@ -37,11 +37,11 @@
                   <p><strong>Datum izdavanja:</strong> {{ apiGameDetails.released || 'N/A' }}</p>
                   <p><strong>Metacritic ocjena:</strong> {{ apiGameDetails.metacritic || 'N/A' }}</p>
                   <div class="mt-4">
-                    <img v-if="apiGameDetails.esrb_rating?.name == 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-12 h-auto" />
-                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-12 h-auto" />
-                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-12 h-auto" />
-                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-12 h-auto" />
-                    <img v-else-if="apiGameDetails.esrb_rating?.name == 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-12 h-auto" />
+                    <img v-if="apiGameDetails.esrb_rating?.name === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-12 h-auto" />
+                    <img v-else-if="apiGameDetails.esrb_rating?.name === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-12 h-auto" />
                     <p v-else-if="apiGameDetails.esrb_rating?.name"><strong>ESRB:</strong> {{ apiGameDetails.esrb_rating.name }}</p>
                   </div>
                 </div>
@@ -229,8 +229,7 @@ export default {
       error.value = null;
       existingGameId.value = null;
       try {
-        const details = await gamesApi.getGameDetails(apiId);
-        apiGameDetails.value = details;
+        apiGameDetails.value = await gamesApi.getGameDetails(apiId);
 
         if (userStore.isLoggedIn && userStore.user?.id) {
           const { data } = await supabase
@@ -270,7 +269,12 @@ export default {
           .eq('user_id', userId)
           .order(sortField.value, { ascending: sortOrder.value === 'asc' });
 
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+          console.error('Greška pri dohvaćanju igara:', fetchError);
+          error.value = 'Greška pri učitavanju igara. Pokušaj ponovno.';
+          games.value = [];
+          return;
+        }
 
         games.value = data || [];
       } catch (err) {
@@ -301,7 +305,7 @@ export default {
     };
 
     const filteredGames = computed(() => {
-      let filtered = games.value;
+      let filtered;
 
       // Filtriraj po statusu/ocjeni
       switch (activeFilter.value) {
