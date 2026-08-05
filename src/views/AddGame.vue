@@ -3,14 +3,6 @@
   <div class="add-game">
     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">Pretraži igre</h1>
 
-    <div class="alert alert-warning mb-6 sm:mb-8 shadow-lg max-w-xl mx-auto">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg>
-      <div class="text-sm">
-        <p><strong>RAWG API (servis za dodavanje igara) je trenutno nedostupan, pa pretraživanje novih igara neće raditi.</strong></p>
-        <p class="mt-1">Aktivno radim na rješenju. U međuvremenu su sve već dodane igre sigurne u Gamenote-u i možeš ih slobodno pregledavati. Možeš pokušati pretražiti igre, ali ne garantiram da će raditi.</p>
-      </div>
-    </div>
-    
     <div class="card bg-base-200 shadow-xl">
       <div class="card-body p-4 sm:p-6">
         <div class="mb-4 sm:mb-6">

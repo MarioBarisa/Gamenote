@@ -16,7 +16,7 @@ export default async (request, context) => {
   let gameDesc = 'Pogledaj ovu igru na Gamenote!'
   
   try {
-    const res = await fetch(`https://api.rawg.io/api/games/${apiId}?key=${RAWG_KEY}`)
+    const res = await fetch(`https://api.gamenote.eu/api/games/${apiId}?key=${RAWG_KEY}`)
     const data = await res.json()
     if (data.name) gameName = data.name
     if (data.background_image) gameImage = data.background_image

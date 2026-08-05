@@ -4,7 +4,7 @@ import { ref, computed } from 'vue';
 // POSTAVITI -> VITE_RAWG_API_KEY u .env datoteci
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 // Use proxy in development to avoid CORS issues
-const BASE_URL = import.meta.env.DEV ? '/api/rawg' : 'https://api.rawg.io/api';
+const BASE_URL = 'https://api.gamenote.eu/api';
 
 // RSS FEED LISTA IZVORA -> DODAJ ILI MAKNI PO POTREBI
 const RSS_FEEDS = [
@@ -24,6 +24,8 @@ const RSS_FEEDS = [
 // POSTAVITI -> VITE_RSS_API_KEY u .env datoteci
 const NEWS_API_KEY = import.meta.env.VITE_RSS_API_KEY;
 
+const THROW = (err) => { if (err) throw err; };
+
 export const useGamesApi = () => {
   const isLoading = ref(false);
   const error = ref(null);
@@ -38,11 +40,10 @@ export const useGamesApi = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju igara');
+        THROW(new Error('Greška pri dohvaćanju igara'));
       }
       
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (err) {
       error.value = err.message;
       return { results: [] };
@@ -61,10 +62,14 @@ export const useGamesApi = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju detalja igre');
+        THROW(new Error('Greška pri dohvaćanju detalja igre'));
       }
       
-      return await response.json();
+      const data = await response.json();
+      if (data && !data.description_raw) {
+        data.description_raw = data.description || null;
+      }
+      return data;
     } catch (err) {
       error.value = err.message;
       return null;
@@ -80,7 +85,7 @@ export const useGamesApi = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju slika igre');
+        THROW(new Error('Greška pri dohvaćanju slika igre'));
       }
       
       const data = await response.json();
@@ -146,7 +151,7 @@ export const useGamesApi = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju popularnih igara');
+        THROW(new Error('Greška pri dohvaćanju popularnih igara'));
       }
       
       const data = await response.json();
@@ -169,7 +174,7 @@ export const useGamesApi = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju nedavnih igara');
+        THROW(new Error('Greška pri dohvaćanju nedavnih igara'));
       }
       
       const data = await response.json();
@@ -197,7 +202,7 @@ export const useGamesApi = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju igara ove godine');
+        THROW(new Error('Greška pri dohvaćanju igara ove godine'));
       }
       
       const data = await response.json();
@@ -275,14 +280,28 @@ export const useGamesApi = () => {
       const response = await fetch(`${BASE_URL}/games/${gameId}/game-series?key=${API_KEY}`);
       
       if (!response.ok) {
-        throw new Error('Greška pri dohvaćanju serijala igara');
+        THROW(new Error('Greška pri dohvaćanju serijala igara'));
       }
       
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (err) {
       console.error('Game series API error:', err);
       return { results: [] };
+    }
+  };
+
+  const matchGame = async (title, year) => {
+    try {
+      const params = new URLSearchParams({ key: API_KEY, title: title || '' });
+      if (year) params.set('year', year);
+      const response = await fetch(`${BASE_URL}/games/match?${params.toString()}`);
+      if (!response.ok) {
+        THROW(new Error('Greška pri pronalaženju igre'));
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('Game match API error:', err);
+      return null;
     }
   };
 
@@ -298,6 +317,7 @@ export const useGamesApi = () => {
     getThisYearGames,
     getGameNews,
     getMockGameNews,
-    getGameSeries
+    getGameSeries,
+    matchGame
   };
 };

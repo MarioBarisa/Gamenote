@@ -46,6 +46,7 @@
       <!-- 1. Hero header -->
       <div class="hero min-h-[220px] sm:min-h-[400px] md:min-h-[450px] lg:min-h-[400px] mb-6 rounded-box overflow-hidden relative shadow-xl" 
            :style="`background-image: url(${game.background_image || game.image_url || 'https://placehold.co/1200x400?text=No+Image'}); background-position: center; background-size: cover;`">
+        <img v-if="screenshots[0]" :src="screenshots[0]" alt="" class="hidden lg:block absolute inset-0 w-full h-full object-cover" />
         <div class="hero-overlay bg-gradient-to-t from-base-100 to-transparent opacity-90"></div>
         <div class="hero-content text-neutral-content w-full h-full flex flex-col justify-between items-start !p-4 sm:!p-8">
           <div class="flex w-full justify-between items-start">
@@ -55,7 +56,10 @@
               Podijeli
             </button>
           </div>
-          <div class="mt-auto w-full">
+          <div class="mt-auto w-full lg:flex lg:items-end lg:gap-5">
+            <div v-if="coverImage" class="hidden lg:block shrink-0">
+              <img :src="coverImage" :alt="game.title" class="w-[8.2rem] h-[11.4rem] object-cover rounded-lg shadow-xl ring-1 ring-white/20" />
+            </div>
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{{ game.title }}</h1>
           </div>
         </div>
@@ -1107,6 +1111,8 @@ export default {
       }
     });
 
+    const coverImage = computed(() => game.value?.image_url || game.value?.background_image || null);
+
     const seriesGames = computed(() => {
       if (!game.value?.series_games) return [];
       try {
@@ -1318,6 +1324,7 @@ export default {
       platforms,
       editForm,
       screenshots,
+      coverImage,
       seriesGames,
       libraryGameIdMap,
       previousGame,
