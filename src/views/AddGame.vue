@@ -432,6 +432,8 @@ export default {
       try {
         const data = await gamesApi.searchGames(searchQuery.value);
         searchResults.value = data.results || [];
+        sessionStorage.setItem('addGameSearchQuery', searchQuery.value);
+        sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
       } catch (error) {
         console.error('Greška pri pretraživanju igara:', error);
       } finally {
@@ -766,6 +768,18 @@ export default {
     };
     
     onMounted(() => {
+      const savedQuery = sessionStorage.getItem('addGameSearchQuery');
+      const savedResults = sessionStorage.getItem('addGameSearchResults');
+      if (savedQuery) {
+        searchQuery.value = savedQuery;
+      }
+      if (savedResults) {
+        try {
+          searchResults.value = JSON.parse(savedResults);
+        } catch (e) {
+          searchResults.value = [];
+        }
+      }
       loadGameFromApiId();
     });
     

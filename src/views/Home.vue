@@ -55,8 +55,8 @@
           </svg>
           Jump back in.
         </h2>
-        <div class="card bg-base-200 shadow-xl overflow-hidden relative" :style="todaysPick.image_url ? `background-image: url(${todaysPick.image_url}); background-position: center; background-size: cover;` : ''">
-          <div v-if="todaysPick.image_url" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></div>
+        <div class="card bg-base-200 shadow-xl overflow-hidden relative" :style="heroImage ? `background-image: url(${heroImage}); background-position: center; background-size: cover;` : ''">
+          <div v-if="heroImage" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></div>
           <div class="card-body relative z-10 sm:flex-row items-center gap-6 p-6 sm:p-8">
             <figure v-if="!todaysPick.image_url" class="w-24 h-32 flex-none bg-base-300 rounded-lg flex items-center justify-center">
               <span class="opacity-50">Nema slike</span>
@@ -66,7 +66,7 @@
             </figure>
             <div class="flex-grow text-center sm:text-left">
               <div class="badge badge-secondary mb-3 shadow-sm border-none font-bold uppercase tracking-wider text-xs p-3">Today's Pick</div>
-              <h3 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 text-base-content drop-shadow-md">{{ todaysPick.title }}</h3>
+              <h3 @click="navigateToUserGame(todaysPick.id)" class="cursor-pointer hover:text-secondary transition-colors text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 text-base-content drop-shadow-md">{{ todaysPick.title }}</h3>
               <p class="opacity-80 text-sm sm:text-base max-w-xl mb-6 font-medium">{{ todaysPick.platform }} • {{ todaysPick._statusLabel }}</p>
               <div class="card-actions justify-center sm:justify-start">
                 <button @click="navigateToUserGame(todaysPick.id)" class="btn btn-primary shadow-xl hover:scale-105 transition-transform text-white">
@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
@@ -113,6 +113,17 @@ export default {
     const userGamesLoading = ref(true);
     const currentlyPlaying = ref([]);
     const todaysPick = ref(null);
+    const heroImage = computed(() => {
+      const pick = todaysPick.value;
+      if (!pick) return null;
+      try {
+        const screenshots = JSON.parse(pick.screenshot_urls || '[]');
+        if (Array.isArray(screenshots) && screenshots.length > 0) return screenshots[0];
+      } catch (e) {
+        return null;
+      }
+      return pick.image_url || null;
+    });
     const totalGames = ref(0);
     const completedGames = ref(0);
     const totalHours = ref(0);
@@ -127,7 +138,7 @@ export default {
       try {
         const userId = userStore.user.id;
 
-        const { data: allGames, error } = await supabase
+        const { data: allGames } = await supabase
           .from('games')
           .select('*')
           .eq('user_id', userId)
@@ -163,11 +174,9 @@ export default {
       loading.value = true;
 
       try {
-        const popularnigre = await gamesApi.getPopularGames();
-        popularGames.value = popularnigre;
+        popularGames.value = await gamesApi.getPopularGames();
 
-        const nedavnigre = await gamesApi.getRecentGames();
-        recentGames.value = nedavnigre;
+        recentGames.value = await gamesApi.getRecentGames();
       } catch (error) {
         console.error('Error fetching API games:', error);
       } finally {
@@ -200,6 +209,7 @@ export default {
       userGamesLoading,
       currentlyPlaying,
       todaysPick,
+      heroImage,
       totalGames,
       completedGames,
       totalHours,
