@@ -75,15 +75,15 @@
         <!-- Filter Tabs -->
         <div class="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
           <div class="flex flex-nowrap gap-2 min-w-max">
-            <button class="btn btn-sm" :class="activeFilter === 'all' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('all')">Sve</button>
-            <button class="btn btn-sm" :class="activeFilter === 'playing' || activeFilter === 'current' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('playing')">Igram</button>
-            <button class="btn btn-sm" :class="activeFilter === 'completed' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('completed')">Završeno</button>
-            <button class="btn btn-sm" :class="activeFilter === 'paused' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('paused')">Pauzirano</button>
-            <button class="btn btn-sm" :class="activeFilter === 'backlog' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('backlog')">Backlog</button>
-            <button class="btn btn-sm" :class="activeFilter === 'dropped' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('dropped')">Napušteno</button>
-            <button class="btn btn-sm" :class="activeFilter === 'wishlist' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('wishlist')">Wishlist</button>
-            <button class="btn btn-sm" :class="activeFilter === 'rated-5' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('rated-5')">5/5</button>
-            <button class="btn btn-sm" :class="activeFilter === 'rated-4' ? 'btn-active btn-neutral shadow' : 'btn-outline bg-base-100 shadow-sm'" @click="filterGames('rated-4')">4/5+</button>
+            <button class="btn btn-sm" :class="filterBtnClass('all')" @click="filterGames('all')">Sve</button>
+            <button class="btn btn-sm" :class="filterBtnClass('playing')" @click="filterGames('playing')">Igram</button>
+            <button class="btn btn-sm" :class="filterBtnClass('completed')" @click="filterGames('completed')">Završeno</button>
+            <button class="btn btn-sm" :class="filterBtnClass('paused')" @click="filterGames('paused')">Pauzirano</button>
+            <button class="btn btn-sm" :class="filterBtnClass('backlog')" @click="filterGames('backlog')">Backlog</button>
+            <button class="btn btn-sm" :class="filterBtnClass('dropped')" @click="filterGames('dropped')">Napušteno</button>
+            <button class="btn btn-sm" :class="filterBtnClass('wishlist')" @click="filterGames('wishlist')">Wishlist</button>
+            <button class="btn btn-sm" :class="filterBtnClass('rated-5')" @click="filterGames('rated-5')">5/5</button>
+            <button class="btn btn-sm" :class="filterBtnClass('rated-4')" @click="filterGames('rated-4')">4/5+</button>
           </div>
         </div>
 
@@ -296,6 +296,24 @@ export default {
       activeFilter.value = filter;
     };
 
+    const filterBtnClass = (filter) => {
+      const colorMap = {
+        'all': 'btn-info',
+        'playing': 'btn-primary',
+        'current': 'btn-primary',
+        'completed': 'btn-success',
+        'paused': 'btn-warning',
+        'backlog': 'btn-ghost',
+        'dropped': 'btn-error',
+        'wishlist': 'btn-accent',
+        'rated-5': 'btn-secondary',
+        'rated-4': 'btn-secondary'
+      };
+      const color = colorMap[filter] || 'btn-neutral';
+      if (activeFilter.value !== filter) return `${color} btn-outline bg-base-100 shadow-sm`;
+      return `${color} btn-active shadow`;
+    };
+
     const closeDropdown = (type) => {
       const ref = type === 'sort' ? sortDropdownLabel : null;
       if (ref?.value) {
@@ -347,6 +365,16 @@ export default {
           game.publisher?.toLowerCase().includes(query) ||
           game.platform?.toLowerCase().includes(query)
         );
+      }
+
+      if (sortField.value === 'rating' && Array.isArray(filtered)) {
+        filtered = [...filtered].sort((a, b) => {
+          const aNull = a.rating == null, bNull = b.rating == null;
+          if (aNull && bNull) return 0;
+          if (aNull) return 1;
+          if (bNull) return -1;
+          return sortOrder.value === 'desc' ? b.rating - a.rating : a.rating - b.rating;
+        });
       }
 
       return filtered;
@@ -406,6 +434,7 @@ export default {
       filteredGames,
       sortGames,
       filterGames,
+      filterBtnClass,
       closeDropdown,
       navigateToGame,
       navigateToAddGame,
