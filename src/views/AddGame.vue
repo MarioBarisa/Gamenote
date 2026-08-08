@@ -8,13 +8,27 @@
         <div class="mb-4 sm:mb-6">
           <h2 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-4"></h2>
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              placeholder="Unesite naziv igre..." 
-              class="input input-bordered input-md sm:input-lg flex-grow w-full sm:flex-grow"
-              @keyup.enter="searchGames" 
-            />
+            <div class="relative flex-1 w-full sm:flex-grow">
+              <input 
+                type="text" 
+                v-model="searchQuery" 
+                placeholder="Unesite naziv igre..." 
+                class="input input-bordered input-md sm:input-lg w-full pr-10"
+                @keyup.enter="searchGames" 
+              />
+              <button 
+                v-if="searchQuery"
+                @click="clearSearch"
+                class="absolute inset-y-0 right-1 sm:right-2 flex items-center justify-center w-8 sm:w-9 text-base-content/60 hover:text-base-content"
+                title="Očisti pretragu"
+                aria-label="Očisti pretragu"
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <button @click="searchGames" class="btn btn-primary btn-md sm:btn-lg whitespace-nowrap w-full sm:w-auto" :disabled="searchLoading">
               <span v-if="searchLoading" class="loading loading-spinner"></span>
               <span v-else>Pretraži</span>
@@ -24,20 +38,46 @@
         
         <div v-if="searchResults.length > 0" class="search-results mb-6 sm:mb-8">
           <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Rezultati pretrage</h3>
-          <div :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
+          <div :class="`grid ${cardConfig.container} ${cardConfig.gap}`">
             <div 
               v-for="game in searchResults" 
               :key="game.id" 
-              class="card bg-base-100 cursor-pointer transition-all duration-300 hover:bg-base-300 hover:shadow-lg"
+              class="game-card card bg-base-100 shadow-xl h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
               @click="navigateToGameDetails(game)"
             >
-              <figure v-if="game.background_image" class="h-32 sm:h-40">
-                <img :src="game.background_image" :alt="game.name" class="w-full h-full object-cover" />
+              <figure :class="`relative ${cardConfig.imageHeight} overflow-hidden`">
+                <img :src="game.background_image || 'https://placehold.co/600x400?text=No+Image'" :alt="game.name" class="w-full h-full object-cover" />
+                <div v-if="isGameInLibrary(game)" class="absolute top-0 left-0 m-1 sm:m-2">
+                  <span
+                      class="badge bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600 text-white font-bold text-xs sm:text-sm p-2 sm:p-3 shadow-lg border-2 border-emerald-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 20 20">
+                        <path d="M0 0h20v20H0z" fill="none" />
+                        <path fill="currentColor" fill-rule="evenodd" d="M3.213 5.8c.015.759-.398 1.785-.935 2.321a2.66 2.66 0 0 0 0 3.76c.53.528.92 1.444.935 2.192c.014.662.273 1.32.778 1.824a2.65 2.65 0 0 0 1.748.775c.791.04 1.827.5 2.387 1.06a2.66 2.66 0 0 0 3.759 0c.56-.56 1.596-1.02 2.387-1.06a2.65 2.65 0 0 0 1.748-.775a2.65 2.65 0 0 0 .777-1.826c.015-.746.4-1.656.929-2.184a2.663 2.663 0 0 0 .006-3.766c-.536-.535-.95-1.562-.934-2.32a2.65 2.65 0 0 0-.778-1.932a2.65 2.65 0 0 0-2.015-.775c-.714.036-1.615-.31-2.12-.816a2.66 2.66 0 0 0-3.76 0c-.504.505-1.406.852-2.12.816a2.65 2.65 0 0 0-2.014.775A2.65 2.65 0 0 0 3.213 5.8m9.828.826a1 1 0 0 1 .389 1.36l-2.768 4.982a1 1 0 0 1-.298.343a1 1 0 0 1-1.23-.045l-2.759-2.207a1 1 0 1 1 1.25-1.562l1.853 1.483l2.203-3.966a1 1 0 0 1 1.36-.388" clip-rule="evenodd" />
+                      </svg>
+                    U kolekciji
+                  </span>
+                </div>
               </figure>
-              <div class="card-body p-3 sm:p-4">
-                <h4 class="card-title text-md sm:text-lg">{{ game.name }}</h4>
+              <div :class="`card-body ${cardConfig.cardBody} flex flex-col`">
+                <h4 :class="`card-title ${cardConfig.titleSize} font-bold mb-1 line-clamp-1`">{{ game.name }}</h4>
+                <div v-show="game.metacritic || getPlatformNames(game).length" class="flex items-center flex-wrap gap-1.5 mb-1">
+                  <span v-if="game.metacritic" class="badge badge-outline font-bold text-xs sm:text-sm" :class="getMetacriticBadgeColor(game.metacritic)">
+                    Metacritic: {{ game.metacritic }}
+                  </span>
+                  <span 
+                    v-for="platform in getPlatformNames(game).slice(0, 3)" 
+                    :key="platform" 
+                    class="badge badge-outline p-2 h-auto tooltip tooltip-top"
+                    :data-tip="platform"
+                  >
+                    <PlatformIcon :name="platform" class="w-6 h-6" />
+                  </span>
+                  <span v-if="getPlatformNames(game).length > 3" class="badge badge-neutral p-2 h-auto">
+                    +{{ getPlatformNames(game).length - 3 }}
+                  </span>
+                </div>
                 <p class="text-sm opacity-70">{{ formatReleaseDate(game.released) }}</p>
-                <div class="card-actions justify-end mt-2">
+                <div class="card-actions justify-end mt-3 pt-1">
                   <button 
                     @click.stop="selectGameForCollection(game)" 
                     class="btn btn-xs sm:btn-sm btn-primary"
@@ -47,6 +87,9 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div ref="searchSentinelRef" class="flex justify-center mt-4 py-2">
+            <span v-if="searchLoadingMore" class="loading loading-spinner loading-lg"></span>
           </div>
         </div>
       </div>
@@ -294,7 +337,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
@@ -303,8 +346,12 @@ import { addGameToGroup } from '../services/groupsApi';
 import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
 import { GAME_STATUS } from '../constants/gameStatus';
+import PlatformIcon from '../components/PlatformIcon.vue';
+
+const PAGE_SIZE = 20;
 
 export default {
+  components: { PlatformIcon },
   setup() {
     const userStore = useUserStore();
     const cardSizeStore = useCardSizeStore();
@@ -315,11 +362,18 @@ export default {
     const searchQuery = ref('');
     const searchResults = ref([]);
     const searchLoading = ref(false);
+    const searchLoadingMore = ref(false);
+    const searchPage = ref(1);
+    const hasMoreResults = ref(false);
+    const searchSentinelRef = ref(null);
+    const libraryGameApiIds = ref(new Set());
     const selectedGame = ref(null);
     const saveLoading = ref(false);
     const showApiGameModal = ref(false);
     const apiGameDetails = ref(null);
     const apiGameStoresList = ref([]);
+    
+    const cardConfig = computed(() => cardSizeStore.getSizeConfig(cardSizeStore.cardSize));
     
     const platforms = [
       'PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 
@@ -424,21 +478,117 @@ export default {
       }
     });
 
+    const loadLibraryGameApiIds = async () => {
+      if (!userStore.user?.id) return;
+      try {
+        const { data } = await supabase
+          .from('games')
+          .select('game_api_id')
+          .eq('user_id', userStore.user.id)
+          .not('game_api_id', 'is', null);
+        libraryGameApiIds.value = new Set((data || []).map(g => g.game_api_id).filter(Boolean));
+      } catch (error) {
+        console.error('Greška pri učitavanju kolekcije:', error);
+      }
+    };
+
+    const isGameInLibrary = (game) => {
+      if (!game?.id) return false;
+      return libraryGameApiIds.value.has(game.id.toString());
+    };
+
+    const clearSearch = () => {
+      searchQuery.value = '';
+      searchResults.value = [];
+      searchPage.value = 1;
+      hasMoreResults.value = false;
+      sessionStorage.removeItem('addGameSearchQuery');
+      sessionStorage.removeItem('addGameSearchResults');
+    };
+
+    const getPlatformNames = (game) => {
+      if (!game) return [];
+      const extract = (list) => (list || []).map(p => {
+        if (!p) return '';
+        if (typeof p === 'string') return p;
+        return p?.platform?.name || p?.name || p?.slug || '';
+      }).filter(Boolean);
+      return [...new Set([...extract(game.platforms), ...extract(game.parent_platforms)])];
+    };
+
+    const getMetacriticBadgeColor = (score) => {
+      if (!score) return 'text-gray-400';
+      if (score >= 75) return 'text-green-500 border-green-500';
+      if (score >= 50) return 'text-yellow-500 border-yellow-500';
+      return 'text-red-500 border-red-500';
+    };
+
+    const computeHasMore = (data, resultsLength) => {
+      if (data && data.next) return true;
+      if (data && typeof data.count === 'number') return data.count > resultsLength;
+      return resultsLength >= PAGE_SIZE;
+    };
+
     const searchGames = async () => {
       if (!searchQuery.value.trim()) return;
       
       searchLoading.value = true;
       
       try {
-        const data = await gamesApi.searchGames(searchQuery.value);
+        const data = await gamesApi.searchGames(searchQuery.value, 1);
         searchResults.value = data.results || [];
+        searchPage.value = 1;
+        hasMoreResults.value = computeHasMore(data, searchResults.value.length);
         sessionStorage.setItem('addGameSearchQuery', searchQuery.value);
         sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
+        window.scrollTo({ top: 0 });
       } catch (error) {
         console.error('Greška pri pretraživanju igara:', error);
       } finally {
         searchLoading.value = false;
       }
+    };
+    
+    const loadMoreResults = async () => {
+      if (searchLoadingMore.value || searchLoading.value || !hasMoreResults.value) return;
+      if (showApiGameModal.value) return;
+      if (!searchQuery.value.trim()) return;
+      
+      searchLoadingMore.value = true;
+      
+      try {
+        const data = await gamesApi.searchGames(searchQuery.value, searchPage.value + 1);
+        const newResults = data.results || [];
+        const existingIds = new Set(searchResults.value.map(g => g.id));
+        const uniqueNew = newResults.filter(g => !existingIds.has(g.id));
+        
+        searchPage.value += 1;
+        searchResults.value = [...searchResults.value, ...uniqueNew];
+        hasMoreResults.value = computeHasMore(data, searchResults.value.length);
+        sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
+      } catch (error) {
+        console.error('Greška pri učitavanju dodatnih rezultata:', error);
+      } finally {
+        searchLoadingMore.value = false;
+      }
+    };
+    
+    let sentinelObserver = null;
+    const setupSentinelObserver = () => {
+      if (sentinelObserver) {
+        sentinelObserver.disconnect();
+        sentinelObserver = null;
+      }
+      nextTick(() => {
+        const target = searchSentinelRef.value;
+        if (!target) return;
+        sentinelObserver = new IntersectionObserver((entries) => {
+          if (entries.some(e => e.isIntersecting)) {
+            loadMoreResults();
+          }
+        }, { rootMargin: '300px 0px' });
+        sentinelObserver.observe(target);
+      });
     };
     
     const navigateToGameDetails = (game) => {
@@ -767,6 +917,15 @@ export default {
       }
     };
     
+    watch(() => searchResults.value.length > 0, (hasResults) => {
+      if (hasResults) {
+        setupSentinelObserver();
+      } else if (sentinelObserver) {
+        sentinelObserver.disconnect();
+        sentinelObserver = null;
+      }
+    });
+
     onMounted(() => {
       const savedQuery = sessionStorage.getItem('addGameSearchQuery');
       const savedResults = sessionStorage.getItem('addGameSearchResults');
@@ -780,7 +939,20 @@ export default {
           searchResults.value = [];
         }
       }
+      if (searchResults.value.length > 0) {
+        searchPage.value = 1;
+        hasMoreResults.value = true;
+        setupSentinelObserver();
+      }
+      loadLibraryGameApiIds();
       loadGameFromApiId();
+    });
+
+    onUnmounted(() => {
+      if (sentinelObserver) {
+        sentinelObserver.disconnect();
+        sentinelObserver = null;
+      }
     });
     
     return {
@@ -791,6 +963,8 @@ export default {
       searchQuery,
       searchResults,
       searchLoading,
+      searchLoadingMore,
+      hasMoreResults,
       selectedGame,
       saveLoading,
       showApiGameModal,
@@ -800,9 +974,16 @@ export default {
       apiGameForm,
       apiGameStoresList,
       cardSizeStore,
+      cardConfig,
+      searchSentinelRef,
       searchGames,
+      clearSearch,
+      loadMoreResults,
       navigateToGameDetails,
       selectGameForCollection,
+      isGameInLibrary,
+      getPlatformNames,
+      getMetacriticBadgeColor,
       toggleApiGroupId,
       formatReleaseDate,
       saveGame,

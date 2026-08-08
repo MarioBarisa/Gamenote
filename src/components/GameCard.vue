@@ -29,11 +29,11 @@
         <span class="badge badge-outline p-2 h-auto tooltip tooltip-top" :data-tip="game.platform || 'Nepoznata platforma'">
           <PlatformIcon :name="game.platform" class="w-6 h-6" />
         </span>
-        <span v-if="genreList.length" class="badge badge-outline ml-2 p-2 h-auto">
-          <span v-for="g in genreList" :key="g" class="tooltip tooltip-top" :data-tip="g">
-            <GenreIcon :genre="g" class="w-6 h-6" />
+          <span v-if="genreList.length" class="badge badge-outline ml-2 p-2 h-auto">
+            <span v-for="(g, index) in genreList" :key="g" class="tooltip tooltip-top" :class="{ 'hidden sm:inline-flex': index >= 2 }" :data-tip="g">
+              <GenreIcon :genre="g" class="w-6 h-6" />
+            </span>
           </span>
-        </span>
         <button v-if="game.notes" @click.stop="showNotesModal = true" class="ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto" title="Prikazi bilješke">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
