@@ -5,6 +5,8 @@
         :src="getGameImage(game)" 
         :alt="game.title" 
         class="w-full h-full object-cover"
+        decoding="async"
+        :loading="lazy ? 'lazy' : undefined"
       />
       <!-- 100% Badge --->
       <div v-if="achievementPercent === 100" class="absolute top-0 left-0 m-1 sm:m-2">
@@ -128,6 +130,10 @@ export default {
     game: {
       type: Object,
       required: true
+    },
+    lazy: {
+      type: Boolean,
+      default: false
     }
   },
   setup() {

@@ -1,22 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../views/Home.vue';
-import AddGame from '../views/AddGame.vue';
-import Games from '../views/Games.vue';
-import GameDetails from '../views/GameDetails.vue';
-import ApiGameDetails from '../views/ApiGameDetails.vue';
-import Stats from '../views/Stats.vue';
-import SignIn from '../components/SignIn.vue';
-import SignUp from '../components/SignUp.vue';
-import Profile from '../views/Profile.vue';
-import ThemeSettings from '../views/ThemeSettings.vue';
-import Groups from '../views/Groups.vue';
-import GroupDetails from '../views/GroupDetails.vue';
-import Importers from '../views/Importers.vue';
-import ResetPasswordView from '../views/ResetPasswordView.vue';
-import SharedGameView from '../views/SharedGameView.vue';
-import PrivacyPolicy from '../views/PrivacyPolicy.vue';
-import TermsOfService from '../views/TermsOfService.vue';
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,17 +6,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Home
+      component: () => import('../views/Home.vue')
     },
     {
       path: '/groups',
       name: 'groups',
-      component: Groups
+      component: () => import('../views/Groups.vue')
     },
     {
       path: '/groups/:id',
       name: 'group-details',
-      component: GroupDetails
+      component: () => import('../views/GroupDetails.vue')
     },
     {
       path: '/about',
@@ -49,12 +31,12 @@ const router = createRouter({
     {
       path: '/add-game',
       name: 'add-game',
-      component: AddGame
+      component: () => import('../views/AddGame.vue')
     },
     {
       path: '/library',
       name: 'library',
-      component: Games
+      component: () => import('../views/Games.vue')
     },
     {
       path: '/games',
@@ -64,48 +46,48 @@ const router = createRouter({
     {
       path: '/game/:id',
       name: 'game-details',
-      component: GameDetails
+      component: () => import('../views/GameDetails.vue')
     },
     {
       path: '/edit-game/:id',
       name: 'edit-game',
-      component: GameDetails,
+      component: () => import('../views/GameDetails.vue'),
       props: { editMode: true }
     },
     {
       path: '/api-games/:id',
       name: 'api-game-details',
-      component: ApiGameDetails
+      component: () => import('../views/ApiGameDetails.vue')
     },
     {
       path: '/stats',
       name: 'stats',
-      component: Stats
+      component: () => import('../views/Stats.vue')
     },
     {
       path: '/login',
       name: 'login',
-      component: SignIn
+      component: () => import('../components/SignIn.vue')
     },
     {
       path: '/register',
       name: 'register',
-      component: SignUp
+      component: () => import('../components/SignUp.vue')
     },
     {
       path: '/profile',
       name: 'profile',
-      component: Profile
+      component: () => import('../views/Profile.vue')
     },
     {
       path: '/theme-settings',
       name: 'theme-settings',
-      component: ThemeSettings
+      component: () => import('../views/ThemeSettings.vue')
     },
     {
       path: '/reset-password',
       name: 'reset-password',
-      component: ResetPasswordView
+      component: () => import('../views/ResetPasswordView.vue')
     },
     {
       path: '/:pathMatch(.*)*',
@@ -115,22 +97,22 @@ const router = createRouter({
     {
       path: '/importers',
       name: 'importers',
-      component: Importers
+      component: () => import('../views/Importers.vue')
     },
     {
       path: '/shared',
       name: 'shared-game',
-      component: SharedGameView
+      component: () => import('../views/SharedGameView.vue')
     },
     {
       path: '/privacy',
       name: 'privacy',
-      component: PrivacyPolicy
+      component: () => import('../views/PrivacyPolicy.vue')
     },
     {
       path: '/tos',
       name: 'tos',
-      component: TermsOfService
+      component: () => import('../views/TermsOfService.vue')
     }
   ]
 });
@@ -156,7 +138,14 @@ router.afterEach(() => {
 let lastAuthCheck = 0;
 const AUTH_CHECK_INTERVAL = 5000;
 
+const PUBLIC_ROUTES = new Set(['home', 'login', 'register', 'shared-game', 'privacy', 'tos', 'about', 'contact', 'not-found']);
+
 router.beforeEach(async (to, from, next) => {
+  if (PUBLIC_ROUTES.has(to.name)) {
+    next();
+    return;
+  }
+
   try {
     const userStore = await import('../stores/user').then(module => module.useUserStore());
 

@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
@@ -197,9 +197,17 @@ export default {
       return new Date(dateString).toLocaleDateString('hr-HR');
     };
 
-    onMounted(async () => {
+    let loaded = false;
+    const loadUserData = async () => {
+      if (!userStore.isLoggedIn || loaded) return;
+      loaded = true;
       await fetchUserGames();
       await fetchApiGames();
+    };
+
+    onMounted(loadUserData);
+    watch(() => userStore.isLoggedIn, (loggedIn) => {
+      if (loggedIn) loadUserData();
     });
 
     return {
