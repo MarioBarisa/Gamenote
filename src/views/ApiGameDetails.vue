@@ -33,219 +33,229 @@
         <router-link :to="`/game/${gameInLibraryId}`" class="btn btn-sm bg-white text-blue-600 hover:bg-sky-50 border-none ml-auto shadow-md">Prikaži u biblioteci</router-link>
       </div>
 
-      <div class="flex flex-col md:flex-row gap-4 mb-6">
-        <div class="flex-none">
-          <div class="card bg-base-200 shadow-xl w-full md:w-[300px]">
-            <figure>
-              <img :src="game.background_image || 'https://placehold.co/600x400?text=No+Image'" :alt="game.name" class="w-full h-auto" />
-            </figure>
-            <div class="card-body">
-              <h2 class="card-title">{{ game.name }}</h2>
-              <p><strong>Platforma:</strong> {{ getPlatforms() }}</p>
-              <p><strong>Žanr:</strong> {{ getGenres() }}</p>
-              <p><strong>Izdavač:</strong> {{ getPublishers() }}</p>
+<!-- Hero -->
+      <div class="hero min-h-[220px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[380px] mb-6 rounded-box overflow-hidden relative shadow-xl"
+           :style="`background-image: url('${game.background_image || 'https://placehold.co/1200x400?text=No+Image'}'); background-position: center; background-size: cover;`">
+        <img v-if="screenshots[0]?.image" :src="screenshots[0].image" alt="" class="hidden lg:block absolute inset-0 w-full h-full object-cover" />
+        <div class="hero-overlay bg-gradient-to-t from-base-100 to-transparent opacity-90"></div>
+        <div class="hero-content text-neutral-content w-full h-full flex flex-col justify-between items-start !p-4 sm:!p-8">
+          <div class="flex w-full justify-between items-start">
+            <router-link to="/add-game" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">❮ Natrag</router-link>
+            <button @click="shareGame" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              Podijeli
+            </button>
+          </div>
+          <div class="mt-auto w-full lg:flex lg:items-end lg:gap-5">
+            <div v-if="game.background_image" class="hidden lg:block shrink-0">
+              <img :src="game.background_image" :alt="game.name" class="w-[8.2rem] h-[11.4rem] object-cover rounded-lg shadow-xl ring-1 ring-white/20" />
+            </div>
+            <div class="w-full">
+              <p class="text-sm sm:text-base font-semibold text-white/80 drop-shadow">{{ formatDate(game.released) }}</p>
+              <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{{ game.name }}</h1>
+              <div v-if="game.genres?.length" class="text-sm sm:text-base text-white/80 drop-shadow mt-1">{{ getGenres() }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <div class="mt-2">
-                <p><strong>Metacritic ocjena:</strong></p>
-                <div class="radial-progress font-bold m-2" 
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-stretch">
+
+        <!-- Informacije -->
+        <div class="card bg-base-200 shadow-xl lg:col-span-2 h-full">
+          <div class="card-body p-3 sm:p-4 flex flex-col">
+            <h2 class="card-title text-base m-0 mb-3">Informacije</h2>
+
+            <!-- Metacritic + ESRB -->
+            <div class="flex flex-wrap items-center justify-evenly gap-x-10 gap-y-3 bg-base-300 rounded-xl p-3 w-full mb-3">
+              <div v-if="game.metacritic" class="flex items-center gap-2">
+                <span class="flex items-center gap-1.5 text-sm opacity-70">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" /></svg>
+                  Metacritic
+                </span>
+                <div class="radial-progress font-bold text-lg"
                   :class="getMetacriticColorClass(game.metacritic)"
-                  :style="`--value:${game.metacritic || 0}`" 
-                  :aria-valuenow="game.metacritic" 
-                  role="progressbar">{{ game.metacritic || 'N/A' }} / 100</div>
+                  :style="`--value:${game.metacritic || 0}; --size:4.2rem; --thickness:0.4rem;`"
+                  :aria-valuenow="game.metacritic"
+                  role="progressbar">{{ game.metacritic }}</div>
               </div>
+              <div v-if="game.esrb_rating?.name" class="flex items-center gap-2">
+                <span class="flex items-center gap-1.5 text-sm opacity-70">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" /></svg>
+                  ESRB
+                </span>
+                <img v-if="game.esrb_rating.name === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="w-12 h-auto" />
+                <img v-else-if="game.esrb_rating.name === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="w-12 h-auto" />
+                <img v-else-if="game.esrb_rating.name === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="w-12 h-auto" />
+                <img v-else-if="game.esrb_rating.name === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="w-12 h-auto" />
+                <img v-else-if="game.esrb_rating.name === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="w-12 h-auto" />
+                <span v-else class="text-sm font-semibold">{{ game.esrb_rating.name }}</span>
+              </div>
+            </div>
 
-              <div class="mt-2">
-                <p><strong>ESRB ocjena:</strong></p>
-                <img v-if="game.esrb_rating?.name === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-auto h-auto p-4" />
-                <img v-else-if="game.esrb_rating?.name === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-auto h-auto p-4" />
-                <span v-else class="text-gray-500">N/A</span>
+            <!-- Platforme -->
+            <div v-if="platformList.length > 0" class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" /></svg>
+                  Platforme
+              </span>
+              <div class="flex flex-wrap items-center justify-end gap-2">
+                <span v-for="p in platformList" :key="p" class="tooltip tooltip-top flex items-center justify-center" :data-tip="p" :title="p">
+                  <PlatformIcon :name="p" class="w-6 h-6" />
+                </span>
               </div>
+            </div>
 
-              <div class="mt-2">
-                <p><strong>Datum izdavanja:</strong> {{ formatDate(game.released) }}</p>
-              </div>
+            <!-- Izdavač -->
+            <div v-if="getPublishers() !== 'N/A'" class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                Izdavač
+              </span>
+              <span class="text-sm font-semibold text-right">{{ getPublishers() }}</span>
+            </div>
 
-              <div class="mt-2">
-                <p><strong>Službena web stranica:</strong>
-                  <a v-if="game.website" :href="game.website" target="_blank" class="link link-primary">
-                    Otvori
-                  </a>
-                  <span v-else>N/A</span>
-                </p>
-              </div>
+            <!-- Datum izdavanja -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" /></svg>
+                Datum izdavanja
+              </span>
+              <span class="text-sm font-semibold text-right">{{ formatDate(game.released) }}</span>
+            </div>
 
-              <div class="flex flex-nowrap gap-2 mt-4 justify-between">
-                <button @click="shareGame" class="btn btn-sm flex-1 btn-ghost border border-base-300 gap-1 px-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                  Podijeli
-                </button>
-                <button @click="openAddToCollectionModal" class="btn btn-primary btn-sm flex-1 px-1">
-                  Dodaj u kolekciju
-                </button>
-              </div>
+            <!-- Službena stranica -->
+            <div v-if="game.website" class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>
+                Službena stranica
+              </span>
+              <a :href="game.website" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm font-semibold">Otvori</a>
+            </div>
+
+            <div class="flex gap-2 mt-4 pt-3 border-t border-base-300">
+              <button @click="openAddToCollectionModal" class="btn btn-primary btn-sm flex-1 px-1">
+                Dodaj u kolekciju
+              </button>
             </div>
           </div>
         </div>
 
-        <div class="flex-1">
-          <div class="card bg-base-200 shadow-xl h-full">
-            <div class="mt-8">
-              <h2 class="text-2xl font-bold mb-4 ml-4">Dodatne informacije</h2>
+        <!-- Tabs: Informacije / Serija igara / Slike igre -->
+        <div class="card bg-base-200 shadow-xl lg:col-span-3 h-full">
+          <div class="card-body p-3 sm:p-4 flex flex-col">
+            <div class="flex flex-col flex-1">
+              <div role="tablist" class="tabs tabs-lift">
+                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
+                  <span class="hidden sm:inline font-bold">Informacije</span>
+                </button>
+                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
+                  <span class="hidden sm:inline font-bold">Serija igara</span>
+                </button>
+                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-active' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
+                  <span class="hidden sm:inline font-bold">Slike igre</span>
+                </button>
+              </div>
 
-              <div class="card bg-base-200 shadow-xl">
-                <div class="card-body">
-                  <div class="grid grid-cols-1 gap-4">
-                    <div>
-                      <h3 class="text-lg font-bold">Opis</h3>
-                      <p>{{ game.description_raw || 'Nema opisa.' }}</p>
-                    </div>
+              <div class="p-4 flex flex-col flex-1 gap-3 bg-base-300 rounded-b-xl rounded-tr-xl" :class="activeInfoTab === 'info' ? 'rounded-tl-none' : 'rounded-tl-xl'">
+                <!-- Opis -->
+                <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1">
+                  <div>
+                    <h3 class="text-lg font-bold">Opis</h3>
+                    <p class="whitespace-pre-wrap">{{ game.description_raw || 'Nema opisa.' }}</p>
                   </div>
+                </div>
 
-                  <div class="mt-6" v-if="gameSeries.length > 0">
-                    <h3 class="text-lg font-bold mb-2">Serija igara</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
-                      <!-- prijašnja igra -->
-                      <div v-if="previousGame" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-                        <figure class="px-4 pt-4">
-                          <img 
-                            :src="previousGame.background_image || 'https://placehold.co/300x200?text=No+Image'" 
-                            :alt="previousGame.name" 
-                            class="rounded-lg w-full h-32 object-cover"
-                          />
-                        </figure>
-                        <div class="card-body p-4">
-                          <h4 class="card-title text-sm">{{ previousGame.name }}</h4>
-                          <p class="text-xs text-gray-500">Prethodna igra • {{ formatDate(previousGame.released) }}</p>
-                          <div class="card-actions justify-end mt-2">
-                            <router-link 
-                              :to="`/api-games/${previousGame.id}`" 
-                              class="btn btn-xs btn-primary"
-                            >
-                              Pogledaj
-                            </router-link>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- sljedeca igra -->
-                      <div v-if="nextGame" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-                        <figure class="px-4 pt-4">
-                          <img 
-                            :src="nextGame.background_image || 'https://placehold.co/300x200?text=No+Image'" 
-                            :alt="nextGame.name" 
-                            class="rounded-lg w-full h-32 object-cover"
-                          />
-                        </figure>
-                        <div class="card-body p-4">
-                          <h4 class="card-title text-sm">{{ nextGame.name }}</h4>
-                          <p class="text-xs text-gray-500">Sljedeća igra • {{ formatDate(nextGame.released) }}</p>
-                          <div class="card-actions justify-end mt-2">
-                            <router-link 
-                              :to="`/api-games/${nextGame.id}`" 
-                              class="btn btn-xs btn-primary"
-                            >
-                              Pogledaj
-                            </router-link>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- nema igara prije -->
-                      <div v-if="!previousGame" class="card bg-base-100 shadow-sm">
-                        <div class="card-body p-4 text-center">
-                          <p class="text-sm text-gray-500">Nema prethodne igre u seriji</p>
-                        </div>
-                      </div>
-                      
-                      <!--nema igara poslje -->
-                      <div v-if="!nextGame" class="card bg-base-100 shadow-sm">
-                        <div class="card-body p-4 text-center">
-                          <p class="text-sm text-gray-500">Ova igra je najnovija u seriji! 😊</p>
+                <!-- Serija igrara -->
+                <div v-show="activeInfoTab === 'series'" class="flex flex-col gap-3 flex-1">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
+                    <div v-if="previousGame" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                      <figure class="px-4 pt-4">
+                        <img :src="previousGame.background_image || 'https://placehold.co/300x200?text=No+Image'" :alt="previousGame.name" class="rounded-lg w-full h-32 object-cover" />
+                      </figure>
+                      <div class="card-body p-4">
+                        <h4 class="card-title text-sm">{{ previousGame.name }}</h4>
+                        <p class="text-xs text-gray-500">Prethodna igra • {{ formatDate(previousGame.released) }}</p>
+                        <div class="card-actions justify-end mt-2">
+                          <router-link :to="`/api-games/${previousGame.id}`" class="btn btn-xs btn-primary">Pogledaj</router-link>
                         </div>
                       </div>
                     </div>
-                    
-                    <!-- ako je nered pokaži bilo šta -->
-                    <div v-if="!previousGame && !nextGame && !isLatestGame && gameSeries.length > 1" class="mt-4">
-                      <h4 class="text-md font-semibold mb-2">Sve igre u seriji:</h4>
-                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div v-for="seriesGame in filteredSeriesGames" :key="seriesGame.id" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-                          <figure class="px-4 pt-4">
-                            <img 
-                              :src="seriesGame.background_image || 'https://placehold.co/300x200?text=No+Image'" 
-                              :alt="seriesGame.name" 
-                              class="rounded-lg w-full h-32 object-cover"
-                            />
-                          </figure>
-                          <div class="card-body p-4">
-                            <h4 class="card-title text-sm">{{ seriesGame.name }}</h4>
-                            <p class="text-xs text-gray-500">{{ formatDate(seriesGame.released) }}</p>
-                            <div class="card-actions justify-end mt-2">
-                              <router-link 
-                                :to="`/api-games/${seriesGame.id}`" 
-                                class="btn btn-xs btn-primary"
-                              >
-                                Pogledaj
-                              </router-link>
-                            </div>
-                          </div>
+
+                    <div v-if="nextGame" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                      <figure class="px-4 pt-4">
+                        <img :src="nextGame.background_image || 'https://placehold.co/300x200?text=No+Image'" :alt="nextGame.name" class="rounded-lg w-full h-32 object-cover" />
+                      </figure>
+                      <div class="card-body p-4">
+                        <h4 class="card-title text-sm">{{ nextGame.name }}</h4>
+                        <p class="text-xs text-gray-500">Sljedeća igra • {{ formatDate(nextGame.released) }}</p>
+                        <div class="card-actions justify-end mt-2">
+                          <router-link :to="`/api-games/${nextGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
                         </div>
+                      </div>
+                    </div>
+
+                    <div v-if="!previousGame" class="card bg-base-100 shadow-sm">
+                      <div class="card-body p-4 text-center">
+                        <p class="text-sm text-gray-500">Nema prethodne igre u seriji</p>
+                      </div>
+                    </div>
+
+                    <div v-if="!nextGame" class="card bg-base-100 shadow-sm">
+                      <div class="card-body p-4 text-center">
+                        <p class="text-sm text-gray-500">Ova igra je najnovija u seriji! 😊</p>
                       </div>
                     </div>
                   </div>
 
-                  <div class="mt-6" v-if="screenshots.length > 0">
-                    <h3 class="text-lg font-bold mb-2">Slike igre</h3>
+                  <div v-if="!previousGame && !nextGame && !isLatestGame && gameSeries.length > 1" class="mt-4">
+                    <h4 class="text-md font-semibold mb-2">Sve igre u seriji:</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div v-for="(screenshot, index) in screenshots" :key="index" class="relative">
-                        <img 
-                          :src="screenshot.image" 
-                          :alt="`Screenshot ${index + 1}`" 
-                          class="w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                          @click="openScreenshotModal(index)"
-                        />
+                      <div v-for="seriesGame in filteredSeriesGames" :key="seriesGame.id" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                        <figure class="px-4 pt-4">
+                          <img :src="seriesGame.background_image || 'https://placehold.co/300x200?text=No+Image'" :alt="seriesGame.name" class="rounded-lg w-full h-32 object-cover" />
+                        </figure>
+                        <div class="card-body p-4">
+                          <h4 class="card-title text-sm">{{ seriesGame.name }}</h4>
+                          <p class="text-xs text-gray-500">{{ formatDate(seriesGame.released) }}</p>
+                          <div class="card-actions justify-end mt-2">
+                            <router-link :to="`/api-games/${seriesGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
-                    <div class="modal-box max-w-5xl">
-                      <div class="relative">
-                        <img :src="screenshots[selectedScreenshotIndex].image" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
-                        
-                        <button 
-                          v-if="screenshots.length > 1"
-                          @click="previousScreenshot" 
-                          class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
-                        >
-                          ❮
-                        </button>
-                        
-                        <button 
-                          v-if="screenshots.length > 1"
-                          @click="nextScreenshot" 
-                          class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75"
-                        >
-                          ❯
-                        </button>
-                        
-                        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                          {{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}
-                        </div>
-                      </div>
-                      
-                      <div class="modal-action">
-                        <button @click="closeScreenshotModal" class="btn">Zatvori</button>
-                      </div>
+                <!-- Slike igre -->
+                <div v-show="activeInfoTab === 'screens'" class="flex flex-col gap-3 flex-1">
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div v-for="(screenshot, index) in screenshots" :key="index" class="relative">
+                      <img :src="screenshot.image" :alt="`Screenshot ${index + 1}`" class="w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity" @click="openScreenshotModal(index)" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot lightbox -->
+      <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
+        <div class="modal-box max-w-5xl">
+          <div class="relative">
+            <img :src="screenshots[selectedScreenshotIndex].image" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
+            <button v-if="screenshots.length > 1" @click="previousScreenshot" class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75">❮</button>
+            <button v-if="screenshots.length > 1" @click="nextScreenshot" class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75">❯</button>
+            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">{{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}</div>
+          </div>
+          <div class="modal-action">
+            <button @click="closeScreenshotModal" class="btn">Zatvori</button>
           </div>
         </div>
       </div>
@@ -515,8 +525,10 @@ import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
 import { GAME_STATUS } from '../constants/gameStatus';
 import { listGroups, addGameToGroup } from '../services/groupsApi';
+import PlatformIcon from '../components/PlatformIcon.vue';
 
 export default {
+  components: { PlatformIcon },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -530,6 +542,7 @@ export default {
     const screenshots = ref([]);
     const gameSeries = ref([]);
     const selectedScreenshotIndex = ref(null);
+    const activeInfoTab = ref('info');
     const showAddModal = ref(false);
     const saveLoading = ref(false);
     const groups = ref([]);
@@ -644,6 +657,7 @@ export default {
     // gledaj za promjene 
     watch(() => route.params.id, (newId, oldId) => {
       if (newId && newId !== oldId) {
+        activeInfoTab.value = 'info';
         fetchGame();
       }
     });
@@ -798,6 +812,11 @@ export default {
       if (!game.value?.platforms) return 'N/A';
       return game.value.platforms.map(p => p.platform.name).join(', ');
     };
+
+    const platformList = computed(() => {
+      if (!game.value?.platforms) return [];
+      return [...new Set(game.value.platforms.map(p => p?.platform?.name || p?.name).filter(Boolean))];
+    });
     
     const getGenres = () => {
       if (!game.value?.genres) return 'N/A';
@@ -1015,6 +1034,7 @@ export default {
       screenshots,
       gameSeries,
       selectedScreenshotIndex,
+      activeInfoTab,
       previousGame,
       nextGame,
       isLatestGame,
@@ -1024,6 +1044,7 @@ export default {
       previousScreenshot,
       nextScreenshot,
       getPlatforms,
+      platformList,
       getGenres,
       getPublishers,
       formatDate,
