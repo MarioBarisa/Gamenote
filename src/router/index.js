@@ -140,8 +140,10 @@ const AUTH_CHECK_INTERVAL = 5000;
 
 const PUBLIC_ROUTES = new Set(['home', 'login', 'register', 'shared-game', 'privacy', 'tos', 'about', 'contact', 'not-found']);
 
+const needsUserHydration = (to) => to.name === 'shared-game';
+
 router.beforeEach(async (to, from, next) => {
-  if (PUBLIC_ROUTES.has(to.name)) {
+  if (PUBLIC_ROUTES.has(to.name) && !needsUserHydration(to)) {
     next();
     return;
   }
@@ -158,6 +160,12 @@ router.beforeEach(async (to, from, next) => {
     }
 
     const isAuthenticated = userStore.isLoggedIn;
+
+    if (needsUserHydration(to)) {
+      next();
+      return;
+    }
+
     const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings', 'groups', 'group-details'];
 
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
