@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 840">
+  <defs>
+    <linearGradient id="weaveA" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0" stop-color="#ff77e1" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#ff77e1" stop-opacity="0.5"/>
+      <stop offset="0.36" stop-color="#ffd782" stop-opacity="0.45"/>
+      <stop offset="0.54" stop-color="#a0ffbe" stop-opacity="0.45"/>
+      <stop offset="0.72" stop-color="#82cdff" stop-opacity="0.5"/>
+      <stop offset="0.88" stop-color="#c896ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#c896ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="weaveB" x1="0.2" y1="1" x2="0.9" y2="0">
+      <stop offset="0" stop-color="#82cdff" stop-opacity="0"/>
+      <stop offset="0.25" stop-color="#7c3aed" stop-opacity="0.35"/>
+      <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="0.75" stop-color="#f472b6" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.4 0.4 0.4 0 0"/>
+    </filter>
+    <path id="sp" d="M0 -12 Q 2.6 -2.6 12 0 Q 2.6 2.6 0 12 Q -2.6 2.6 -12 0 Q -2.6 -2.6 0 -12 Z"/>
+    <circle id="glint" r="1.6"/>
+  </defs>
+
+  <rect width="600" height="840" fill="#0a0a14"/>
+
+  <!-- iridescentni vez -->
+  <g transform="rotate(24 300 420)">
+    <rect x="-220" y="-160" width="1040" height="1160" fill="url(#weaveA)"/>
+  </g>
+  <g transform="rotate(-38 300 420)">
+    <rect x="-220" y="-160" width="1040" height="1160" fill="url(#weaveB)" style="mix-blend-mode:screen"/>
+  </g>
+
+  <!-- glitter mikro-zrno -->
+  <rect width="600" height="840" filter="url(#grain)" opacity="0.16"/>
+
+  <!-- raspršene zvjezdice -->
+  <g fill="#ffffff">
+    <use href="#sp" transform="translate(64 92) scale(0.9) rotate(-14)" opacity="0.75"/>
+    <use href="#sp" transform="translate(212 48) scale(0.55) rotate(22)" opacity="0.5"/>
+    <use href="#sp" transform="translate(398 76) scale(1.25) rotate(-6)" opacity="0.9"/>
+    <use href="#sp" transform="translate(540 140) scale(0.65) rotate(30)" opacity="0.45"/>
+    <use href="#sp" transform="translate(120 210) scale(0.5) rotate(10)" opacity="0.4"/>
+    <use href="#sp" transform="translate(310 188) scale(1.05) rotate(-24)" opacity="0.8"/>
+    <use href="#sp" transform="translate(472 262) scale(0.7) rotate(16)" opacity="0.55"/>
+    <use href="#sp" transform="translate(58 330) scale(1.15) rotate(-10)" opacity="0.85"/>
+    <use href="#sp" transform="translate(236 320) scale(0.45) rotate(28)" opacity="0.35"/>
+    <use href="#sp" transform="translate(430 372) scale(0.95) rotate(-18)" opacity="0.7"/>
+    <use href="#sp" transform="translate(556 428) scale(0.6) rotate(8)" opacity="0.45"/>
+    <use href="#sp" transform="translate(150 462) scale(1.35) rotate(20)" opacity="0.95"/>
+    <use href="#sp" transform="translate(342 496) scale(0.55) rotate(-30)" opacity="0.4"/>
+    <use href="#sp" transform="translate(500 560) scale(1.1) rotate(12)" opacity="0.8"/>
+    <use href="#sp" transform="translate(84 586) scale(0.7) rotate(-8)" opacity="0.5"/>
+    <use href="#sp" transform="translate(264 620) scale(0.95) rotate(26)" opacity="0.7"/>
+    <use href="#sp" transform="translate(442 668) scale(0.5) rotate(-20)" opacity="0.4"/>
+    <use href="#sp" transform="translate(130 708) scale(1.2) rotate(6)" opacity="0.9"/>
+    <use href="#sp" transform="translate(330 742) scale(0.65) rotate(-16)" opacity="0.5"/>
+    <use href="#sp" transform="translate(520 786) scale(0.85) rotate(24)" opacity="0.65"/>
+    <use href="#sp" transform="translate(40 792) scale(0.55) rotate(-26)" opacity="0.45"/>
+    <use href="#sp" transform="translate(238 806) scale(0.75) rotate(14)" opacity="0.55"/>
+    <use href="#sp" transform="translate(36 512) scale(0.6) rotate(18)" opacity="0.42"/>
+    <use href="#sp" transform="translate(574 62) scale(0.7) rotate(-12)" opacity="0.5"/>
+  </g>
+  <g>
+    <use href="#sp" fill="#ffb3ec" transform="translate(178 128) scale(0.8) rotate(32)" opacity="0.7"/>
+    <use href="#sp" fill="#9be8ff" transform="translate(368 240) scale(0.72) rotate(-22)" opacity="0.68"/>
+    <use href="#sp" fill="#c9f7b8" transform="translate(508 350) scale(0.66) rotate(14)" opacity="0.6"/>
+    <use href="#sp" fill="#d9b6ff" transform="translate(196 548) scale(0.88) rotate(-6)" opacity="0.72"/>
+    <use href="#sp" fill="#9be8ff" transform="translate(388 700) scale(0.74) rotate(20)" opacity="0.62"/>
+    <use href="#sp" fill="#ffd782" transform="translate(562 620) scale(0.6) rotate(-28)" opacity="0.58"/>
+    <use href="#sp" fill="#ffb3ec" transform="translate(84 400) scale(0.62) rotate(10)" opacity="0.55"/>
+  </g>
+  <g fill="#ffffff">
+    <use href="#glint" transform="translate(96 156)" opacity="0.7"/>
+    <use href="#glint" transform="translate(288 108)" opacity="0.5"/>
+    <use href="#glint" transform="translate(452 196)" opacity="0.65"/>
+    <use href="#glint" transform="translate(172 296)" opacity="0.45"/>
+    <use href="#glint" transform="translate(394 332)" opacity="0.6"/>
+    <use href="#glint" transform="translate(548 402)" opacity="0.5"/>
+    <use href="#glint" transform="translate(112 448)" opacity="0.65"/>
+    <use href="#glint" transform="translate(306 540)" opacity="0.45"/>
+    <use href="#glint" transform="translate(470 604)" opacity="0.6"/>
+    <use href="#glint" transform="translate(148 656)" opacity="0.5"/>
+    <use href="#glint" transform="translate(352 716)" opacity="0.65"/>
+    <use href="#glint" transform="translate(540 760)" opacity="0.45"/>
+    <use href="#glint" transform="translate(58 736)" opacity="0.55"/>
+    <use href="#glint" transform="translate(254 764)" opacity="0.4"/>
+  </g>
+</svg>

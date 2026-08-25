@@ -1,15 +1,32 @@
 <template>
-  <div class="game-card card bg-base-200 shadow-xl h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+  <component
+    :is="tcgActive ? 'hover-tilt' : 'div'"
+    v-bind="tcgActive ? tiltAttrs : {}"
+    class="game-card-host h-full"
+    :class="[
+      { 'tcg-round': tcgActive, 'tcg-ex': !!foilVariant },
+      foilVariant ? `tcg-ex--${foilVariant}` : ''
+    ]"
+  >
+    <div
+      class="game-card card bg-base-200 shadow-xl h-full"
+      :class="[
+        tcgActive ? '' : 'transform transition-all duration-300 hover:scale-105 hover:shadow-2xl',
+        { 'relative overflow-hidden': !!foilVariant }
+      ]"
+    >
     <figure :class="`relative ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).imageHeight} overflow-hidden`">
-      <img 
-        :src="getGameImage(game)" 
-        :alt="game.title" 
+      <img
+        :src="getGameImage(game)"
+        :alt="game.title"
         class="w-full h-full object-cover"
         decoding="async"
         :loading="lazy ? 'lazy' : undefined"
       />
+      <!-- TCG folija -->
+      <div v-if="foilVariant" class="tcg-foil" :class="`tcg-foil--${foilVariant}`" aria-hidden="true"></div>
       <!-- 100% Badge --->
-      <div v-if="achievementPercent === 100" class="absolute top-0 left-0 m-1 sm:m-2">
+      <div v-if="achievementPercent === 100 && !foilVariant" class="absolute top-0 left-0 m-1 sm:m-2">
         <div class="badge bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-black font-bold text-xs sm:text-sm p-2 sm:p-3 shadow-lg border-2 border-yellow-300">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -43,19 +60,21 @@
         </button>
       </div>
 
-      <!-- Modal za bilješke -->
-      <div v-if="showNotesModal" class="modal modal-open">
-        <div class="modal-box max-w-2xl">
-          <h3 class="font-bold text-lg mb-4">{{ game.title }}</h3>
-          <div class="bg-base-100 p-4 rounded mb-4 max-h-96 overflow-y-auto">
-            <p class="text-sm whitespace-pre-wrap">{{ game.notes }}</p>
+      <!-- Modal za bilješke (teleportirano izvan kartice radi overflow/tilt isjecanja) -->
+      <Teleport to="body">
+        <div v-if="showNotesModal" class="modal modal-open">
+          <div class="modal-box max-w-2xl">
+            <h3 class="font-bold text-lg mb-4">{{ game.title }}</h3>
+            <div class="bg-base-100 p-4 rounded mb-4 max-h-96 overflow-y-auto">
+              <p class="text-sm whitespace-pre-wrap">{{ game.notes }}</p>
+            </div>
+            <div class="modal-action">
+              <button class="btn btn-primary" @click.stop="showNotesModal = false">Zatvori</button>
+            </div>
           </div>
-          <div class="modal-action">
-            <button class="btn btn-primary" @click.stop="showNotesModal = false">Zatvori</button>
-          </div>
+          <form method="dialog" class="modal-backdrop" @click.stop="showNotesModal = false"></form>
         </div>
-        <form method="dialog" class="modal-backdrop" @click.stop="showNotesModal = false"></form>
-      </div>
+      </Teleport>
       
       <div class="flex items-center mb-2">
         <div class="flex">
@@ -111,17 +130,22 @@
   </div>
 </div>
 
-</div>
+    </div>
 
     </div>
   </div>
+  </component>
 </template>
 
 <script>
 import { useCardSizeStore } from '../stores/cardSize';
-import { ref } from 'vue';
+import { useThemeStore } from '../stores/theme';
+import { ref, watch } from 'vue';
 import PlatformIcon from './PlatformIcon.vue';
 import GenreIcon from './GenreIcon.vue';
+
+// hover-tilt se registrira samo jednom i tek kad je TCG način aktivan
+let hoverTiltRegistered = false;
 
 export default {
   name: 'GameCard',
@@ -134,14 +158,60 @@ export default {
     lazy: {
       type: Boolean,
       default: false
+    },
+    noTcg: {
+      type: Boolean,
+      default: false
     }
   },
   setup() {
     const cardSizeStore = useCardSizeStore();
+    const themeStore = useThemeStore();
     const showNotesModal = ref(false);
-    return { cardSizeStore, showNotesModal };
+
+    const ensureHoverTilt = () => {
+      if (!hoverTiltRegistered) {
+        hoverTiltRegistered = true;
+        import('hover-tilt/web-component');
+      }
+    };
+    watch(
+      () => themeStore.tcgMode,
+      (on) => { if (on) ensureHoverTilt(); },
+      { immediate: true }
+    );
+
+    return { cardSizeStore, themeStore, showNotesModal };
   },
   computed: {
+    tcgActive() {
+      return this.themeStore.tcgMode && !this.noTcg;
+    },
+    perfectRating() {
+      return (this.game?.rating || 0) === 5;
+    },
+    foilVariant() {
+      if (!this.tcgActive) return null;
+      const ach = this.achievementPercent === 100;
+      if (ach && this.perfectRating) return 'prism';
+      if (ach) return 'gold';
+      if (this.perfectRating) return 'holo';
+      return null;
+    },
+    tiltAttrs() {
+      const glareHue = { gold: '45', holo: '270', prism: '180' };
+      return {
+        'tilt-factor': '1.4',
+        'scale-factor': '1.04',
+        shadow: true,
+        'shadow-blur': '18',
+        'glare-intensity': '0.4',
+        'glare-hue': glareHue[this.foilVariant] || '270',
+        'blend-mode': 'overlay',
+        'spring-options': '{"stiffness": 0.25, "damping": 0.75}',
+        'exit-delay': '120'
+      };
+    },
     genreList() {
       const game = this.game;
       if (!game) return [];
@@ -257,5 +327,129 @@ export default {
   .tooltip::after {
     display: none !important;
   }
+}
+
+/* ===== TCG način ===== */
+.game-card-host {
+  display: block;
+}
+
+/* Izolacija: folija smije miješati isključivo sa svojim sadržajem (poster img).
+   Bez ovoga preserve-3d/transform kontekst hover-tilta može preusmjeriti blend
+   prema prozirnoj pozadini → poster djeluje "prozirno". */
+.game-card figure {
+  isolation: isolate;
+}
+
+/* Folija: cijeli poster, sijaj prati nagib kartice (hover-tilt varijable, 0–1).
+   Gradijenti su "trakasti" — crni razmaci ne mijenjaju sliku uz color-dodge,
+   pa detalji ostaju vidljivi između sjajnih traka. */
+.tcg-foil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.45;
+  background-size: 220% 220%;
+  background-position:
+    calc(var(--hover-tilt-x, 0.5) * 100%)
+    calc(var(--hover-tilt-y, 0.5) * 100%);
+  animation: tcg-foil-breathe 7s ease-in-out infinite alternate;
+}
+
+.tcg-foil--gold {
+  background-image: linear-gradient(
+    115deg,
+    #000 12%, #f7e08b 22%, #000 34%,
+    #fff3b0 44%, #000 56%,
+    #d4af37 66%, #000 78%,
+    #ffe98a 88%, #000 100%
+  );
+}
+
+.tcg-foil--holo {
+  background-image: linear-gradient(
+    115deg,
+    #000 10%, #7c3aed 20%, #000 32%,
+    #22d3ee 42%, #000 54%,
+    #f472b6 64%, #000 76%,
+    #2dd4bf 86%, #000 100%
+  );
+}
+
+.tcg-foil--prism {
+  background-image: conic-gradient(
+    from 90deg at 50% 50%,
+    #000, #f7e08b 15%, #000 30%,
+    #22d3ee 45%, #000 60%,
+    #f472b6 75%, #000 90%, #000
+  );
+  opacity: 0.55;
+}
+
+/* Gamenote logo je sada dio EX Holo sloja (::part(tilt)::after u ne-scoped bloku ispod) */
+
+@keyframes tcg-foil-breathe {
+  from { background-size: 220% 220%; }
+  to { background-size: 260% 260%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tcg-foil {
+    animation: none;
+  }
+}
+</style>
+
+<!-- NE-scoped: ::part() selektori moraju živjeti u globalnom CSS-u da bi došli do
+     shadow DOM-a hover-tilt web komponente. Uzorak: Pokemon "ex Holo" primjer iz dokumentacije. -->
+<style>
+.tcg-round::part(container),
+.tcg-round::part(tilt) {
+  border-radius: var(--radius-box, 1rem);
+  isolation: isolate;
+}
+
+/* Tekstura folije sa zvjezdicama (SVG) se miješa u zadani gradijent sjaja,
+   pa se cijela kompozicija soft-lightom prelije preko kartice — uzorak:
+   Pokemon "ex Holo" primjer iz hover-tilt dokumentacije. */
+.tcg-ex::part(tilt)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* slojevi: Gamenote logo (vrh, normal) → folija sa zvjezdicama → zadani gradijent sjaja.
+     Logo MORA biti iznad folije — color-burn tamne teksture inače poništi sve
+     osim čisto bijelih piksala (zvjezdica). */
+  background-image:
+    url('../assets/newAssets/GamenoteMainLogo.png'),
+    url('../assets/tcg/foil-spectrum.svg'),
+    var(--hover-tilt-default-gradient);
+  background-size: 50% auto, 120% 160%, cover;
+  background-position:
+    center center,
+    calc(50% + var(--hover-tilt-x, 0) * 60px)
+    calc(50% + var(--hover-tilt-y, 0) * 60px),
+    center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal, color-burn;
+  mix-blend-mode: soft-light;
+  opacity: calc(0.25 + var(--hover-tilt-opacity, 0) * 0.5);
+  will-change: background-position, opacity;
+}
+
+/* Prizma — lagano pomaknuta paleta istog uzorka */
+.tcg-ex--prism::part(tilt)::after {
+  filter: hue-rotate(20deg);
+}
+
+/* Zlatna varijanta — topla šampanj folija */
+.tcg-ex--gold::part(tilt)::after {
+  background-image:
+    url('../assets/newAssets/GamenoteMainLogo.png'),
+    url('../assets/tcg/foil-gold.svg'),
+    var(--hover-tilt-default-gradient);
 }
 </style>

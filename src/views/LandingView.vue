@@ -8,7 +8,7 @@
           <div class="hero-marquee-track" :style="{ '--marquee-duration': row.duration, '--marquee-direction': row.direction }">
             <template v-for="copy in 2" :key="copy">
               <div v-for="demo in row.games" :key="`${demo.id}-${copy}`" class="shrink-0 w-44 sm:w-48 md:w-56 px-2">
-                <GameCard :game="demo" lazy />
+                <GameCard :game="demo" lazy no-tcg />
               </div>
             </template>
           </div>

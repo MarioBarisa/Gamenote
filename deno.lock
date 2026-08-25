@@ -17,6 +17,7 @@
         "npm:@vitejs/plugin-vue@^5.2.3",
         "npm:chart.js@^4.4.9",
         "npm:daisyui@^5.0.35",
+        "npm:hover-tilt@1",
         "npm:html2canvas@^1.4.1",
         "npm:netlify-cli@^24.0.1",
         "npm:pinia-plugin-persistedstate@^4.7.1",

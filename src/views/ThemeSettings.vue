@@ -25,6 +25,50 @@
       </div>
     </div>
 
+    <!-- TCG način -->
+    <div>
+      <h2 class="text-2xl font-bold mb-4">TCG način</h2>
+      <div class="card bg-base-200">
+        <div class="card-body flex flex-col gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h3 class="card-title text-lg">TCG Mode</h3>
+              <p class="text-sm opacity-70">
+                3D nagib i folirani efekt na karticama igara. Igre sa 100% postignuća dobivaju zlatnu Gamenote foliju,
+                igre s ocjenom 5/5 holografsku, a igre s obima specijalnu prizma foliju. Preporučeno samo na računalu.
+              </p>
+            </div>
+            <label class="flex items-center gap-3 cursor-pointer shrink-0">
+              <span class="text-sm">Omogući</span>
+              <input
+                type="checkbox"
+                class="toggle toggle-primary"
+                :checked="themeStore.tcgMode"
+                @change="onTcgToggle($event)"
+              />
+            </label>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs opacity-60">
+            <span>Ovaj način koristi kod iz community-built</span>
+            <a
+              class="link link-hover inline-flex items-center gap-0.5 font-medium"
+              href="https://github.com/simeydotme/hover-tilt"
+              target="_blank"
+              rel="noopener"
+            >
+              Hover Tilt
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3" aria-hidden="true">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+              </svg>
+            </a>.
+            <span>Hvala</span>
+            <a class="link link-hover font-medium" href="https://github.com/simeydotme" target="_blank" rel="noopener">Simeydotme</a>
+            <span>na implementaciji!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- Teme Sekcija -->
     <div>
@@ -183,15 +227,63 @@
         </div>
       </div>
     </div>
+
+    <!-- Mobilno upozorenje za TCG način -->
+    <div v-if="showTcgWarning" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">⚠️ Mobilni uređaj otkriven</h3>
+        <p class="py-4 text-sm">
+          TCG način koristi 3D animacije i sjene koje mogu usporiti pregledavanje ili uzrokovati probleme s prikazom
+          na mobilnim uređajima. Ako primijetiš probleme, uvijek ga možeš isključiti ovdje u postavkama.
+        </p>
+        <label class="flex items-center gap-2 cursor-pointer mb-2">
+          <input type="checkbox" v-model="tcgDontShowAgain" class="checkbox checkbox-sm" />
+          <span class="text-sm">Ne prikazuj više ovu poruku</span>
+        </label>
+        <div class="modal-action">
+          <button class="btn btn-ghost" @click="showTcgWarning = false">Odustani</button>
+          <button class="btn btn-primary" @click="confirmTcgMobile">Ipak omogući</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop" @click.stop="showTcgWarning = false"></form>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useThemeStore } from '../stores/theme';
 import { useCardSizeStore } from '../stores/cardSize';
 
 const themeStore = useThemeStore();
 const cardSizeStore = useCardSizeStore();
+
+const showTcgWarning = ref(false);
+const tcgDontShowAgain = ref(false);
+
+const isCoarsePointer = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+const onTcgToggle = (event) => {
+  const want = event.target.checked;
+  const dismissed = localStorage.getItem('gamenote_tcg_warning_dismissed') === '1';
+  if (want && isCoarsePointer() && !dismissed) {
+    event.target.checked = false;
+    tcgDontShowAgain.value = false;
+    showTcgWarning.value = true;
+    return;
+  }
+  themeStore.setTcgMode(want);
+};
+
+const confirmTcgMobile = () => {
+  if (tcgDontShowAgain.value) {
+    localStorage.setItem('gamenote_tcg_warning_dismissed', '1');
+  }
+  themeStore.setTcgMode(true);
+  showTcgWarning.value = false;
+};
 
 const getCurrentThemeLabel = () => {
   const theme = themeStore.availableThemes.find(t => t.name === themeStore.currentTheme);

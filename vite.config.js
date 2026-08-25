@@ -67,7 +67,17 @@ function psnDevServer() {
 }
 
 export default defineConfig({
-  plugins: [tailwindcss(), vue(), psnDevServer()],
+  plugins: [
+    tailwindcss(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'hover-tilt',
+        },
+      },
+    }),
+    psnDevServer(),
+  ],
   server: {
     proxy: {
       '/api/rawg': {
