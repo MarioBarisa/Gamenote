@@ -11,21 +11,21 @@
   },
   "dependencies": {
     "@iconify/vue": "^5.0.1",
-    "@supabase/supabase-js": "^2.49.4",
-    "@tailwindcss/vite": "^4.1.5",
-    "chart.js": "^4.4.9",
+    "@supabase/supabase-js": "^2.112.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "chart.js": "^4.5.1",
     "hover-tilt": "^1.0.0",
     "html2canvas": "^1.4.1",
     "pinia": "^3.0.2",
     "pinia-plugin-persistedstate": "^4.7.1",
-    "psn-api": "^2.17.0",
+    "psn-api": "^2.18.1",
     "tailwindcss": "^4.1.5",
-    "vue": "^3.5.13",
+    "vue": "^3.5.41",
     "vue-router": "^4.0.13"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
-    "daisyui": "^5.0.35",
+    "daisyui": "^5.7.20",
     "netlify-cli": "^24.0.1",
     "vite": "^6.4.3",
     "vite-plugin-vue-devtools": "^7.7.2"
