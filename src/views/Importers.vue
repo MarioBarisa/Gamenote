@@ -55,7 +55,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span class="font-bold hidden sm:inline">Sigurnosna kopija</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz IGDB-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara">
+            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz Gamenote API-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span class="font-bold hidden sm:inline">Osvježi metadata igara</span>
             </button>
@@ -500,7 +500,7 @@
 
         </div>
   
-        <!-- MIGRACIJA RAW/IGDB podataka -->
+        <!-- MIGRACIJA RAWG/IGDB podataka -->
         <div v-if="activeTab === 'migrate'" class="space-y-4">
 
           <!-- Backup tooltip -->
@@ -546,7 +546,7 @@
                 </svg>
                 <h2 class="text-lg font-bold">RAWG podaci u biblioteci</h2>
               </div>
-              <p class="text-sm text-base-content/60">Pronalazi nove (IGDB) ID-jeve za igre dodane prije prelaska na novi API te ažurira njihove metapodatke (naslovnicu, opis, žanrove, datume, ocjene…). Tvoji dodani podaci se NEĆE izgubiti!
+              <p class="text-sm text-base-content/60">Pronalazi nove (Gamenote) ID-jeve za igre dodane prije prelaska na novi API te ažurira njihove metapodatke (naslovnicu, opis, žanrove, datume, ocjene…). Tvoji dodani podaci se NEĆE izgubiti!
               Preporučuje se da ovo napraviš na računalu jer je iskustvo puno bolje i brže.</p>
               <button class="btn btn-outline btn-sm gap-1 w-fit" :disabled="migrateScanLoading" @click="scanMigration">
                 <span v-if="migrateScanLoading" class="loading loading-spinner loading-sm"></span>
@@ -651,7 +651,7 @@
                     </th>
                     <th>Naziv</th>
                     <th>Stari ID (RAWG)</th>
-                    <th>Novi ID (IGDB)</th>
+                    <th>Novi ID (Gamenote)</th>
                     <th>Datum</th>
                     <th class="w-28 text-center">Pouzdanost</th>
                     <th class="min-w-[10rem] text-center">Status</th>
@@ -799,7 +799,7 @@
                 <h2 class="text-lg font-bold">Osvježi metadata igara</h2>
               </div>
               <p class="text-sm text-base-content/60">
-                Gamenote prolazi kroz tvoje dodane igre i osvježava metapodatke svih igara koje imaju povezan IGDB ID — naslovnicu, opis, žanrove, datume, ocjene i snimke zaslona. Tvoje ocjene, stanje, bilješke i progresija se ne mijenjaju.
+                Gamenote prolazi kroz tvoje dodane igre i osvježava metapodatke svih igara koje imaju povezan Gamenote ID — naslovnicu, opis, žanrove, datume, ocjene i snimke zaslona. Tvoje ocjene, stanje, bilješke i progresija se ne mijenjaju.
               </p>
               <div class="flex flex-wrap gap-3">
                 <button class="btn btn-outline btn-primary gap-1" :disabled="refreshLoading" @click="runRefresh">
@@ -830,7 +830,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span><strong>{{ refreshDoneCount }}</strong> igara osvježeno iz IGDB-a.</span>
+                <span><strong>{{ refreshDoneCount }}</strong> igara osvježeno iz Gamenote API-a.</span>
               </div>
             </div>
           </div>
@@ -1675,7 +1675,7 @@ const refreshDoneCount = ref(0);
         refreshDoneCount.value = done;
         refreshProgress.value = '';
         refreshTotal.value = 0;
-        showToast(`${done} igara osvježeno iz IGDB-a.`);
+        showToast(`${done} igara osvježeno iz Gamenote API-a.`);
       } catch (e) {
         refreshError.value = e?.message || 'Greška pri osvježavanju.';
         refreshProgress.value = '';
