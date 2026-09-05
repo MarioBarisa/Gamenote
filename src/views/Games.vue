@@ -191,10 +191,11 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
+import { useLibraryUiStore } from '../stores/libraryUi';
 import { useGamesApi } from '../services/gamesApi';
 import { supabase } from '../supabase';
 import GameCard from '../components/GameCard.vue';
@@ -206,6 +207,7 @@ export default {
   setup() {
     const userStore = useUserStore();
     const cardSizeStore = useCardSizeStore();
+    const libraryUiStore = useLibraryUiStore();
     const route = useRoute();
     const router = useRouter();
     const gamesApi = useGamesApi();
@@ -214,12 +216,12 @@ export default {
     const error = ref(null);
     const games = ref([]);
     const apiGameDetails = ref(null);
-    const sortField = ref('created_at');
-    const sortOrder = ref('desc');
-    const activeFilter = ref('all');
+    const sortField = ref(libraryUiStore.sortField);
+    const sortOrder = ref(libraryUiStore.sortOrder);
+    const activeFilter = ref(libraryUiStore.activeFilter);
     const sortDropdownLabel = ref(null);
     const filterDropdownLabel = ref(null);
-    const searchQuery = ref('');
+    const searchQuery = ref(libraryUiStore.searchQuery);
     const existingGameId = ref(null);
 
     const isApiGame = computed(() => !!route.query.api_id);
@@ -289,11 +291,13 @@ export default {
     const sortGames = (field, order) => {
       sortField.value = field;
       sortOrder.value = order;
+      libraryUiStore.saveViewState({ field, order });
       fetchGames();
     };
 
     const filterGames = (filter) => {
       activeFilter.value = filter;
+      libraryUiStore.saveViewState({ filter });
     };
 
     const filterBtnClass = (filter) => {
@@ -381,6 +385,7 @@ export default {
     });
 
     const navigateToGame = (id) => {
+      libraryUiStore.markForRestore(window.scrollY);
       router.push(`/game/${id}`);
     };
 
@@ -407,13 +412,43 @@ export default {
     watch(() => route.query.filter, (newFilter) => {
       if (newFilter && newFilter !== activeFilter.value) {
         activeFilter.value = newFilter;
+        libraryUiStore.saveViewState({ filter: newFilter });
       }
     }, { immediate: false });
 
-  
+    watch(searchQuery, (newQuery) => {
+      libraryUiStore.saveViewState({ search: newQuery });
+    });
+
+    // Vrati scroll nakon povratka iz detalja igre (tek kad je lista renderirana)
+    const restoreScrollIfNeeded = () => {
+      if (!libraryUiStore.shouldRestore) return;
+      const y = libraryUiStore.consumeRestore();
+      if (isApiGame.value || !y) return;
+      nextTick(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, y);
+          });
+        });
+      });
+    };
+
+    watch(loading, (isLoading) => {
+      if (!isLoading) restoreScrollIfNeeded();
+    });
+
+    // Spremi scroll ako se ide u detalje igre (pokriva i browser back/geste)
+    onBeforeRouteLeave((to) => {
+      if (['game-details', 'edit-game', 'api-game-details'].includes(to.name)) {
+        libraryUiStore.markForRestore(window.scrollY);
+      }
+    });
+
     onMounted(() => {
       if (route.query.filter) {
         activeFilter.value = route.query.filter;
+        libraryUiStore.saveViewState({ filter: route.query.filter });
       }
       if (route.query.api_id) {
         fetchApiGameDetails(route.query.api_id);
