@@ -4,7 +4,7 @@
       <div class="card-body gap-4 text-left">
         <div class="flex flex-col items-center mb-2">
           <RouterLink to="/">
-            <img src="../assets/gamenote.png" alt="Gamenote" class="h-30 w-auto" />
+            <GamenoteBanner class="h-12 w-auto max-w-full object-contain" />
           </RouterLink>
           <h2 class="text-xl font-bold mt-3">Prijavi se</h2>
         </div>
@@ -131,6 +131,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuth } from '../services/useAuth'
+import GamenoteBanner from './GamenoteBanner.vue'
 
 const { loading, errorMessage, signIn } = useAuth()
 

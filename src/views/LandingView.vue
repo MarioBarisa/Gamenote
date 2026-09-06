@@ -8,7 +8,7 @@
           <div class="hero-marquee-track" :style="{ '--marquee-duration': row.duration, '--marquee-direction': row.direction }">
             <template v-for="copy in 2" :key="copy">
               <div v-for="demo in row.games" :key="`${demo.id}-${copy}`" class="shrink-0 w-44 sm:w-48 md:w-56 px-2">
-                <GameCard :game="demo" lazy no-tcg />
+                <GameCard :game="demo" lazy no-tcg :meta="false" />
               </div>
             </template>
           </div>
@@ -26,8 +26,7 @@
     <div class="hero-content text-center flex-col relative z-10 transition-all duration-700 ease-out"
            :class="mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
         
-        <img src="../assets/gamenote.png" 
-             alt="Gamenote Logo" 
+        <GamenoteBanner
              class="w-64 sm:w-80 md:w-96 max-w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
              
         <div class="max-w-3xl mt-4">
@@ -134,6 +133,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import GameCard from '../components/GameCard.vue'
+import GamenoteBanner from '../components/GamenoteBanner.vue'
 
 const mounted = ref(false)
 const currentFeatureIndex = ref(0)

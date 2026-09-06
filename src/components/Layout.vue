@@ -128,7 +128,7 @@
       </div>
     </header>
 
-    <main :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-full pb-28 lg:pb-0' : 'flex-grow'">
+    <main :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-[1600px] pb-28 lg:pb-0' : 'flex-grow'">
       <slot />
     </main>
     

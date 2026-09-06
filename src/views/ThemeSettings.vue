@@ -145,7 +145,7 @@
             </div>
 
             <div class="mt-4 text-xs opacity-70 space-y-1">
-              <p><strong>Mobilni:</strong> 3 kartica po redu</p>
+              <p><strong>Mobilni:</strong> 2 kartice po redu</p>
               <p><strong>Desktop:</strong> 6-7 kartica po redu</p>
             </div>
 

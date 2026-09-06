@@ -263,7 +263,7 @@
 
           <!-- Gamenote logo -->
           <div class="flex justify-center mb-4">
-            <img src="../assets/gamenote.png" class="h-12 w-auto opacity-80" alt="Gamenote" />
+            <GamenoteBanner class="h-10 w-auto max-w-full object-contain" />
           </div>
 
           <h3 class="text-xl font-bold text-center text-error">Obriši račun</h3>
@@ -325,10 +325,12 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
 import Chart from 'chart.js/auto';
+import GamenoteBanner from '../components/GamenoteBanner.vue';
 
 const THROW = (err) => { if (err) throw err; };
 
 export default {
+  components: { GamenoteBanner },
   setup() {
     const router = useRouter();
     const userStore = useUserStore();

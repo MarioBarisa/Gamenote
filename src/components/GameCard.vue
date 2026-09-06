@@ -3,10 +3,7 @@
     :is="tcgActive ? 'hover-tilt' : 'div'"
     v-bind="tcgActive ? tiltAttrs : {}"
     class="game-card-host h-full"
-    :class="[
-      { 'tcg-round': tcgActive, 'tcg-ex': !!foilVariant },
-      foilVariant ? `tcg-ex--${foilVariant}` : ''
-    ]"
+    :class="{ 'tcg-round': tcgActive }"
   >
     <div
       class="game-card card bg-base-200 shadow-xl h-full"
@@ -15,7 +12,7 @@
         { 'relative overflow-hidden': !!foilVariant }
       ]"
     >
-    <figure :class="`relative ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).imageHeight} overflow-hidden`">
+    <figure :class="`relative w-full ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).poster} overflow-hidden`">
       <img
         :src="getGameImage(game)"
         :alt="game.title"
@@ -39,21 +36,32 @@
       <h2 :class="`card-title ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).titleSize} font-bold mb-1 line-clamp-1`">{{ game.title }}</h2>
       <!-- Status badge -->
       <div v-if="gameStatus" class="mb-2">
-        <span :class="[`badge ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).badgeSize} p-1.5 sm:p-2 font-semibold`, statusBadgeClass]">
+        <span :class="[`badge ${sizeCfg.badge} font-semibold`, statusBadgeClass]">
           {{ statusBadgeText }}
         </span>
+      </div>
+      <div v-else class="mb-2" aria-hidden="true">
+        <span :class="`badge ${sizeCfg.badge} font-semibold invisible`">Trenutno igram</span>
       </div>
       
       <div class="flex items-center text-xs sm:text-sm mb-2">
         <span class="badge badge-outline p-2 h-auto tooltip tooltip-top" :data-tip="game.platform || 'Nepoznata platforma'">
           <PlatformIcon :name="game.platform" class="w-6 h-6" />
         </span>
-          <span v-if="genreList.length" class="badge badge-outline ml-2 p-2 h-auto">
-            <span v-for="(g, index) in genreList" :key="g" class="tooltip tooltip-top" :class="{ 'hidden sm:inline-flex': index >= 2 }" :data-tip="g">
-              <GenreIcon :genre="g" class="w-6 h-6" />
-            </span>
+        <span v-if="visibleGenres.length" class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto">
+          <span v-for="g in visibleGenres" :key="g" class="tooltip tooltip-top inline-flex" :data-tip="g">
+            <GenreIcon :genre="g" class="w-6 h-6" />
           </span>
-        <button v-if="game.notes" @click.stop="showNotesModal = true" class="ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto" title="Prikazi bilješke">
+        </span>
+        <span v-else class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto invisible" aria-hidden="true">
+          <GenreIcon genre="" class="w-6 h-6" />
+        </span>
+        <button v-if="game.notes" @click.stop="showNotesModal = true" class="ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0" title="Prikaži bilješke">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+          </svg>
+        </button>
+        <button v-else class="ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0 invisible" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
@@ -91,48 +99,61 @@
       </div>
       
 
-      <div class="mt-auto space-y-2 pt-2">
+      <div v-if="meta" class="mt-auto space-y-2 pt-2">
 
 
 <!-- Datumi -->
-<div v-if="(game.start_date || game.end_date) && gameStatus !== 'playing'" class="flex items-center gap-1.5 text-xs opacity-60">
+<div class="flex items-center gap-1.5 text-xs min-h-8" :class="showDates ? 'opacity-60' : 'opacity-40'">
   <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
   </svg>
-  <span v-if="game.start_date">{{ formatDate(game.start_date) }}</span>
-  <template v-if="game.start_date && game.end_date">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-    </svg>
-    <span>{{ formatDate(game.end_date) }}</span>
+  <template v-if="showDates">
+    <span v-if="game.start_date">{{ formatDate(game.start_date) }}</span>
+    <template v-if="game.start_date && game.end_date">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+      <span>{{ formatDate(game.end_date) }}</span>
+    </template>
+    <template v-else-if="!game.start_date && game.end_date">
+      <span>do {{ formatDate(game.end_date) }}</span>
+    </template>
   </template>
-  <template v-else-if="!game.start_date && game.end_date">
-    <span>do {{ formatDate(game.end_date) }}</span>
-  </template>
+  <span v-else :title="datesHint">–</span>
 </div>
 
 <!-- Play time -->
-<div v-if="game.play_time" class="text-xs sm:text-sm opacity-70">
-  {{ game.play_time }}h igranja
+<div class="text-xs sm:text-sm min-h-5 flex items-center opacity-70">
+  {{ game.play_time || 0 }}h igranja
 </div>
 
 <!-- Progress -->
-<div v-if="game.progress_value && game.progress_total" class="space-y-1">
-  <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+<div class="space-y-1" :aria-label="hasProgress ? undefined : 'Bez podataka o napretku'">
+  <div class="w-full rounded-full h-2 overflow-hidden" :class="hasProgress ? 'bg-gray-700' : 'bg-base-300/50 border border-dashed border-base-content/25'">
     <div
+      v-if="hasProgress"
       class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all"
       :style="{ width: `${achievementPercent}%` }"
     ></div>
   </div>
-  <div class="flex justify-between items-center text-xs">
-    <span class="font-semibold">{{ validatedProgressValue }}/{{ game.progress_total }} {{ achievementLabel }}</span>
-    <span class="opacity-70">{{ achievementPercent }}%</span>
+  <div class="flex justify-between items-center text-xs min-h-4" :class="{ 'opacity-40': !hasProgress }">
+    <template v-if="hasProgress">
+      <span class="font-semibold">{{ validatedProgressValue }}/{{ game.progress_total }} {{ achievementLabel }}</span>
+      <span class="opacity-70">{{ achievementPercent }}%</span>
+    </template>
+    <template v-else>
+      <span class="font-semibold">0/0 {{ achievementLabel }}</span>
+      <span>0%</span>
+    </template>
   </div>
 </div>
 
     </div>
 
     </div>
+
+    <!-- EX-holo preko cijele kartice -->
+    <div v-if="foilVariant" class="tcg-exholo" :class="`tcg-exholo--${foilVariant}`" aria-hidden="true"></div>
   </div>
   </component>
 </template>
@@ -162,6 +183,10 @@ export default {
     noTcg: {
       type: Boolean,
       default: false
+    },
+    meta: {
+      type: Boolean,
+      default: true
     }
   },
   setup() {
@@ -184,6 +209,24 @@ export default {
     return { cardSizeStore, themeStore, showNotesModal };
   },
   computed: {
+    sizeCfg() {
+      return this.cardSizeStore.getSizeConfig(this.cardSizeStore.cardSize);
+    },
+    hasDates() {
+      return !!(this.game?.start_date || this.game?.end_date);
+    },
+    showDates() {
+      return this.hasDates && this.gameStatus !== 'playing';
+    },
+    datesHint() {
+      return this.gameStatus === 'playing' ? 'U tijeku' : 'Nema datuma';
+    },
+    hasProgress() {
+      return !!(this.game?.progress_value && this.game?.progress_total);
+    },
+    visibleGenres() {
+      return this.genreList.slice(0, this.sizeCfg.maxGenres ?? 3);
+    },
     tcgActive() {
       return this.themeStore.tcgMode && !this.noTcg;
     },
@@ -388,8 +431,54 @@ export default {
   opacity: 0.55;
 }
 
-/* Gamenote logo je sada dio EX Holo sloja (::part(tilt)::after u ne-scoped bloku ispod) */
+/* Glare bez tamnog ruba */
+.tcg-round {
+  --hover-tilt-custom-gradient: radial-gradient(
+    farthest-corner circle at var(--gradient-x) var(--gradient-y),
+    lch(95% 2.7 var(--hover-tilt-glare-hue, 270) / calc(var(--hover-tilt-glare-intensity, 1) * 0.66)) 8%,
+    lch(88% 5.5 var(--hover-tilt-glare-hue, 270) / calc(var(--hover-tilt-glare-intensity, 1) * 0.5)) 28%,
+    lch(95% 2.7 var(--hover-tilt-glare-hue, 270) / 0) 90%
+  );
+}
 
+.tcg-exholo {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Logo uvijek iznad folije */
+  /* Offset simetričan, manji od rezerve */
+  background-image:
+    url('../assets/newAssets/GamenoteMainLogo.png'),
+    url('../assets/tcg/foil-spectrum.svg'),
+    var(--hover-tilt-default-gradient);
+  background-size: 50% auto, 140% 160%, cover;
+  background-position:
+    center center,
+    calc(50% + (var(--hover-tilt-x, 0) - 0.5) * 40px)
+    calc(50% + (var(--hover-tilt-y, 0) - 0.5) * 40px),
+    center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal, color-burn;
+  mix-blend-mode: soft-light;
+  opacity: calc(0.25 + var(--hover-tilt-opacity, 0) * 0.5);
+  will-change: background-position, opacity;
+}
+
+/* Prizma — lagano pomaknuta paleta istog uzorka */
+.tcg-exholo--prism {
+  filter: hue-rotate(20deg);
+}
+
+/* Zlatna varijanta — topla šampanj folija */
+.tcg-exholo--gold {
+  background-image:
+    url('../assets/newAssets/GamenoteMainLogo.png'),
+    url('../assets/tcg/foil-gold.svg'),
+    var(--hover-tilt-default-gradient);
+}
+.
 @keyframes tcg-foil-breathe {
   from { background-size: 220% 220%; }
   to { background-size: 260% 260%; }
@@ -402,54 +491,11 @@ export default {
 }
 </style>
 
-<!-- NE-scoped: ::part() selektori moraju živjeti u globalnom CSS-u da bi došli do
-     shadow DOM-a hover-tilt web komponente. Uzorak: Pokemon "ex Holo" primjer iz dokumentacije. -->
+<!-- ::part mora biti globalno -->
 <style>
 .tcg-round::part(container),
 .tcg-round::part(tilt) {
   border-radius: var(--radius-box, 1rem);
   isolation: isolate;
-}
-
-/* Tekstura folije sa zvjezdicama (SVG) se miješa u zadani gradijent sjaja,
-   pa se cijela kompozicija soft-lightom prelije preko kartice — uzorak:
-   Pokemon "ex Holo" primjer iz hover-tilt dokumentacije. */
-.tcg-ex::part(tilt)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  /* slojevi: Gamenote logo (vrh, normal) → folija sa zvjezdicama → zadani gradijent sjaja.
-     Logo MORA biti iznad folije — color-burn tamne teksture inače poništi sve
-     osim čisto bijelih piksala (zvjezdica). */
-  background-image:
-    url('../assets/newAssets/GamenoteMainLogo.png'),
-    url('../assets/tcg/foil-spectrum.svg'),
-    var(--hover-tilt-default-gradient);
-  background-size: 50% auto, 120% 160%, cover;
-  background-position:
-    center center,
-    calc(50% + var(--hover-tilt-x, 0) * 60px)
-    calc(50% + var(--hover-tilt-y, 0) * 60px),
-    center;
-  background-repeat: no-repeat;
-  background-blend-mode: normal, color-burn;
-  mix-blend-mode: soft-light;
-  opacity: calc(0.25 + var(--hover-tilt-opacity, 0) * 0.5);
-  will-change: background-position, opacity;
-}
-
-/* Prizma — lagano pomaknuta paleta istog uzorka */
-.tcg-ex--prism::part(tilt)::after {
-  filter: hue-rotate(20deg);
-}
-
-/* Zlatna varijanta — topla šampanj folija */
-.tcg-ex--gold::part(tilt)::after {
-  background-image:
-    url('../assets/newAssets/GamenoteMainLogo.png'),
-    url('../assets/tcg/foil-gold.svg'),
-    var(--hover-tilt-default-gradient);
 }
 </style>

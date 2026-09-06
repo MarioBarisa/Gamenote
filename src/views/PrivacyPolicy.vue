@@ -20,7 +20,7 @@
 
       <!-- Logo -->
       <div class="flex justify-center mb-6">
-        <img src="../assets/gamenote.png" class="h-20 sm:h-24 w-auto opacity-90" alt="Gamenote" />
+        <GamenoteBanner class="h-12 sm:h-14 w-auto max-w-full object-contain" />
       </div>
 
       <!-- Headline -->
@@ -220,6 +220,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import GamenoteBanner from '../components/GamenoteBanner.vue'
 
 const lang = ref('hr')
 

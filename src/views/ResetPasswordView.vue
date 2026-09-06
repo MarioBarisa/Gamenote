@@ -3,7 +3,7 @@
     <div class="card w-full max-w-md bg-base-100 shadow-xl">
       <div class="card-body gap-4 text-left">
         <div class="flex flex-col items-center mb-2">
-          <img src="../assets/gamenote.png" alt="Gamenote" class="h-30 w-auto" />
+          <GamenoteBanner class="h-12 w-auto max-w-full object-contain" />
           <h2 class="text-xl font-bold mt-3">Resetiranje lozinke</h2>
         </div>
 
@@ -74,6 +74,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
 import { useAuth } from '../services/useAuth'
+import GamenoteBanner from '../components/GamenoteBanner.vue'
 
 const router = useRouter()
 const { updatePassword } = useAuth()

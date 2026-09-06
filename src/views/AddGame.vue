@@ -45,7 +45,7 @@
               class="game-card card bg-base-100 shadow-xl h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
               @click="navigateToGameDetails(game)"
             >
-              <figure :class="`relative ${cardConfig.imageHeight} overflow-hidden`">
+              <figure :class="`relative w-full ${cardConfig.poster} overflow-hidden`">
                 <img :src="game.background_image || 'https://placehold.co/600x400?text=No+Image'" :alt="game.name" class="w-full h-full object-cover" />
                 <div v-if="isGameInLibrary(game)" class="absolute top-0 left-0 m-1 sm:m-2">
                   <span

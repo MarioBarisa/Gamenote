@@ -33,7 +33,16 @@
         </div>
 
         <div v-if="userGamesLoading" :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
-          <div v-for="n in 3" :key="n" class="skeleton rounded-2xl" style="aspect-ratio: 3/4;"></div>
+          <div v-for="n in 3" :key="n" class="card bg-base-200 shadow-xl h-full overflow-hidden">
+            <div :class="`skeleton w-full ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).poster}`"></div>
+            <div :class="`card-body ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).cardBody} gap-2`">
+              <div class="skeleton h-4 w-3/4"></div>
+              <div class="skeleton h-5 w-1/2"></div>
+              <div class="skeleton h-4 w-2/3"></div>
+              <div class="skeleton h-4 w-full"></div>
+              <div class="skeleton h-2 w-full"></div>
+            </div>
+          </div>
         </div>
 
         <div v-else-if="currentlyPlaying.length === 0" class="alert alert-info">
