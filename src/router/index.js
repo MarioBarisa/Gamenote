@@ -142,9 +142,8 @@ const PUBLIC_ROUTES = new Set(['home', 'login', 'register', 'shared-game', 'priv
 
 const needsUserHydration = (to) => to.name === 'shared-game';
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to) => {
   if (PUBLIC_ROUTES.has(to.name) && !needsUserHydration(to)) {
-    next();
     return;
   }
 
@@ -162,20 +161,16 @@ router.beforeEach(async (to, from, next) => {
     const isAuthenticated = userStore.isLoggedIn;
 
     if (needsUserHydration(to)) {
-      next();
       return;
     }
 
     const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings', 'groups', 'group-details'];
 
     if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
-      next({ name: 'login' });
-    } else {
-      next();
+      return { name: 'login' };
     }
   } catch (error) {
     console.error('Auth guard error:', error);
-    next();
   }
 });
 

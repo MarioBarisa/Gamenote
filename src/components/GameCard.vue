@@ -478,7 +478,6 @@ export default {
     url('../assets/tcg/foil-gold.svg'),
     var(--hover-tilt-default-gradient);
 }
-.
 @keyframes tcg-foil-breathe {
   from { background-size: 220% 220%; }
   to { background-size: 260% 260%; }

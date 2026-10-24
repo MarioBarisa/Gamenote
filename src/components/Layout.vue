@@ -432,9 +432,8 @@ export default {
       lastY = y;
     };
     onMounted(() => {
-      router.beforeEach((to, from, next) => {
+      router.beforeEach(() => {
         resetAllDropdowns();
-        next();
       });
 
       router.afterEach(() => {
