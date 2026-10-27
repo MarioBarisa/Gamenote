@@ -26,19 +26,22 @@
   
         <!-- Platforme i alati -->
         <div>
-          <div role="tablist" class="tabs tabs-lift overflow-x-auto overflow-y-clip pb-1">
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'psn' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeTab === 'psn'" @click="activeTab = 'psn'" title="PlayStation">
+          <div role="tablist" class="tabs tabs-box gap-1 max-w-full overflow-x-auto overflow-y-clip" aria-label="Importeri i alati">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'psn' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'psn'" @click="activeTab = 'psn'" aria-label="PlayStation" :title="isConnected ? `PlayStation · povezan profil: ${psnProfileData?.onlineId || 'PSN'}` : 'PlayStation · profil nije povezan'" :aria-describedby="isConnected ? 'psn-connection-status' : undefined">
               <svg fill="currentColor" viewBox="0 0 32 32" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3.262 24.248c-2.374-0.681-2.767-2.084-1.69-2.899 0.776-0.51 1.668-0.954 2.612-1.288l0.087-0.027 7.017-2.516v2.89l-5.030 1.839c-0.881 0.339-1.031 0.79-0.299 1.032 0.365 0.093 0.783 0.147 1.214 0.147 0.615 0 1.204-0.109 1.749-0.308l-0.035 0.011 2.422-0.882v2.592c-0.15 0.037-0.32 0.055-0.487 0.091-0.775 0.136-1.667 0.214-2.577 0.214-1.778 0-3.486-0.298-5.078-0.846l0.11 0.033zM18.049 24.544l7.868-2.843c0.893-0.322 1.032-0.781 0.307-1.022-0.363-0.089-0.779-0.14-1.208-0.14-0.622 0-1.22 0.108-1.774 0.305l0.037-0.011-5.255 1.874v-2.983l0.3-0.106c1.050-0.349 2.284-0.62 3.557-0.761l0.083-0.008c0.468-0.050 1.010-0.078 1.559-0.078 1.877 0 3.677 0.331 5.343 0.939l-0.108-0.035c2.309 0.751 2.549 1.839 1.969 2.589-0.559 0.557-1.235 0.998-1.988 1.282l-0.039 0.013-10.677 3.883v-2.869zM12.231 4.248v21.927l4.892 1.576v-18.39c0-0.862 0.38-1.438 0.992-1.238 0.795 0.225 0.95 1.017 0.95 1.881v7.342c3.050 1.491 5.451-0.003 5.451-3.939 0-4.045-1.407-5.842-5.546-7.282-1.785-0.648-4.040-1.294-6.347-1.805l-0.389-0.072z"/>
               </svg>
-              <span class="font-bold hidden sm:inline">PlayStation</span>
+              <span class="font-semibold text-xs sm:text-sm"><span class="sm:hidden">PSN</span><span class="hidden sm:inline">PlayStation</span></span>
+              <svg v-if="isConnected" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 shrink-0 text-success" data-testid="psn-connected" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-6" /></svg>
+              <span v-if="isConnected" id="psn-connection-status" class="sr-only">Povezan profil: {{ psnProfileData?.onlineId || 'PSN' }}</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5 opacity-40 cursor-not-allowed" disabled>
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'steam' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'steam'" @click="activeTab = 'steam'" aria-label="Steam" :title="steamConnection.connected ? `Steam · povezan profil: ${steamConnection.name}` : 'Steam · profil nije povezan'" :aria-describedby="steamConnection.connected ? 'steam-connection-status' : undefined">
               <svg fill="currentColor" viewBox="0 0 32 32" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.102 12.129c0-1.564 1.268-2.831 2.831-2.831s2.831 1.268 2.831 2.831c0 1.564-1.267 2.831-2.831 2.831-1.563 0-2.83-1.267-2.83-2.83v0zM24.691 12.135c0-2.081-1.687-3.768-3.768-3.768s-3.768 1.687-3.768 3.768c0 2.081 1.687 3.768 3.768 3.768 2.080-0.003 3.765-1.688 3.768-3.767v-0zM10.427 23.76l-1.841-0.762c0.524 1.078 1.611 1.808 2.868 1.808 1.317 0 2.448-0.801 2.93-1.943l0.008-0.021c0.155-0.362 0.246-0.784 0.246-1.226 0-1.757-1.424-3.181-3.181-3.181-0.405 0-0.792 0.076-1.148 0.213l0.022-0.007 1.903 0.787c0.852 0.364 1.439 1.196 1.439 2.164 0 1.296-1.051 2.347-2.347 2.347-0.324 0-0.632-0.066-0.913-0.184l0.015 0.006zM15.974 1.004c-7.857 0.001-14.301 6.046-14.938 13.738l-0.004 0.054 8.038 3.322c0.668-0.462 1.495-0.737 2.387-0.737h-0c0.079 0 0.156 0.005 0.235 0.008l3.575-5.176v-0.074c0.003-3.12 2.533-5.648 5.653-5.648 3.122 0 5.653 2.531 5.653 5.653s-2.531 5.653-5.653 5.653h-0.131l-5.094 3.638c0 0.065 0.005 0.131 0.005 0.199 0 2.342-1.899 4.241-4.241 4.241-2.047 0-3.756-1.451-4.153-3.38l-0.005-0.027-5.755-2.383c1.841 6.345 7.601 10.905 14.425 10.905 8.281 0 14.994-6.713 14.994-14.994s-6.713-14.994-14.994-14.994z"/>
               </svg>
-              <span class="font-bold hidden sm:inline">Steam</span>
-              <span class="badge badge-xs badge-ghost hidden sm:inline-flex">Uskoro</span>
+              <span class="font-semibold text-xs sm:text-sm">Steam</span>
+              <svg v-if="steamConnection.connected" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 shrink-0 text-success" data-testid="steam-connected" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-6" /></svg>
+              <span v-if="steamConnection.connected" id="steam-connection-status" class="sr-only">Povezan profil: {{ steamConnection.name }}</span>
             </button>
             <button role="tab" class="tab tab-lifted gap-1.5 opacity-40 cursor-not-allowed" disabled>
               <svg fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
@@ -47,21 +50,23 @@
               <span class="font-bold hidden sm:inline">Xbox</span>
               <span class="badge badge-xs badge-ghost hidden sm:inline-flex">Uskoro</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'migrate' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeTab === 'migrate'" @click="activeTab = 'migrate'" title="Migracija podataka">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'migrate' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'migrate'" @click="activeTab = 'migrate'" title="Migracija podataka">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
               <span class="font-bold hidden sm:inline">Migracija podataka</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'backup' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeTab === 'backup'" @click="activeTab = 'backup'" title="Sigurnosna kopija">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'backup' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'backup'" @click="activeTab = 'backup'" title="Sigurnosna kopija">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span class="font-bold hidden sm:inline">Sigurnosna kopija</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz Gamenote API-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara">
+            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz Gamenote API-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span class="font-bold hidden sm:inline">Osvježi metadata igara</span>
             </button>
           </div>
         </div>
   
+        <SteamImporter v-show="activeTab === 'steam'" @connection-change="steamConnection = $event" />
+
         <!-- PSN panel -->
         <div v-if="activeTab === 'psn'" class="space-y-4">
   
@@ -104,7 +109,7 @@
   
                 <!-- Action buttons -->
                 <div class="flex flex-wrap gap-2 shrink-0">
-                  <button class="btn btn-sm btn-error btn-outline gap-1 tooltip tooltip-left" data-tip="Briše PSN vezu iz ovog preglednika. Kolekcija ostaje netaknuta." @click="disconnectPsn">
+                  <button class="btn btn-sm btn-error btn-outline gap-1 tooltip tooltip-left" data-tip="Briše PSN vezu iz ovog preglednika. Kolekcija ostaje netaknuta." aria-label="Odspoji" :disabled="syncLoading || importLoading" @click="disconnectPsn">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
@@ -156,244 +161,15 @@
   
           <template v-if="!syncLoading && psnGames.length">
   
-            <!-- Stats + controls card -->
-            <div class="card bg-base-200 shadow">
-              <div class="card-body p-3 space-y-3">
-  
-                <div class="flex flex-wrap gap-2 items-center">
-                  <span class="badge badge-sm sm:badge-lg badge-ghost font-bold">{{ psnGames.length }} igara</span>
-                  <span class="badge badge-sm sm:badge-lg badge-success badge-outline">{{ newCount }} novih</span>
-                  <span class="badge badge-sm sm:badge-lg badge-info badge-outline">{{ existingCount }} postoji</span>
-                </div>
-  
-                <input v-model="filterText" class="input input-sm input-bordered w-full" placeholder="Pretraži igre..."/>
-  
-                <div class="flex flex-wrap gap-1 sm:gap-2 items-center">
-                  <div class="flex flex-wrap flex-1 min-w-0 sm:flex-none gap-1">
-                    <button class="btn btn-xs btn-ghost gap-1" @click="selectAll(true)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                      </svg>
-                      Sve nove
-                    </button>
-                    <button class="btn btn-xs btn-ghost gap-1" @click="selectAll(false)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                      Poništi nove
-                    </button>
-                    <div class="divider divider-horizontal mx-0"></div>
-                    <button class="btn btn-xs btn-ghost gap-1" @click="selectAllSync(true)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                      </svg>
-                      Sve sync
-                    </button>
-                    <button class="btn btn-xs btn-ghost gap-1" @click="selectAllSync(false)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                      Poništi sync
-                    </button>
-                  </div>
-                  <div class="ml-auto flex flex-wrap w-full sm:w-auto gap-1 sm:gap-2">
-                    <button class="btn btn-xs sm:btn-sm flex-1 sm:flex-none justify-center gap-1 tooltip tooltip-top" data-tip="Ponovno dohvaća igre, vrijeme igranja i trofeje sa PSN-a." :disabled="syncLoading || importLoading" @click="syncPsn">
-                      <span v-if="syncLoading" class="loading loading-spinner loading-sm"></span>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                      </svg>
-                      Osvježi s PSN-a
-                    </button>
-                    <button class="btn btn-xs sm:btn-sm btn-info flex-1 sm:flex-none justify-center gap-1" :disabled="importLoading || updateCount === 0" @click="updateSelected">
-                      <span v-if="importLoading && importProgress.startsWith('Sync')" class="loading loading-spinner loading-sm"></span>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                      </svg>
-                      Sync ({{ updateCount }})
-                    </button>
-                    <button class="btn btn-xs sm:btn-sm btn-success flex-1 sm:flex-none justify-center gap-1" :disabled="importLoading || selectedCount === 0" @click="importSelected">
-                      <span v-if="importLoading && !importProgress.startsWith('Sync')" class="loading loading-spinner loading-sm"></span>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                      </svg>
-                      Import ({{ selectedCount }})
-                    </button>
-                  </div>
-                </div>
-  
-                <div v-if="importLoading && importTotal > 0" class="space-y-1">
-                  <div class="flex justify-between text-xs opacity-60">
-                    <span>{{ importProgress }}</span>
-                    <span>{{ importDone }}/{{ importTotal }}</span>
-                  </div>
-                  <progress class="progress progress-success w-full" :value="importDone" :max="importTotal"></progress>
-                </div>
-  
-              </div>
-            </div>
-  
-            <!-- MOBILE cards -->
-            <div class="flex flex-col gap-4 lg:hidden">
-              <div
-                v-for="g in filteredGames" :key="g._key"
-                class="card bg-base-200 shadow-md transition-opacity"
-                :class="g._exists ? 'opacity-70' : ''"
-              >
-                <div class="card-body p-4 space-y-3">
-                  <div class="flex gap-4 items-start">
-                    <div class="flex flex-col gap-1 items-center pt-1 shrink-0">
-                      <input v-if="!g._exists" type="checkbox" class="checkbox checkbox-success" v-model="selectedMap[g._key]"/>
-                      <input v-else type="checkbox" class="checkbox checkbox-info" v-model="updateMap[g._key]"/>
-                      <span class="text-xs opacity-40">{{ g._exists ? 'sync' : 'new' }}</span>
-                    </div>
-                    <div v-if="g.imageUrl" class="avatar shrink-0">
-                      <div class="w-16 h-20 rounded-xl overflow-hidden">
-                        <img :src="g.imageUrl" :alt="g.name" loading="lazy" class="object-cover w-full h-full"/>
-                      </div>
-                    </div>
-                    <div class="flex-1 min-w-0 space-y-1.5">
-                      <div class="font-bold text-base leading-snug">{{ g.name }}</div>
-                      <div class="flex flex-wrap gap-1.5">
-                        <span class="badge badge-sm" :class="g.platformCategory === 'ps5_native_game' ? 'badge-primary' : 'badge-ghost'">{{ mapPlatform(g.platformCategory) }}</span>
-                        <span v-if="g._exists" class="badge badge-sm badge-info">Postoji</span>
-                        <span v-else class="badge badge-sm badge-success badge-outline">Nova</span>
-                        <span v-if="g.hoursPlayed != null" class="badge badge-sm badge-ghost">{{ g.hoursPlayed }}h</span>
-                        <span v-if="g.trophyPercent != null" class="badge badge-sm badge-warning badge-outline">{{ g.trophyPercent }}% trofeja</span>
-                      </div>
-                      <div class="text-xs opacity-40" v-if="g.lastPlayed">Zadnje: {{ formatDate(g.lastPlayed) }}</div>
-                    </div>
-                  </div>
-                  <template v-if="!g._exists">
-                    <div class="divider my-0"></div>
-                    <div class="grid grid-cols-2 gap-3">
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs opacity-60 font-medium">Ocjena</span>
-                        <div class="rating rating-md">
-                          <input v-for="star in [1,2,3,4,5]" :key="star" type="radio"
-                            :name="'mob-r-' + g._key" class="mask mask-star-2 bg-orange-400"
-                            :value="star"
-                            :checked="(gameExtras[g._key] ??= defaultExtras()).rating === star"
-                            @change="(gameExtras[g._key] ??= defaultExtras()).rating = star"/>
-                        </div>
-                      </div>
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs opacity-60 font-medium">Status</span>
-                        <select class="select select-sm select-bordered w-full" v-model="(gameExtras[g._key] ??= defaultExtras()).status">
-                          <option v-for="s in statusOptions" :key="s.value" :value="s.value">{{ s.label }}</option>
-                        </select>
-                      </div>
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs opacity-60 font-medium">Grupa</span>
-                        <select class="select select-sm select-bordered w-full" v-model="(gameExtras[g._key] ??= defaultExtras()).groupId">
-                          <option :value="null">Bez grupe</option>
-                          <option v-for="grp in groups" :key="grp.id" :value="grp.id">{{ grp.name }}</option>
-                        </select>
-                      </div>
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs opacity-60 font-medium">Bilješka</span>
-                        <input type="text" class="input input-sm input-bordered w-full" placeholder="Opcionalno..."
-                          v-model="(gameExtras[g._key] ??= defaultExtras()).notes"/>
-                      </div>
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </div>
-  
-            <!-- DESKTOP table -->
-            <div class="hidden lg:block overflow-x-auto rounded-xl">
-              <table class="table table-zebra">
-                <thead>
-                  <tr class="bg-base-300 text-sm">
-                    <th class="w-10 text-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-success mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                      </svg>
-                    </th>
-                    <th class="w-10 text-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-info mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                      </svg>
-                    </th>
-                    <th>Naziv</th>
-                    <th class="w-16">Platf.</th>
-                    <th class="w-16">Sati</th>
-                    <th class="w-36">Trofeji</th>
-                    <th class="w-28">Ocjena</th>
-                    <th class="w-28">Status</th>
-                    <th class="w-36">Grupa</th>
-                    <th class="w-36">Bilješka</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="g in filteredGames" :key="g._key" :class="[g._exists ? 'opacity-70' : '', 'h-16']">
-                    <td class="text-center">
-                      <input type="checkbox" class="checkbox checkbox-success" v-model="selectedMap[g._key]" :disabled="g._exists"/>
-                    </td>
-                    <td class="text-center">
-                      <input type="checkbox" class="checkbox checkbox-info" v-model="updateMap[g._key]" :disabled="!g._exists"/>
-                    </td>
-                    <td>
-                      <div class="flex items-center gap-3">
-                        <div v-if="g.imageUrl" class="avatar shrink-0">
-                          <div class="w-10 h-14 rounded-lg overflow-hidden">
-                            <img :src="g.imageUrl" :alt="g.name" loading="lazy" class="object-cover w-full h-full"/>
-                          </div>
-                        </div>
-                        <div>
-                          <div class="font-semibold text-base leading-tight">{{ g.name }}</div>
-                          <div class="text-xs opacity-40 mt-0.5" v-if="g.lastPlayed">{{ formatDate(g.lastPlayed) }}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="badge" :class="g.platformCategory === 'ps5_native_game' ? 'badge-primary' : 'badge-ghost'">
-                        {{ mapPlatform(g.platformCategory) }}
-                      </span>
-                    </td>
-                    <td class="tabular-nums">{{ g.hoursPlayed != null ? g.hoursPlayed + 'h' : '—' }}</td>
-                    <td>
-                      <span v-if="g.trophyPercent != null" class="tabular-nums text-sm">
-                        {{ g.trophyPercent }}%
-                        <span class="opacity-40 text-xs">({{ g.trophiesEarned ?? 0 }}/{{ g.trophiesTotal ?? 0 }})</span>
-                      </span>
-                      <span v-else class="opacity-30">—</span>
-                    </td>
-                    <td>
-                      <div class="rating rating-sm" v-if="!g._exists">
-                        <input v-for="star in [1,2,3,4,5]" :key="star" type="radio"
-                          :name="'dt-r-' + g._key" class="mask mask-star-2 bg-orange-400" :value="star"
-                          :checked="(gameExtras[g._key] ??= defaultExtras()).rating === star"
-                          @change="(gameExtras[g._key] ??= defaultExtras()).rating = star"/>
-                      </div>
-                      <span v-else class="opacity-30">—</span>
-                    </td>
-                    <td>
-                      <select v-if="!g._exists" class="select select-sm select-bordered w-full"
-                        v-model="(gameExtras[g._key] ??= defaultExtras()).status">
-                        <option v-for="s in statusOptions" :key="s.value" :value="s.value">{{ s.label }}</option>
-                      </select>
-                      <span v-else class="opacity-30">—</span>
-                    </td>
-                    <td>
-                      <select v-if="!g._exists" class="select select-sm select-bordered w-full"
-                        v-model="(gameExtras[g._key] ??= defaultExtras()).groupId">
-                        <option :value="null">—</option>
-                        <option v-for="grp in groups" :key="grp.id" :value="grp.id">{{ grp.name }}</option>
-                      </select>
-                      <span v-else class="opacity-30">—</span>
-                    </td>
-                    <td>
-                      <input v-if="!g._exists" type="text" class="input input-sm input-bordered w-full"
-                        placeholder="Bilješka..."
-                        v-model="(gameExtras[g._key] ??= defaultExtras()).notes"/>
-                      <span v-else class="opacity-30">—</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-  
+            <ImporterGameList
+              source="psn" :games="psnListGames" :selected-new="selectedMap" :selected-existing="updateMap"
+              :extras="gameExtras" :groups="groups" :status-options="statusOptions"
+              :busy="syncLoading || importLoading" refresh-label="Osvježi s PSN-a"
+              metadata-required :progress="importProgress" :done="importDone" :total="importTotal"
+              @resolve="resolvePsnGame" @poster="setPsnPoster" @select="selectPsnGame" @refresh="syncPsn" @import="importSelected" @sync="updateSelected"
+            />
+
+<div v-if="metadataWarning" role="status" class="alert alert-warning">{{ metadataWarning }}</div>
             <div v-if="importError" class="alert alert-error shadow">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -841,12 +617,23 @@
   </template>
   
   <script>
-  import { ref, reactive, computed, onMounted } from 'vue';
+import { validateBackup } from '../services/backupValidation';
+import { fetchUserRows } from '../services/libraryData';
+  import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
   import { useUserStore } from '../stores/user';
   import { supabase } from '../supabase';
 import { useGamesApi } from '../services/gamesApi';
+import { GAME_STATUS } from '../constants/gameStatus';
+import { hasAllAchievements } from '../services/importerStatus';
 import { Icon } from '@iconify/vue';
 import PsnCredit from '../components/PsnCredit.vue';
+import SteamImporter from '../components/SteamImporter.vue';
+import ImporterGameList from '../components/ImporterGameList.vue';
+import { loadImporterMetadata } from '../services/importerMetadata';
+import { resolveImporterGame, loadImporterChoices, saveImporterChoices } from '../services/importerResolution';
+import { httpUrl } from '../services/safeContent';
+import { otherPlatforms } from '../services/importerMatching';
+import { buildPsnRow, buildPsnPatch, buildPsnIndex, platformName } from '../services/psnImport';
 import {
   connectWithNpsso, disconnectPsn as clearPsnConnection,
   hasPsnConnection, fetchSyncData, saveSnapshot, loadSnapshot, normalizeTitle,
@@ -855,23 +642,21 @@ import {
 
   const THROW = (err) => { if (err) throw err; };
   
-  const STATUS_OPTIONS = [
-    { value: 'backlog',   label: 'Backlog' },
-    { value: 'playing',   label: 'Playing' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'paused',    label: 'Paused' },
-    { value: 'dropped',   label: 'Dropped' },
-    { value: 'wishlist',  label: 'Wishlist' },
-  ];
-  
   export default {
-    components: { PsnCredit, Icon },
+    components: { PsnCredit, Icon, SteamImporter, ImporterGameList },
     setup() {
       const userStore = useUserStore();
       const gamesApi = useGamesApi();
+      const ownerId = userStore.user?.id;
+      let disposed = false;
+      const assertOwner = () => {
+        if (disposed || !ownerId || userStore.user?.id !== ownerId) throw new Error('Korisnik je promijenjen. Ponovno otvori importer.');
+      };
+      onBeforeUnmount(() => { disposed = true; });
   
       const activeTab = ref('psn');
       const isConnected = ref(hasPsnConnection());
+      const steamConnection = ref({ connected: false, name: '' });
       const lastSyncedAt = ref(loadSnapshot()?.syncedAt || null);
       const wizardOpen = ref(false);
       const wizardNpsso = ref('');
@@ -883,7 +668,8 @@ import {
       const syncStage = ref('');
       const hasSynced = ref(false);
       const psnGames = ref([]);
-      const filterText = ref('');
+      let psnLibraryRows = [];
+      const psnChoices = ref(loadImporterChoices(ownerId, 'psn'));
       const selectedMap = ref({});
       const updateMap = ref({});
       const gameExtras = ref({});
@@ -892,9 +678,10 @@ import {
       const importDone = ref(0);
       const importTotal = ref(0);
       const importError = ref('');
+      const metadataWarning = ref('');
       const importDoneCount = ref(0);
 const groups = ref([]);
-const statusOptions = STATUS_OPTIONS;
+const statusOptions = GAME_STATUS;
 
 const backupLoading = ref(false);
 const importing = ref(false);
@@ -928,16 +715,9 @@ const refreshTotal = ref(0);
 const refreshError = ref('');
 const refreshDoneCount = ref(0);
   
-      const defaultExtras = () => ({ rating: 0, notes: '', status: 'completed', groupId: null });
-  
-      const selectedCount = computed(() => Object.values(selectedMap.value).filter(Boolean).length);
-      const updateCount = computed(() => Object.values(updateMap.value).filter(Boolean).length);
-      const newCount = computed(() => psnGames.value.filter(g => !g._exists).length);
-      const existingCount = computed(() => psnGames.value.filter(g => g._exists).length);
-  
-      const filteredGames = computed(() => {
-        const q = filterText.value.trim().toLowerCase();
-        return q ? psnGames.value.filter(g => g.name.toLowerCase().includes(q)) : psnGames.value;
+      const defaultExtras = (game = {}) => ({
+        rating: 0, notes: '', groupId: null, statusAutomatic: true,
+        status: hasAllAchievements(game.trophiesEarned, game.trophiesTotal) ? 'completed' : 'backlog',
       });
 
       const filteredMigrationGames = computed(() => {
@@ -956,8 +736,21 @@ const refreshDoneCount = ref(0);
       const migrateNoMatchCount = computed(() => migrateGames.value.filter(g => g.status === 'nomatch').length);
   
       const mapPlatform = (cat) => cat === 'ps5_native_game' ? 'PS5' : cat === 'ps4_game' ? 'PS4' : 'PS';
-      const mapPlatformFull = (cat) => cat === 'ps5_native_game' ? 'PlayStation 5' : cat === 'ps4_game' ? 'PlayStation 4' : 'PlayStation';
-      const formatDate = (iso) => { try { return new Date(iso).toLocaleDateString('hr-HR'); } catch { return iso; } };
+      const psnListGames = computed(() => psnGames.value.map(game => ({
+        key: game._key, name: game.name, exists: game._exists, blocked: game._blocked,
+        otherPlatforms: game._otherPlatforms || [],
+        candidates: game._resolution?.candidates || [], needsChoice: game._resolution?.needsChoice, resolution: game._resolution?.resolution,
+        imageUrl: game.imageUrl || game._metadata?.image_url || null, platform: mapPlatform(game.platformCategory),
+        platformPrimary: game.platformCategory === 'ps5_native_game',
+        playtime: game.hoursPlayed != null ? `${game.hoursPlayed} h` : '—',
+        progress: game.trophyPercent, progressLabel: 'trofeja',
+        progressValue: game.trophiesEarned, progressTotal: game.trophiesTotal,
+        lastPlayed: game.lastPlayed,
+      })));
+      const selectPsnGame = ({ key, existing, value }) => {
+        if (existing) updateMap.value[key] = value;
+        else selectedMap.value[key] = value;
+      };
 
       const PLATFORM_MAP = {
         'pc (microsoft windows)': 'PC',
@@ -993,7 +786,7 @@ const refreshDoneCount = ref(0);
       const loadGroups = async () => {
         const userId = userStore.user?.id;
         if (!userId) return;
-        const { data } = await supabase.from('groups').select('id, name').eq('user_id', userId).order('name');
+        const data = await fetchUserRows(supabase, 'groups', userId, { columns: 'id,name', order: 'name' });
         groups.value = data || [];
       };
   
@@ -1043,51 +836,59 @@ const refreshDoneCount = ref(0);
       const loadLibraryIndex = async () => {
         const userId = userStore.user?.id;
         if (!userId) return new Map();
-        const { data } = await supabase.from('games')
-          .select('id,title,psn_np_communication_id,psn_title_id')
-          .eq('user_id', userId);
-        const index = new Map();
-        for (const row of data || []) {
-          if (row.psn_np_communication_id && !index.has('npc:' + row.psn_np_communication_id)) index.set('npc:' + row.psn_np_communication_id, row);
-          if (row.psn_title_id && !index.has('tid:' + String(row.psn_title_id))) index.set('tid:' + String(row.psn_title_id), row);
-          const tKey = 't:' + normalizeTitle(row.title);
-          if (!index.has(tKey)) index.set(tKey, row);
-        }
-        return index;
+        assertOwner();
+        psnLibraryRows = await fetchUserRows(supabase, 'games', userId, { columns: 'id,title,platform,psn_np_communication_id,psn_title_id' });
+        assertOwner();
+        return buildPsnIndex(psnLibraryRows);
       };
-
-      const matchInIndex = (index, g) =>
-        (g.npCommunicationId && index.get('npc:' + g.npCommunicationId)) ||
-        (g.psnTitleId != null && index.get('tid:' + String(g.psnTitleId))) ||
-        index.get('t:' + normalizeTitle(g.name)) ||
-        null;
-  
-      const markExisting = async () => {
-        const index = await loadLibraryIndex();
-        psnGames.value = psnGames.value.map(g => {
-          const key = g.psnTitleId ? String(g.psnTitleId) : normalizeTitle(g.name);
-          if (!gameExtras.value[key]) gameExtras.value[key] = defaultExtras();
-          const match = matchInIndex(index, g);
-          return { ...g, _key: key, _exists: Boolean(match), _matchId: match?.id || null };
+      const applyPsnMatches = () => {
+        const index = buildPsnIndex(psnLibraryRows);
+        psnGames.value = psnGames.value.map(game => {
+          const key = game.psnTitleId ? String(game.psnTitleId) : normalizeTitle(game.name);
+          if (!gameExtras.value[key]) gameExtras.value[key] = defaultExtras(game);
+          if (gameExtras.value[key].statusAutomatic) gameExtras.value[key].status = defaultExtras(game).status;
+          const match = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[key], index);
+          return {
+            ...game, _key: key, _exists: Boolean(match.row), _blocked: match.blocked, _resolution: match,
+            _matchId: match.row?.id || null, _otherPlatforms: otherPlatforms(psnLibraryRows, game.name, platformName(game.platformCategory)),
+          };
         });
         const nextSelected = {}, nextUpdate = {};
-        for (const g of psnGames.value) {
-          nextSelected[g._key] = !g._exists;
-          nextUpdate[g._key] = g._exists;
+        for (const game of psnGames.value) {
+          nextSelected[game._key] = !game._exists && !game._blocked && (selectedMap.value[game._key] ?? true);
+          nextUpdate[game._key] = game._exists && !game._blocked && (updateMap.value[game._key] ?? true);
         }
         selectedMap.value = nextSelected;
         updateMap.value = nextUpdate;
       };
-  
+      const markExisting = async () => {
+        await loadLibraryIndex();
+        applyPsnMatches();
+      };
+      const resolvePsnGame = ({ key, value }) => {
+        if (importLoading.value || syncLoading.value) return;
+        psnChoices.value[key] = value === 'separate' ? { mode: 'separate' } : { mode: 'link', targetId: value.slice(5) };
+        saveImporterChoices(ownerId, 'psn', psnChoices.value);
+        applyPsnMatches();
+        const game = psnGames.value.find(game => game._key === key);
+        selectedMap.value[key] = !game._exists && !game._blocked;
+        updateMap.value[key] = game._exists && !game._blocked;
+      };
+      const setPsnPoster = ({ key, url }) => {
+        const game = psnGames.value.find(game => game._key === key);
+        if (game) game._posterUrl = httpUrl(url);
+      };
+
       const syncPsn = async () => {
         syncError.value = '';
         importError.value = '';
+        metadataWarning.value = '';
         importDoneCount.value = 0;
-        filterText.value = '';
         try {
           syncLoading.value = true;
           syncStage.value = '';
           const data = await fetchSyncData((msg) => { syncStage.value = msg; });
+          assertOwner();
           psnGames.value = data.games || [];
           psnProfileData.value = data.profile;
           hasSynced.value = true;
@@ -1109,258 +910,128 @@ const refreshDoneCount = ref(0);
         }
       };
   
-      const selectAll = (value) => {
-        const next = { ...selectedMap.value };
-        for (const g of psnGames.value) { if (!g._exists) next[g._key] = value; }
-        selectedMap.value = next;
-      };
-  
-      const selectAllSync = (value) => {
-        const next = { ...updateMap.value };
-        for (const g of psnGames.value) { if (g._exists) next[g._key] = value; }
-        updateMap.value = next;
-      };
-  
-      function chunkArr(arr, size) {
-        const out = [];
-        for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-        return out;
-      }
-
-      // paralelni pool (RAWG dohvat)
-      async function mapPool(items, limit, worker) {
-        const out = new Array(items.length);
-        let i = 0;
-        await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
-          while (i < items.length) { const idx = i++; out[idx] = await worker(items[idx], idx); }
-        }));
-        return out;
-      }
-
-      const enrichFromRawg = async (name) => {
-        const searchResults = await gamesApi.searchGames(name);
-        const firstResult = searchResults?.results?.[0];
-        if (!firstResult) return null;
-        const details = await gamesApi.getGameDetails(firstResult.id);
-        if (!details) return null;
-
-        let screenshots = [];
-        try {
-          screenshots = (await gamesApi.getGameScreenshots(firstResult.id)) || [];
-        } catch (e) { console.error('[Importers] screenshots failed:', e); }
-
-        let seriesGames = [];
-        try {
-          const seriesData = await gamesApi.getGameSeries(firstResult.id);
-          seriesGames = seriesData?.results || [];
-        } catch (e) { console.error('[Importers] series failed:', e); }
-
-        return {
-          title: details.name || name,
-          genre: details.genres?.map(x => x.name).join(', ') || null,
-          publisher: details.publishers?.map(x => x.name).join(', ') || null,
-          game_api_id: String(details.id),
-          image_url: details.background_image || null,
-          background_image: details.background_image || null,
-          description: details.description_raw || null,
-          metacritic_score: details.metacritic || null,
-          esrb_rating: details.esrb_rating?.name || null,
-          release_date: details.released || null,
-          website_url: details.website || null,
-          developers: JSON.stringify(details.developers?.map(d => d.name) || []),
-          genres_list: JSON.stringify(details.genres?.map(x => x.name) || []),
-          platforms_list: JSON.stringify(details.platforms?.map(p => p.platform.name) || []),
-          publishers_list: JSON.stringify(details.publishers?.map(x => x.name) || []),
-          ...(screenshots.length ? { screenshot_urls: JSON.stringify(screenshots.map(s => s.image)) } : {}),
-          ...(seriesGames.length ? {
-            series_games: JSON.stringify(seriesGames.map(sg => ({
-              id: sg.id, name: sg.name, released: sg.released, background_image: sg.background_image
-            })))
-          } : {})
-        };
-      };
-
-      const buildBaseRow = (userId, g, extras) => ({
-        user_id: userId,
-        title: g.name,
-        platform: mapPlatformFull(g.platformCategory),
-        play_time: g.hoursPlayed != null ? Math.round(g.hoursPlayed) : null,
-        rating: extras.rating > 0 ? extras.rating : null,
-        notes: extras.notes || '',
-        start_date: g.firstPlayed || null,
-        end_date: extras.status === 'completed' ? (g.lastPlayed || null) : null,
-        status: extras.status || 'completed',
-        currently_playing: extras.status === 'playing',
-        progress_mode: 'trophies_psn',
-        progress_value: g.trophiesEarned != null ? Math.round(g.trophiesEarned) : null,
-        progress_total: g.trophiesTotal != null ? Math.round(g.trophiesTotal) : null,
-        progress_unit: 'trophies',
-        progress_source: mapPlatformFull(g.platformCategory),
-        achievement_percent: g.trophyPercent != null ? Math.round(g.trophyPercent) : null,
-        game_api_id: null,
-        image_url: g.imageUrl ?? null,
-        background_image: g.imageUrl ?? null,
-        psn_np_communication_id: g.npCommunicationId || null,
-        psn_title_id: g.psnTitleId != null ? String(g.psnTitleId) : null
-      });
-
       const importSelected = async () => {
+        if (importLoading.value) return;
         importError.value = '';
+        metadataWarning.value = '';
         importDoneCount.value = 0;
-        importProgress.value = '';
         importDone.value = 0;
-        importTotal.value = 0;
+        const toImport = psnGames.value.filter(game => selectedMap.value[game._key] && !game._exists && !game._blocked);
+        if (!toImport.length) return;
+        importLoading.value = true;
+        importTotal.value = toImport.length;
+        const missingMetadata = [];
+        const unresolved = [];
         try {
-          const userId = userStore.user?.id;
-          if (!userId) THROW(new Error('Nema user_id.'));
-          const toImport = psnGames.value.filter(g => selectedMap.value[g._key] && !g._exists);
-          if (!toImport.length) return;
-
-          importLoading.value = true;
-          importTotal.value = toImport.length;
-
-          // baza redova (bez RAWG-a)
-          const rows = toImport.map((g) => buildBaseRow(userId, g, gameExtras.value[g._key] || defaultExtras()));
-
-          // RAWG obogaćivanje — uvijek uključeno
-          {
-            let enrichedDone = 0;
-            await mapPool(toImport, 3, async (g, idx) => {
-              importProgress.value = `Tražim metapodatke (RAWG): ${g.name}`;
-              try {
-                const extra = await enrichFromRawg(g.name);
-                if (extra) {
-                  // PSN cover fallback
-                  if (!extra.image_url) { extra.image_url = g.imageUrl ?? null; extra.background_image = g.imageUrl ?? null; }
-                  rows[idx] = { ...rows[idx], ...extra };
-                }
-              } catch (e) { console.error('[Importers] RAWG enrichment failed:', e); }
-              enrichedDone++;
-              importDone.value = enrichedDone;
-            });
+          assertOwner();
+          let index = await loadLibraryIndex();
+          for (const game of toImport) {
+            assertOwner();
+            const match = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
+            if (match.blocked) { unresolved.push(game.name); continue; }
+            if (match.row) continue;
+            importProgress.value = `Importiram: ${game.name}`;
+            const extras = gameExtras.value[game._key] || defaultExtras();
+            const metadata = await loadImporterMetadata(gamesApi, game.name);
+            if (!metadata) { missingMetadata.push(game.name); importDone.value++; continue; }
+            const row = { ...buildPsnRow(ownerId, game, extras), ...metadata };
+            if (match.separate) row.title = game.name;
+            row.image_url = game._posterUrl || metadata.image_url;
+            extras.status = row.status;
+            game._metadata = metadata;
+            assertOwner();
+            const { data, error } = await supabase.from('games').insert([row]).select('id');
+            if (error) throw error;
+            if (!data?.[0]?.id) throw new Error('Spremanje nije potvrđeno. Osvježi popis prije ponavljanja.');
+            importDoneCount.value++;
+            importDone.value++;
+            psnLibraryRows.push({ ...row, id: data[0].id });
+            index = buildPsnIndex(psnLibraryRows);
+            if (match.separate) {
+              psnChoices.value[game._key] = { mode: 'separate', entryId: data[0].id };
+              saveImporterChoices(ownerId, 'psn', psnChoices.value);
+            }
+            if (extras.groupId) {
+              assertOwner();
+              const { error: groupError } = await supabase.from('game_groups').insert([{ user_id: ownerId, game_id: data[0].id, group_id: extras.groupId }]);
+              if (groupError) throw new Error('Igra je dodana, ali grupa nije spremljena. Dodaj je u grupu iz detalja igre.');
+            }
           }
-
-          // chunked insert
-          const insertedIds = [];
-          for (const chunk of chunkArr(rows, 25)) {
-            importProgress.value = `Importiram igre… (${insertedIds.length}/${rows.length})`;
-            importDone.value = insertedIds.length;
-            const { data: inserted, error } = await supabase.from('games').insert(chunk).select('id');
-            if (error) THROW(new Error(error.message));
-            insertedIds.push(...(inserted || []).map(r => r.id));
-          }
-
-          // grupe — jedan batch
-          const groupLinks = [];
-          insertedIds.forEach((gameId, idx) => {
-            const extras = gameExtras.value[toImport[idx]._key] || defaultExtras();
-            if (extras.groupId && gameId) groupLinks.push({ user_id: userId, game_id: gameId, group_id: extras.groupId });
-          });
-          if (groupLinks.length) {
-            const { error } = await supabase.from('game_groups').insert(groupLinks);
-            if (error) console.error('[Importers] group insert failed:', error);
-          }
-
-          importDoneCount.value = insertedIds.length;
-          importProgress.value = '';
-          importTotal.value = 0;
-          showToast(`Import dovršen: ${insertedIds.length} ${insertedIds.length === 1 ? 'igra' : 'igara'}.`);
-          await markExisting();
-        } catch (e) {
-          importError.value = e?.message || 'Greška pri importu.';
-          importProgress.value = '';
-          importTotal.value = 0;
+          showToast(`Import dovršen: ${importDoneCount.value} igara.`);
+        } catch (error) {
+          importError.value = `Dodano: ${importDoneCount.value}. ${error.message || 'Import nije uspio.'}`;
         } finally {
+          try { assertOwner(); await markExisting(); }
+          catch (error) { if (!disposed) importError.value += ` ${error.message}`; }
+          if (missingMetadata.length) metadataWarning.value = `Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj igru.`;
+          if (unresolved.length) metadataWarning.value += ` Odaberi postojeću igru ili zaseban unos za: ${unresolved.join(', ')}.`;
           importLoading.value = false;
+          importProgress.value = '';
+          importTotal.value = 0;
         }
       };
-  
+
       const updateSelected = async () => {
+        if (importLoading.value) return;
         importError.value = '';
+        metadataWarning.value = '';
         importDoneCount.value = 0;
-        importProgress.value = '';
         importDone.value = 0;
-        importTotal.value = 0;
+        const toUpdate = psnGames.value.filter(game => updateMap.value[game._key] && game._exists);
+        if (!toUpdate.length) return;
+        importLoading.value = true;
+        importTotal.value = toUpdate.length;
         try {
-          const userId = userStore.user?.id;
-          if (!userId) THROW(new Error('Nema user_id.'));
-          const toUpdate = psnGames.value.filter(g => updateMap.value[g._key] && g._exists);
-          if (!toUpdate.length) return;
-
-          importLoading.value = true;
-          importTotal.value = toUpdate.length;
-
-          // N+1 fix
+          assertOwner();
           const index = await loadLibraryIndex();
-          let done = 0;
-          const updates = [];
-          for (const g of toUpdate) {
-            importProgress.value = `Sync: ${g.name}`;
-            importDone.value = done;
-            const match = matchInIndex(index, g);
-            if (!match?.id) { done++; importDone.value = done; continue; }
-
-            // samo playtime + trofeji
-            const patch = {
-              play_time: g.hoursPlayed != null ? Math.round(g.hoursPlayed) : null,
-              achievement_percent: g.trophyPercent != null ? Math.round(g.trophyPercent) : null,
-              progress_value: g.trophiesEarned != null ? Math.round(g.trophiesEarned) : null,
-              progress_total: g.trophiesTotal != null ? Math.round(g.trophiesTotal) : null,
-              progress_mode: 'trophies_psn',
-              progress_unit: 'trophies',
-              progress_source: mapPlatformFull(g.platformCategory),
-              updated_at: new Date().toISOString()
-            };
-            // backfill PSN ID-jeva
-            if (!match.psn_np_communication_id && g.npCommunicationId) patch.psn_np_communication_id = g.npCommunicationId;
-            if (!match.psn_title_id && g.psnTitleId != null) patch.psn_title_id = String(g.psnTitleId);
-
-            updates.push({ id: match.id, ...patch });
-            done++;
-            importDone.value = done;
+          const targets = new Set();
+          for (const game of toUpdate) {
+            const match = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
+            if (match.row && targets.has(match.row.id)) throw new Error('Odaberi samo jedan izvor napretka za istu igru.');
+            if (match.row) targets.add(match.row.id);
           }
-
-          for (const chunk of chunkArr(updates, 25)) {
-            const results = await Promise.all(chunk.map(async ({ id, ...patch }) => {
-              const { error } = await supabase.from('games').update(patch).eq('id', id);
-              return error ? `${id}: ${error.message}` : null;
-            }));
-            const firstErr = results.find(Boolean);
-            if (firstErr) THROW(new Error(firstErr));
+          for (const game of toUpdate) {
+            assertOwner();
+            const resolution = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
+            const match = resolution.row;
+            if (!match || resolution.blocked) continue;
+            importProgress.value = `Sinkroniziram: ${game.name}`;
+            const { data, error } = await supabase.from('games').update(buildPsnPatch(game, match))
+              .eq('user_id', ownerId).eq('id', match.id).eq('platform', match.platform).select('id');
+            if (error) throw error;
+            if (!data?.length) throw new Error('Igra je promijenjena ili uklonjena. Osvježi popis.');
+            importDoneCount.value++;
+            importDone.value++;
           }
-
-          importDoneCount.value = done;
+          showToast(`Sinkronizirano: ${importDoneCount.value} igara.`);
+        } catch (error) {
+          importError.value = `Sinkronizirano: ${importDoneCount.value}. ${error.message || 'Ažuriranje nije uspjelo.'}`;
+        } finally {
+          importLoading.value = false;
           importProgress.value = '';
           importTotal.value = 0;
-          showToast(`Sync dovršen: ${updates.length} ${updates.length === 1 ? 'igra' : 'igara'} ažurirano.`);
-      } catch (e) {
-        importError.value = e?.message || 'Greška pri ažuriranju.';
-        importProgress.value = '';
-        importTotal.value = 0;
-      } finally {
-        importLoading.value = false;
-      }
-    };
+        }
+      };
 
     const exportBackup = async () => {
+      if (backupLoading.value || importing.value) return;
       backupLoading.value = true;
       try {
-        const uid = userStore.user.id;
+        assertOwner();
+        const uid = ownerId;
         const [gamesRes, groupsRes, gameGroupsRes] = await Promise.all([
-          supabase.from('games').select('*').eq('user_id', uid),
-          supabase.from('groups').select('*').eq('user_id', uid),
-          supabase.from('game_groups').select('*').eq('user_id', uid)
+          fetchUserRows(supabase, 'games', uid),
+          fetchUserRows(supabase, 'groups', uid),
+          fetchUserRows(supabase, 'game_groups', uid)
         ]);
-        if (gamesRes.error) THROW(gamesRes.error);
-        if (groupsRes.error) THROW(groupsRes.error);
-        if (gameGroupsRes.error) THROW(gameGroupsRes.error);
 
+        assertOwner();
         const backup = {
           version: 1,
           exportedAt: new Date().toISOString(),
-          games: gamesRes.data || [],
-          groups: groupsRes.data || [],
-          gameGroups: gameGroupsRes.data || []
+          games: gamesRes,
+          groups: groupsRes,
+          gameGroups: gameGroupsRes
         };
 
         const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -1387,7 +1058,7 @@ const refreshDoneCount = ref(0);
 
       try {
         const text = await file.text();
-        const data = JSON.parse(text);
+        const data = validateBackup(JSON.parse(text));
 
         if (!data.version || !Array.isArray(data.games) || !Array.isArray(data.groups) || !Array.isArray(data.gameGroups)) {
           THROW(new Error('Neispravan format backup datoteke.'));
@@ -1413,13 +1084,15 @@ const refreshDoneCount = ref(0);
     };
 
     const confirmImport = async () => {
-      if (!importFileData.value) return;
+      if (!importFileData.value || importing.value) return;
+      assertOwner();
 
       importing.value = true;
       showImportModal.value = false;
 
       try {
-        const data = importFileData.value;
+        const data = validateBackup(importFileData.value);
+        assertOwner();
 
         if (data.games.length === 0 && data.groups.length === 0 && data.gameGroups.length === 0) {
           THROW(new Error('Backup datoteka ne sadrži podatke (svi nizovi su prazni).'));
@@ -1449,10 +1122,11 @@ const refreshDoneCount = ref(0);
 
         importFileData.value = null;
         await loadGroups();
+        await markExisting();
         showToast(`Backup uspješno uvezen! (${result.inserted.games} igara, ${result.inserted.groups} grupa)`);
       } catch (error) {
         console.error('Greška pri uvozu backupa:', error);
-        showToast(error.message || 'Greška pri uvozu backupa. Tvoji podaci su obrisani. Uvezi backup ponovno.', 'error');
+        showToast(error.message || 'Uvoz nije uspio. Provjeri podatke i pokušaj ponovno.', 'error');
         importFileData.value = null;
       } finally {
         importing.value = false;
@@ -1479,8 +1153,7 @@ const refreshDoneCount = ref(0);
         migrateScanned.value = false;
         migrateGames.value = [];
 
-        const { data, error } = await supabase.from('games').select('*').eq('user_id', userId);
-        if (error) THROW(error);
+        const data = await fetchUserRows(supabase, 'games', userId);
 
         const candidates = (data || []).filter(g => g.game_api_id != null && String(g.game_api_id).trim() !== '');
         const rows = [];
@@ -1542,6 +1215,7 @@ const refreshDoneCount = ref(0);
     const buildGameMetadata = async (apiId, extra = {}) => {
       const update = { updated_at: new Date().toISOString(), ...extra };
       const details = await gamesApi.getGameDetails(apiId);
+      if (!details?.id) throw new Error('Metapodaci nisu dostupni. Pokušaj ponovno.');
       let screenshots = [];
       let seriesGames = [];
       try { screenshots = (await gamesApi.getGameScreenshots(apiId)) || []; } catch (e) { console.error('[Importers] screenshots failed:', e); }
@@ -1612,6 +1286,8 @@ const refreshDoneCount = ref(0);
 
           const update = await buildGameMetadata(newId, { game_api_id: newId });
 
+          assertOwner();
+          if (String(g.db.website_url || '').startsWith('https://store.steampowered.com/app/')) delete update.website_url;
           const { error } = await supabase.from('games').update(update).eq('user_id', userId).eq('id', g.db.id);
           if (error) THROW(new Error(`${g.db.title}: ${error.message}`));
 
@@ -1650,8 +1326,7 @@ const refreshDoneCount = ref(0);
       }
       try {
         refreshLoading.value = true;
-        const { data, error } = await supabase.from('games').select('*').eq('user_id', userId);
-        if (error) THROW(error);
+        const data = await fetchUserRows(supabase, 'games', userId);
         const toRefresh = (data || []).filter(g => g.game_api_id != null && String(g.game_api_id).trim() !== '');
         if (!toRefresh.length) {
           refreshDoneCount.value = 0;
@@ -1664,11 +1339,13 @@ const refreshDoneCount = ref(0);
           refreshDone.value = done;
           try {
             const update = await buildGameMetadata(String(g.game_api_id));
+            assertOwner();
+            if (String(g.website_url || '').startsWith('https://store.steampowered.com/app/')) delete update.website_url;
             const { error: updateError } = await supabase.from('games').update(update).eq('user_id', userId).eq('id', g.id);
             if (updateError) THROW(updateError);
             done++;
           } catch (e) {
-            console.error(`[Importers] refresh failed for ${g.title}:`, e);
+            refreshError.value = `Neke igre nisu osvježene: ${e.message || 'greška dohvata'}`;
           }
           refreshDone.value = done;
         }
@@ -1686,7 +1363,8 @@ const refreshDoneCount = ref(0);
     };
 
     onMounted(async () => {
-  await userStore.fetchUser();
+  try {
+  assertOwner();
   await loadGroups();
 
   // hydrate iz cachea
@@ -1701,19 +1379,18 @@ const refreshDoneCount = ref(0);
       await markExisting();
     }
   }
+  } catch (error) { syncError.value = error.message || 'Učitavanje nije uspjelo.'; }
 });
 
   
       return {
-        userStore, activeTab, isConnected, lastSyncedAt, formatSyncedAt,
+        userStore, activeTab, psnListGames, selectPsnGame, resolvePsnGame, setPsnPoster, isConnected, steamConnection, lastSyncedAt, formatSyncedAt,
         wizardOpen, wizardNpsso, wizardNpssoParsed, wizardLoading, wizardError, openWizard, closeWizard, connectPsn, disconnectPsn,
         syncStage, psnProfileData,
-        syncLoading, syncError, hasSynced, psnGames, filterText, filteredGames,
+        syncLoading, syncError, hasSynced, psnGames,
         selectedMap, updateMap, gameExtras, groups, statusOptions,
-        selectedCount, updateCount, newCount, existingCount,
-        importLoading, importProgress, importDone, importTotal, importError, importDoneCount,
-        mapPlatform, formatDate, defaultExtras,
-        syncPsn, selectAll, selectAllSync, importSelected, updateSelected,
+        importLoading, importProgress, importDone, importTotal, importError, metadataWarning, importDoneCount,
+        syncPsn, importSelected, updateSelected,
         backupLoading, importing, showImportModal, importFileData, toast,
         exportBackup, importBackup, closeImportModal, confirmImport,
         migrateScanLoading, migrateScanned, migrateScanError, migrateGames, migrateFilter,
@@ -1727,4 +1404,3 @@ const refreshDoneCount = ref(0);
     }
   };
   </script>
-  

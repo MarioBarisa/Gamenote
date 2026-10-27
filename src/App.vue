@@ -1,11 +1,14 @@
 <template>
   <Layout>
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <component :is="Component" :key="userStore.user?.id || 'guest'" />
+    </router-view>
   </Layout>
 </template>
 
 <script>
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 import { useThemeStore } from './stores/theme';
 import { useCardSizeStore } from './stores/cardSize';
@@ -18,23 +21,22 @@ export default {
   },
   setup() {
     const userStore = useUserStore();
+    const router = useRouter();
     const themeStore = useThemeStore();
     const cardSizeStore = useCardSizeStore();
 
-    let authSubscription = null;
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      userStore.setUser(session?.user || null);
+    });
+    const authSubscription = data?.subscription;
+    watch(() => userStore.isLoggedIn, (loggedIn) => {
+      if (!loggedIn && router.currentRoute.value.meta.requiresAuth) router.replace('/login');
+    });
     
     onMounted(async () => {
       themeStore.initTheme();
       cardSizeStore.initCardSize();
-      await userStore.fetchUser();
-      const { data } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          userStore.setUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          userStore.clearUser();
-        }
-      });
-      authSubscription = data?.subscription || null;
+      try { await userStore.fetchUser(); } catch { /* Prijavu obrađuje zaštita ruta. */ }
     });
 
     onUnmounted(() => {

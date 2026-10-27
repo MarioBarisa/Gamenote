@@ -1,3 +1,4 @@
+import { useUserStore } from '../stores/user';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -11,11 +12,13 @@ const router = createRouter({
     {
       path: '/groups',
       name: 'groups',
+      meta: { requiresAuth: true },
       component: () => import('../views/Groups.vue')
     },
     {
       path: '/groups/:id',
       name: 'group-details',
+      meta: { requiresAuth: true },
       component: () => import('../views/GroupDetails.vue')
     },
     {
@@ -31,11 +34,13 @@ const router = createRouter({
     {
       path: '/add-game',
       name: 'add-game',
+      meta: { requiresAuth: true },
       component: () => import('../views/AddGame.vue')
     },
     {
       path: '/library',
       name: 'library',
+      meta: { requiresAuth: true },
       component: () => import('../views/Games.vue')
     },
     {
@@ -46,22 +51,26 @@ const router = createRouter({
     {
       path: '/game/:id',
       name: 'game-details',
+      meta: { requiresAuth: true },
       component: () => import('../views/GameDetails.vue')
     },
     {
       path: '/edit-game/:id',
       name: 'edit-game',
+      meta: { requiresAuth: true },
       component: () => import('../views/GameDetails.vue'),
       props: { editMode: true }
     },
     {
       path: '/api-games/:id',
       name: 'api-game-details',
+      meta: { requiresAuth: true },
       component: () => import('../views/ApiGameDetails.vue')
     },
     {
       path: '/stats',
       name: 'stats',
+      meta: { requiresAuth: true },
       component: () => import('../views/Stats.vue')
     },
     {
@@ -77,11 +86,13 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
+      meta: { requiresAuth: true },
       component: () => import('../views/Profile.vue')
     },
     {
       path: '/theme-settings',
       name: 'theme-settings',
+      meta: { requiresAuth: true },
       component: () => import('../views/ThemeSettings.vue')
     },
     {
@@ -97,6 +108,7 @@ const router = createRouter({
     {
       path: '/importers',
       name: 'importers',
+      meta: { requiresAuth: true },
       component: () => import('../views/Importers.vue')
     },
     {
@@ -135,42 +147,15 @@ router.afterEach(() => {
   }, 50);
 });
 
-let lastAuthCheck = 0;
-const AUTH_CHECK_INTERVAL = 5000;
-
-const PUBLIC_ROUTES = new Set(['home', 'login', 'register', 'shared-game', 'privacy', 'tos', 'about', 'contact', 'not-found']);
-
-const needsUserHydration = (to) => to.name === 'shared-game';
-
 router.beforeEach(async (to) => {
-  if (PUBLIC_ROUTES.has(to.name) && !needsUserHydration(to)) {
-    return;
-  }
-
+  if (!to.meta.requiresAuth && to.name !== 'shared-game') return;
   try {
-    const userStore = await import('../stores/user').then(module => module.useUserStore());
-
-    const now = Date.now();
-    const shouldFetchUser = !lastAuthCheck || (now - lastAuthCheck) > AUTH_CHECK_INTERVAL;
-
-    if (shouldFetchUser) {
-      await userStore.fetchUser();
-      lastAuthCheck = now;
-    }
-
-    const isAuthenticated = userStore.isLoggedIn;
-
-    if (needsUserHydration(to)) {
-      return;
-    }
-
-    const authRequiredRoutes = ['add-game', 'library', 'game-details', 'edit-game', 'api-game-details', 'stats', 'profile', 'theme-settings', 'groups', 'group-details'];
-
-    if (authRequiredRoutes.includes(to.name) && !isAuthenticated) {
-      return { name: 'login' };
-    }
+    const userStore = useUserStore();
+    await userStore.fetchUser();
+    if (to.meta.requiresAuth && !userStore.isLoggedIn) return { name: 'login' };
   } catch (error) {
-    console.error('Auth guard error:', error);
+    console.error('Provjera prijave nije uspjela:', error);
+    if (to.meta.requiresAuth) return { name: 'login' };
   }
 });
 

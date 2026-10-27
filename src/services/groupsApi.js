@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { fetchUserRows } from './libraryData';
 
 // Minimal groups API wrapper
 // Tables expected:
@@ -6,13 +7,7 @@ import { supabase } from '../supabase';
 // game_groups(id, user_id, game_id, group_id)
 
 export async function listGroups(userId) {
-  const { data, error } = await supabase
-    .from('groups')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
+  return fetchUserRows(supabase, 'groups', userId, { order: 'created_at', ascending: false });
 }
 
 export async function getGroup(groupId, userId) {
@@ -58,23 +53,11 @@ export async function deleteGroup(groupId, userId) {
 }
 
 export async function listGroupGames(groupId, userId) {
-  const { data, error } = await supabase
-    .from('game_groups')
-    .select('*, games:game_id(*)')
-    .eq('group_id', groupId)
-    .eq('user_id', userId);
-  if (error) throw error;
-  return data || [];
+  return fetchUserRows(supabase, 'game_groups', userId, { columns: '*, games:game_id(*)', filter: query => query.eq('group_id', groupId) });
 }
 
 export async function listGameGroups(gameId, userId) {
-  const { data, error } = await supabase
-    .from('game_groups')
-    .select('*, groups:group_id(*)')
-    .eq('game_id', gameId)
-    .eq('user_id', userId);
-  if (error) throw error;
-  return data || [];
+  return fetchUserRows(supabase, 'game_groups', userId, { columns: '*, groups:group_id(*)', filter: query => query.eq('game_id', gameId) });
 }
 
 export async function addGameToGroup({ user_id, group_id, game_id }) {

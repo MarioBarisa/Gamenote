@@ -1,4 +1,5 @@
 <template>
+  <div v-if="error" role="alert" class="alert alert-error mb-4">{{ error }}</div>
   <div class="groups-page">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <h1 class="text-2xl sm:text-3xl font-bold">Grupe</h1>
@@ -92,6 +93,8 @@
 </template>
 
 <script>
+import { supabase } from '../supabase';
+import { fetchUserRows } from '../services/libraryData';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -109,17 +112,23 @@ export default {
     const newGroupType = ref('collection');
     const showCreateModal = ref(false);
 
+    const error = ref('');
     const fetchGroups = async () => {
+      error.value = '';
       loading.value = true;
       try {
         if (!userStore.user) return;
         groups.value = await listGroups(userStore.user.id);
         
-        // Fetch games for each group to build banner
-        for (const group of groups.value) {
-          const games = await listGroupGames(group.id, userStore.user.id);
-          groupGamesMap.value[group.id] = games;
+        const links = await fetchUserRows(supabase, 'game_groups', userStore.user.id, { columns: '*, games:game_id(*)' });
+        const map = {};
+        for (const link of links) {
+          if (!map[link.group_id]) map[link.group_id] = [];
+          map[link.group_id].push(link);
         }
+        groupGamesMap.value = map;
+      } catch (failure) {
+        error.value = failure.message || 'Grupe nije moguće učitati.';
       } finally {
         loading.value = false;
       }
@@ -149,6 +158,8 @@ export default {
         newGroupType.value = 'collection';
         showCreateModal.value = false;
         await fetchGroups();
+      } catch (failure) {
+        error.value = failure.message || 'Grupa nije spremljena.';
       } finally {
         creating.value = false;
       }
@@ -162,8 +173,8 @@ export default {
 
     onMounted(fetchGroups);
 
-    return { 
-      loading, 
+    return {
+      error, loading,
       creating, 
       groups, 
       groupsWithGames,

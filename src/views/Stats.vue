@@ -1,5 +1,6 @@
 <!-- src/views/Stats.vue -->
 <template>
+  <div v-if="loadError" role="alert" class="alert alert-error mb-4">{{ loadError }}</div>
   <div class="stats-page">
     <!-- NASLOV -->
     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-4 sm:mb-6">Gamenote Statistika</h1>
@@ -264,6 +265,7 @@
 </template>
 
 <script>
+import { fetchUserRows } from '../services/libraryData';
 import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -303,21 +305,19 @@ export default {
 
     /* ---------- Podatci ---------- */
 
+    const loadError = ref('');
     const fetchGames = async () => {
+      loadError.value = '';
       loading.value = true;
       if (!userStore.user) {
         loading.value = false;
         return;
       }
       try {
-        const { data, error } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userStore.user.id);
-        if (error) throw error;
+        const data = await fetchUserRows(supabase, 'games', userStore.user.id);
         games.value = data || [];
       } catch (error) {
-        console.error('Greška pri dohvaćanju igara:', error);
+        loadError.value = error.message || 'Knjižnicu nije moguće učitati. Osvježi stranicu.';
       } finally {
         loading.value = false;
         await nextTick();
@@ -362,7 +362,7 @@ export default {
 
       games.value.forEach(g => {
         const createdD = parseDate(g.created_at);
-        const endD = parseDate(g.end_date);
+        const endD = g.status === 'completed' ? parseDate(g.end_date) : null;
         const gkCreated = keyFromDate(createdD, granularity);
         const gkEnd = keyFromDate(endD, granularity);
 
@@ -434,7 +434,7 @@ export default {
               if (g.status === 'wishlist') wishlist++;
               if (g.rating === 5) fiveStar++;
             }
-            if (keyFromDate(parseDate(g.end_date), 'day') === key) completed++;
+            if (g.status === 'completed' && keyFromDate(parseDate(g.end_date), 'day') === key) completed++;
           });
           return { key, axisLabel: String(day), fullLabel: `${day}. ${HR_MONTHS[selectedMonth.value - 1]} ${selectedYear.value}.`, added, completed, dropped, paused, wishlist, fiveStar, hours: 0 };
         });
@@ -452,7 +452,7 @@ export default {
             if (g.status === 'wishlist') wishlist++;
             if (g.rating === 5) fiveStar++;
           }
-          if (keyFromDate(parseDate(g.end_date), 'month') === key) {
+          if (g.status === 'completed' && keyFromDate(parseDate(g.end_date), 'month') === key) {
             completed++;
             hours += g.play_time || 0;
           }
@@ -554,6 +554,7 @@ export default {
     /* ---------- Rekordi ---------- */
 
     const daysBetween = (g) => {
+      if (g.status !== 'completed') return null;
       const s = parseDate(g.start_date);
       const e = parseDate(g.end_date);
       if (!s || !e) return null;
@@ -1191,7 +1192,7 @@ export default {
 
     onUnmounted(destroyCharts);
 
-    return {
+    return { loadError,
       router,
       loading,
       games,

@@ -11,7 +11,7 @@ function json(statusCode, body) {
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
-  if ((event.headers?.['content-length'] || 0) > 8192) return json(400, { error: 'Zahtjev prevelik.' });
+  if (event.isBase64Encoded || Buffer.byteLength(event.body || '') > 8192) return json(413, { error: 'Zahtjev prevelik.' });
 
   let payload;
   try {
@@ -19,7 +19,7 @@ exports.handler = async (event) => {
   } catch {
     return json(400, { error: 'Neispravan zahtjev.' });
   }
-  if (!payload || typeof payload !== 'object') return json(400, { error: 'Neispravan zahtjev.' });
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return json(400, { error: 'Neispravan zahtjev.' });
 
   const result = await psnExchange(payload);
   return json(result.ok ? 200 : result.status, result.ok ? result.tokens : { error: result.error });

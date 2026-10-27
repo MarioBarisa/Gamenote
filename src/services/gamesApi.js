@@ -1,323 +1,75 @@
 import { ref, computed } from 'vue';
+import { requestAppApi } from './appApi.js';
 
-// API ključ za RAWG Games Database
-// POSTAVITI -> VITE_RAWG_API_KEY u .env datoteci
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-// Use proxy in development to avoid CORS issues
-const BASE_URL = 'https://api.gamenote.eu/api';
-
-// RSS FEED LISTA IZVORA -> DODAJ ILI MAKNI PO POTREBI
-const RSS_FEEDS = [
-  { name: 'GameSpot', url: 'https://www.gamespot.com/feeds/mashup/', domain: 'gamespot.com' },
-  { name: 'IGN', url: 'https://www.ign.com/rss/articles/feed?format=xml', domain: 'ign.com' },
-  { name: 'Polygon', url: 'https://www.polygon.com/rss/index.xml', domain: 'polygon.com' },
-  { name: 'PC Gamer', url: 'https://www.pcgamer.com/rss/', domain: 'pcgamer.com' },
-  { name: 'VG247', url: 'https://www.vg247.com/feed', domain: 'vg247.com' },
-  { name: 'Rock Paper Shotgun', url: 'https://www.rockpapershotgun.com/feed', domain: 'rockpapershotgun.com' },
-  { name: 'DualShockers', url: 'https://www.dualshockers.com/feed', domain: 'dualshockers.com' },
-  { name: 'TouchArcade', url: 'https://toucharcade.com/feed', domain: 'toucharcade.com' },
-  { name: 'GamingOnLinux', url: 'https://www.gamingonlinux.com/article_rss.php', domain: 'gamingonlinux.com' },
-  {name: 'HCL.hr', url: 'https://www.hcl.hr/feed/', domain: 'hcl.hr'}
+const NEWS_SOURCES = [
+  ['GameSpot', 'gamespot.com'], ['IGN', 'ign.com'], ['Polygon', 'polygon.com'],
+  ['PC Gamer', 'pcgamer.com'], ['VG247', 'vg247.com'], ['Rock Paper Shotgun', 'rockpapershotgun.com'],
 ];
 
-// API ZA RSS FEEDOVE
-// POSTAVITI -> VITE_RSS_API_KEY u .env datoteci
-const NEWS_API_KEY = import.meta.env.VITE_RSS_API_KEY;
-
-const THROW = (err) => { if (err) throw err; };
-
 export const useGamesApi = () => {
-  const isLoading = ref(false);
+  const pending = ref(0);
   const error = ref(null);
 
-  const searchGames = async (query, page = 1) => {
-    isLoading.value = true;
+  async function request(path, params = {}, options = {}) {
+    pending.value++;
     error.value = null;
-    
     try {
-      const response = await fetch(
-        `${BASE_URL}/games?key=${API_KEY}&search=${query}&page=${page}&page_size=20`
-      );
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju igara'));
-      }
-      
-      return await response.json();
-    } catch (err) {
-      error.value = err.message;
-      return { results: [] };
-    } finally {
-      isLoading.value = false;
-    }
-  };
+      const strings = {};
+      for (const [key, value] of Object.entries(params)) strings[key] = String(value);
+      return await requestAppApi({ action: 'games', path, params: strings }, options);
+    } catch (failure) {
+      if (failure.name !== 'AbortError') error.value = failure.message;
+      throw failure;
+    } finally { pending.value--; }
+  }
 
-  const getGameDetails = async (id) => {
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-      const response = await fetch(
-        `${BASE_URL}/games/${id}?key=${API_KEY}`
-      );
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju detalja igre'));
-      }
-      
-      const data = await response.json();
-      if (data && !data.description_raw) {
-        data.description_raw = data.description || null;
-      }
-      return data;
-    } catch (err) {
-      error.value = err.message;
-      return null;
-    } finally {
-      isLoading.value = false;
+  async function searchGames(query, page = 1, options = {}) {
+    return request('/games', { search: query.trim(), page, page_size: 20 }, options);
+  }
+  async function getGameDetails(id, options = {}) {
+    const data = await request(`/games/${encodeURIComponent(id)}`, {}, options);
+    if (data && !data.description_raw) data.description_raw = data.description || null;
+    return data;
+  }
+  async function getGameScreenshots(id) {
+    return (await request(`/games/${encodeURIComponent(id)}/screenshots`)).results || [];
+  }
+  async function getGameSeries(id) {
+    return request(`/games/${encodeURIComponent(id)}/game-series`);
+  }
+  async function getGameAchievements(id) {
+    const data = await getGameDetails(id);
+    return { count: data.achievements_count || data.parent_achievements?.length || 0, results: data.parent_achievements || [] };
+  }
+  async function getPopularGames() {
+    const today = new Date();
+    const lastYear = new Date();
+    lastYear.setFullYear(today.getFullYear() - 1);
+    return (await request('/games', { dates: `${lastYear.toISOString().slice(0,10)},${today.toISOString().slice(0,10)}`, metacritic: '75,100', ordering: '-metacritic', page_size: 10 })).results || [];
+  }
+  async function getRecentGames() {
+    return (await request('/games', { ordering: '-released', page_size: 10 })).results || [];
+  }
+  async function getThisYearGames() {
+    const today = new Date();
+    return (await request('/games', { dates: `${today.getFullYear()}-01-01,${today.toISOString().slice(0,10)}`, ordering: '-added', page_size: 10 })).results || [];
+  }
+  async function getGameNews() {
+    const news = [];
+    for (let feed = 0; feed < NEWS_SOURCES.length; feed++) {
+      try {
+        const data = await requestAppApi({ action: 'news', feed });
+        if (data.status !== 'ok') continue;
+        for (const item of data.items || []) news.push({ ...item, source: NEWS_SOURCES[feed][0], domain: NEWS_SOURCES[feed][1], sourceUrl: data.feed?.link || '#' });
+      } catch (failure) { error.value = failure.message; }
     }
-  };
+    news.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    return news.slice(0, 20);
+  }
+  const getMockGameNews = () => [];
+  const matchGame = (title, year) => request('/games/match', { title: title || '', ...(year ? { year } : {}) });
 
-  const getGameScreenshots = async (id) => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/games/${id}/screenshots?key=${API_KEY}`
-      );
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju slika igre'));
-      }
-      
-      const data = await response.json();
-      return data.results;
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  };
-
-  const getGameAchievements = async (id) => {
-    // RAWG API /achievements endpoint ima ograničenu dostupnost.
-    // Umjesto toga, TREBA dohvatiti broj achievementa iz game detailsa.
-    // Trebam provjeriti dostupne fields u game objektu koji daje RAWG.
-    try {
-      const gameDetails = await getGameDetails(id);
-      
-      if (!gameDetails) {
-        return { count: 0, results: [] };
-      }
-      
-      // RAWG ima različita polja za achievements/trophies ovisno o dostupnosti:
-      // - achievements_count: broj achievementa ako su dostupni
-      // - trophies_count (ako postoji)
-      // - parent_achievements (ako igra ima achievements)
-      
-      let achievementCount = 0;
-      
-      if (gameDetails.achievements_count && gameDetails.achievements_count > 0) {
-        achievementCount = gameDetails.achievements_count;
-      }
-      
-      if (achievementCount === 0 && gameDetails.parent_achievements && gameDetails.parent_achievements.length > 0) {
-        achievementCount = gameDetails.parent_achievements.length;
-      }
-      
-      console.log(`Game: ${gameDetails.name}, Achievements count: ${achievementCount}`);
-      
-      return {
-        count: achievementCount,
-        results: gameDetails.parent_achievements || []
-      };
-    } catch (err) {
-      console.error('Error fetching achievements:', err);
-      return { count: 0, results: [] };
-    }
-  };
-  
-  const getPopularGames = async () => {
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-      const today = new Date();
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(today.getFullYear() - 1);
-      
-      const startDate = oneYearAgo.toISOString().split('T')[0]; // YYYY-MM-DD format
-      const endDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-      
-      const response = await fetch(
-        `${BASE_URL}/games?key=${API_KEY}&dates=${startDate},${endDate}&metacritic=75,100&ordering=-metacritic&page_size=10`
-      );
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju popularnih igara'));
-      }
-      
-      const data = await response.json();
-      return data.results;
-    } catch (err) {
-      error.value = err.message;
-      return [];
-    } finally {
-      isLoading.value = false;
-    }
-  };
-  
-  const getRecentGames = async () => {
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-      const response = await fetch(
-        `${BASE_URL}/games?key=${API_KEY}&ordering=-released&page_size=10`
-      );
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju nedavnih igara'));
-      }
-      
-      const data = await response.json();
-      return data.results;
-    } catch (err) {
-      error.value = err.message;
-      return [];
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const getThisYearGames = async () => {
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-      const today = new Date();
-      const currentYear = today.getFullYear();
-      const startOfYear = `${currentYear}-01-01`;
-      const todayFormatted = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-      
-      const response = await fetch(
-        `${BASE_URL}/games?key=${API_KEY}&dates=${startOfYear},${todayFormatted}&ordering=-added&page_size=10`
-      );
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju igara ove godine'));
-      }
-      
-      const data = await response.json();
-      return data.results;
-    } catch (err) {
-      error.value = err.message;
-      return [];
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const getGameNews = async () => {
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-      const allNews = [];
-      
-      // treba koristi samo najbolje RRS-ove kako NEBI rate limit dosegnuo zbog free 10 000 API poziva ( nakon 10 000 radi ali sporo)
-      for (const feed of RSS_FEEDS.slice(0, 6)) {
-        try {
-          const apiUrl = NEWS_API_KEY 
-            ? `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=${NEWS_API_KEY}&count=4`
-            : `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=4`;
-          
-          const response = await fetch(apiUrl);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.status === 'ok' && data.items) {
-              data.items.forEach(item => {
-                allNews.push({
-                  ...item,
-                  source: feed.name,
-                  domain: feed.domain,
-                  sourceUrl: data.feed?.link || '#'
-                });
-              });
-            }
-          }
-        } catch (feedError) {
-          console.warn(`Greška s feedom ${feed.name}:`, feedError);
-        }
-      }
-
-      // DAJ NAJNOVIJE VIJESTI
-      allNews.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-      
-      return allNews.slice(0, 20); // max 20 shuffle
-    } catch (err) {
-      error.value = err.message || 'Greška pri dohvaćanju vijesti';
-      console.error('News API error:', err);
-      return [];
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const getMockGameNews = () => {
-    return [
-      {
-        title: "Najnovije gaming vijesti dolaze uskoro!",
-        description: "Trenutno radimo na tome da vam donesemo najnovije vijesti iz gaming svijeta.",
-        link: "#",
-        pubDate: new Date().toISOString(),
-        source: "GameNote",
-        domain: "gamenote.com"
-      }
-    ];
-  };
-
-  const getGameSeries = async (gameId) => {
-    try {
-      const response = await fetch(`${BASE_URL}/games/${gameId}/game-series?key=${API_KEY}`);
-      
-      if (!response.ok) {
-        THROW(new Error('Greška pri dohvaćanju serijala igara'));
-      }
-      
-      return await response.json();
-    } catch (err) {
-      console.error('Game series API error:', err);
-      return { results: [] };
-    }
-  };
-
-  const matchGame = async (title, year) => {
-    try {
-      const params = new URLSearchParams({ key: API_KEY, title: title || '' });
-      if (year) params.set('year', year);
-      const response = await fetch(`${BASE_URL}/games/match?${params.toString()}`);
-      if (!response.ok) {
-        THROW(new Error('Greška pri pronalaženju igre'));
-      }
-      return await response.json();
-    } catch (err) {
-      console.error('Game match API error:', err);
-      return null;
-    }
-  };
-
-  return {
-    isLoading: computed(() => isLoading.value),
-    error: computed(() => error.value),
-    searchGames,
-    getGameDetails,
-    getGameScreenshots,
-    getGameAchievements,
-    getPopularGames,
-    getRecentGames,
-    getThisYearGames,
-    getGameNews,
-    getMockGameNews,
-    getGameSeries,
-    matchGame
-  };
+  return { isLoading: computed(() => pending.value > 0), error: computed(() => error.value), searchGames,
+    getGameDetails, getGameScreenshots, getGameAchievements, getPopularGames, getRecentGames,
+    getThisYearGames, getGameNews, getMockGameNews, getGameSeries, matchGame };
 };

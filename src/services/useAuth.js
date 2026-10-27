@@ -22,81 +22,68 @@ export function useAuth() {
   const loading = ref(false)
   const errorMessage = ref('')
 
+  const successMessage = ref('')
+
   async function signIn(email, password) {
+    if (loading.value) return false
     loading.value = true
     errorMessage.value = ''
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      loading.value = false
-      errorMessage.value = translateError(error.message)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      if (error) throw error
+      userStore.setUser(data.user)
+      await router.push('/')
+      return true
+    } catch (error) {
+      errorMessage.value = translateError(error.message) || 'Prijava nije uspjela. Pokušaj ponovno.'
       return false
+    } finally {
+      loading.value = false
     }
-
-    userStore.setUser(data.user)
-    await new Promise(resolve => setTimeout(resolve, 300))
-    loading.value = false
-    router.push('/')
-    return true
   }
 
   async function signUp(email, password, name) {
+    if (loading.value) return false
     loading.value = true
     errorMessage.value = ''
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-      },
-    })
-
-    if (error) {
-      loading.value = false
-      errorMessage.value = translateError(error.message)
+    successMessage.value = ''
+    try {
+      const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() } } })
+      if (error) throw error
+      if (data.session) {
+        userStore.setUser(data.user)
+        await router.push('/')
+      } else {
+        successMessage.value = 'Provjeri e-mail i potvrdi adresu prije prijave.'
+      }
+      return true
+    } catch (error) {
+      errorMessage.value = translateError(error.message) || 'Registracija nije uspjela. Pokušaj ponovno.'
       return false
+    } finally {
+      loading.value = false
     }
-
-    loading.value = false
-    router.push('/')
-    return true
   }
 
   async function resetPassword(email) {
-    const resetError = ref('')
-    const resetSent = ref(false)
-
-    resetError.value = ''
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-
-    if (error) {
-      return { success: false, error: translateError(error.message) }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` })
+      if (error) throw error
+      return { success: true, error: '' }
+    } catch (error) {
+      return { success: false, error: translateError(error.message) || 'Slanje poveznice nije uspjelo.' }
     }
-
-    return { success: true, error: '' }
   }
 
   async function updatePassword(newPassword) {
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-    if (error) {
-      return { success: false, error: translateError(error.message) }
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      return { success: true, error: '' }
+    } catch (error) {
+      return { success: false, error: translateError(error.message) || 'Promjena lozinke nije uspjela.' }
     }
-    return { success: true, error: '' }
   }
 
-  return {
-    loading,
-    errorMessage,
-    signIn,
-    signUp,
-    resetPassword,
-    updatePassword,
-  }
+  return { loading, errorMessage, successMessage, signIn, signUp, resetPassword, updatePassword }
 }

@@ -1,5 +1,6 @@
 // src/views/Profile.vue
 <template>
+  <div v-if="loadError" role="alert" class="alert alert-error mb-4">{{ loadError }}</div>
   <div class="profile">
     <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Profil</h1>
     
@@ -49,7 +50,7 @@
                   :disabled="uploading"
                 />
                 <div class="label">
-                  <span class="label-text-alt">Maksimalno 2MB (JPG, PNG, WebP)</span>
+                  <span class="label-text-alt">Maksimalno 3 MB (JPG, PNG, GIF, WebP)</span>
                   <span v-if="uploading" class="label-text-alt text-info">Uploadam...</span>
                 </div>
               </div>
@@ -320,6 +321,11 @@
 </template>
 
 <script>
+import { disconnectPsn } from '../services/psnService';
+import { clearImporterChoices } from '../services/importerResolution';
+import { fetchUserRows } from '../services/libraryData';
+import { requestAppApi } from '../services/appApi';
+import { localAvatar } from '../services/safeContent';
 import { ref, reactive, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -373,7 +379,7 @@ export default {
     const reauthError = ref('');
 
     const profileImageUrl = computed(() => {
-      return profileForm.avatarUrl || 'https://i.pravatar.cc/300?u=' + (userStore.user?.email || 'default');
+      return profileForm.avatarUrl || localAvatar(userStore.user?.user_metadata?.name);
     });
     
     const passwordsMatch = computed(() => {
@@ -439,7 +445,7 @@ export default {
     };
     
     const handleImageError = () => {
-      profileForm.avatarUrl = 'https://i.pravatar.cc/300?u=' + (userStore.user?.email || 'default');
+      profileForm.avatarUrl = localAvatar(userStore.user?.user_metadata?.name);
     };
     
     // pošalji na imgBB
@@ -448,12 +454,12 @@ export default {
       if (!file) return;
       
       // sprijeci velike slike
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('Slika je prevelika. Maksimalno 2MB.', 'error');
+      if (file.size > 3 * 1024 * 1024) {
+        showToast('Slika je prevelika. Maksimalno 3 MB.', 'error');
         return;
       }
       
-      if (!file.type.startsWith('image/')) {
+      if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
         showToast('Molimo odaberite sliku.', 'error');
         return;
       }
@@ -461,33 +467,17 @@ export default {
       uploading.value = true;
       
       try {
-        // API ->> ENV
-        const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
-        
-        if (!apiKey) {
-          THROW(new Error('API key nije konfiguriran'));
-        }
-        
-        const formData = new FormData();
-        formData.append('image', file);
-        
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-          method: 'POST',
-          body: formData
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData.session) throw new Error('Prijavi se ponovno.');
+        const image = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result).split(',')[1]);
+          reader.onerror = () => reject(new Error('Sliku nije moguće pročitati.'));
+          reader.readAsDataURL(file);
         });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-          THROW(new Error(data.error?.message || 'Upload neuspješan'));
-        }
-        
-        if (data.success && data.data) {
-          profileForm.avatarUrl = data.data.url;
-          showToast('Slika uspješno uploadana!');
-        } else {
-          THROW(new Error('Upload servis greška'));
-        }
+        const data = await requestAppApi({ action: 'avatar', image }, { token: sessionData.session.access_token });
+        profileForm.avatarUrl = data.url;
+        showToast('Slika uspješno prenesena!');
       } catch (error) {
         console.error('Greška pri uploadu:', error);
         showToast(error.message || 'Greška pri uploadu slike', 'error');
@@ -545,6 +535,8 @@ export default {
     
     const logout = async () => {
       try {
+        await disconnectPsn(userStore.user?.id);
+        localStorage.removeItem('gamenote.steam.snapshot.' + userStore.user?.id);
         await userStore.logout();
         router.push('/login');
       } catch (error) {
@@ -610,23 +602,19 @@ export default {
       }
     };
     
+    const loadError = ref('');
     const fetchGames = async () => {
+      loadError.value = '';
       if (!userStore.user) return;
       
       loading.value = true;
       
       try {
-        const { data, error } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userStore.user.id);
-          
-        if (error) THROW(error);
-        
+        const data = await fetchUserRows(supabase, 'games', userStore.user.id);
         games.value = data || [];
         renderCharts();
       } catch (error) {
-        console.error('Greška pri dohvaćanju igara:', error);
+        loadError.value = error.message || 'Knjižnicu nije moguće učitati. Osvježi stranicu.';
       } finally {
         loading.value = false;
       }
@@ -1005,6 +993,9 @@ export default {
           THROW(error);
         }
 
+        clearImporterChoices(userStore.user?.id);
+        await disconnectPsn(userStore.user?.id);
+        localStorage.removeItem('gamenote.steam.snapshot.' + userStore.user?.id);
         await userStore.logout();
         router.push('/login');
       } catch (error) {
@@ -1021,12 +1012,13 @@ export default {
       deletingAccount.value = true;
 
       try {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const accountId = userStore.user?.id;
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: reauthEmail.value,
           password: reauthPassword.value
         });
 
-        if (signInError) {
+        if (signInError || signInData.user?.id !== accountId) {
           reauthError.value = 'Pogrešna e-mail adresa ili lozinka.';
           deletingAccount.value = false;
           return;
@@ -1036,6 +1028,9 @@ export default {
 
         if (error) THROW(error);
 
+        clearImporterChoices(userStore.user?.id);
+        await disconnectPsn(userStore.user?.id);
+        localStorage.removeItem('gamenote.steam.snapshot.' + userStore.user?.id);
         await userStore.logout();
         router.push('/login');
       } catch (error) {
@@ -1045,7 +1040,7 @@ export default {
       }
     };
 
-    return {
+    return { loadError,
       userStore,
       loading,
       updating,

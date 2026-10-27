@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { createRequire } from "node:module";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
@@ -66,7 +66,65 @@ function psnDevServer() {
   };
 }
 
-export default defineConfig({
+function steamDevServer(env) {
+  const require = createRequire(import.meta.url);
+  const { steamRelay } = require('./netlify/functions/lib/_steamRelay.js');
+  return {
+    name: 'steam-dev-server',
+    configureServer(server) {
+      server.middlewares.use('/.netlify/functions/steam', async (req, res) => {
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        res.setHeader('cache-control', 'no-store');
+        function respond(status, data) {
+          res.statusCode = status;
+          res.end(JSON.stringify(data));
+        }
+        if (req.method !== 'POST') return respond(405, { error: 'Metoda nije dopuštena.' });
+        let body = '';
+        for await (const chunk of req) {
+          body += chunk;
+          if (Buffer.byteLength(body) > 4096) return respond(413, { error: 'Zahtjev je prevelik.' });
+        }
+        let payload;
+        try {
+          payload = JSON.parse(body || '{}');
+        } catch {
+          return respond(400, { error: 'Neispravan zahtjev.' });
+        }
+        const result = await steamRelay(payload, req.headers.authorization, { env });
+        return respond(result.ok ? 200 : result.status, result.ok ? result.data : { error: result.error });
+      });
+    },
+  };
+}
+
+function appApiDevServer(env) {
+  const require = createRequire(import.meta.url);
+  const { appApi } = require('./netlify/functions/lib/_appApi.js');
+  return {
+    name: 'app-api-dev-server',
+    configureServer(server) {
+      server.middlewares.use('/.netlify/functions/app-api', async (req, res) => {
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        res.setHeader('cache-control', 'no-store');
+        const respond = (status, data) => { res.statusCode = status; res.end(JSON.stringify(data)); };
+        if (req.method !== 'POST') return respond(405, { error: 'Metoda nije dopuštena.' });
+        let body = '';
+        for await (const chunk of req) {
+          body += chunk;
+          if (Buffer.byteLength(body) > 4300000) return respond(413, { error: 'Zahtjev je prevelik.' });
+        }
+        let payload;
+        try { payload = JSON.parse(body || '{}'); }
+        catch { return respond(400, { error: 'Neispravan zahtjev.' }); }
+        const result = await appApi(payload, req.headers.authorization, { env, ip: req.socket.remoteAddress });
+        respond(result.status, result.data);
+      });
+    },
+  };
+}
+
+export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
     vue({
@@ -77,6 +135,8 @@ export default defineConfig({
       },
     }),
     psnDevServer(),
+    appApiDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
+    steamDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
   ],
   server: {
     proxy: {
@@ -88,4 +148,4 @@ export default defineConfig({
       },
     }
   }
-});
+}));

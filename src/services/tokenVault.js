@@ -1,10 +1,8 @@
-// AES-GCM vault; ključ (neekstraktabilan) u IndexedDB. Fail-open.
+// Šifrirani ključevi odvojeni su po korisniku.
 
 const DB_NAME = 'gamenote-key-db';
 const STORE = 'keys';
-const KEY_ID = 'psn';
-
-let cachedKey; // undefined=nije pokušano, null=nedostupan
+const cachedKeys = new Map();
 
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -17,32 +15,34 @@ function openDb() {
   });
 }
 
-async function getKey() {
-  if (cachedKey !== undefined) return cachedKey;
+function getKey(keyId) {
+  if (!cachedKeys.has(keyId)) cachedKeys.set(keyId, loadKey(keyId));
+  return cachedKeys.get(keyId);
+}
+
+async function loadKey(keyId) {
+  let db;
   try {
-    if (!globalThis.crypto?.subtle || !globalThis.indexedDB) throw new Error('WebCrypto/IndexedDB nedostupan');
-    const db = await openDb();
-    const existing = await new Promise((resolve, reject) => {
-      const rq = db.transaction(STORE, 'readonly').objectStore(STORE).get(KEY_ID);
-      rq.onsuccess = () => resolve(rq.result ?? null);
-      rq.onerror = () => reject(rq.error);
+    if (!globalThis.crypto?.subtle || !globalThis.indexedDB) return null;
+    db = await openDb();
+    const candidate = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      const request = store.get(keyId);
+      let key;
+      request.onsuccess = () => {
+        key = request.result || candidate;
+        if (!request.result) store.put(key, keyId);
+      };
+      tx.oncomplete = () => resolve(key);
+      tx.onerror = () => reject(tx.error);
     });
-    let key = existing ?? null;
-    if (!key) {
-      key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
-      await new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put(key, KEY_ID);
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error);
-      });
-    }
-    cachedKey = key;
-    return key;
-  } catch (e) {
-    console.warn('[vault] Šifrirani spremnik nedostupan:', e?.message || e);
-    cachedKey = null;
+  } catch (error) {
+    console.warn('[vault] Šifrirani spremnik nije dostupan.');
     return null;
+  } finally {
+    db?.close();
   }
 }
 
@@ -62,16 +62,16 @@ export function isEnvelope(x) {
   return Boolean(x && typeof x === 'object' && x.v === 2 && typeof x.iv === 'string' && typeof x.ct === 'string');
 }
 
-export async function seal(obj) {
-  const key = await getKey();
+export async function seal(obj, keyId = 'psn') {
+  const key = await getKey(keyId);
   if (!key) return null;
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
   return { v: 2, alg: 'A256GCM', iv: b64u.enc(iv), ct: b64u.enc(ct) };
 }
 
-export async function unseal(envelope) {
-  const key = await getKey();
+export async function unseal(envelope, keyId = 'psn') {
+  const key = await getKey(keyId);
   if (!key || !isEnvelope(envelope)) return null;
   try {
     const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64u.dec(envelope.iv) }, key, b64u.dec(envelope.ct));
@@ -83,15 +83,17 @@ export async function unseal(envelope) {
 }
 
 // novi ključ po vezi
-export async function deleteKey() {
-  cachedKey = undefined;
+export async function deleteKey(keyId = 'psn') {
+  cachedKeys.delete(keyId);
+  let db;
   try {
-    const db = await openDb();
+    db = await openDb();
     await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).delete(KEY_ID);
+      tx.objectStore(STORE).delete(keyId);
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });
-  } catch { /* best effort */ }
+  } catch { /* Spremnik možda nije dostupan. */ }
+  finally { db?.close(); }
 }

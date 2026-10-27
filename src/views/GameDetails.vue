@@ -1,6 +1,7 @@
 // src/views/GameDetails.vue
 <template>
   <div class="game-details">
+    <div v-if="mutationError && !editMode" role="alert" class="alert alert-error mb-4">{{ mutationError }}</div>
     <div v-if="loading" class="flex justify-center my-8">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
@@ -440,6 +441,7 @@
         </div>
 
         <form @submit.prevent="saveGame" class="space-y-6 game-form">
+          <div v-if="mutationError" role="alert" class="alert alert-error">{{ mutationError }}</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label font-medium">Naziv</label>
@@ -448,7 +450,7 @@
             
             <div class="form-control">
               <label class="label font-medium">Platforma</label>
-              <select v-model="editForm.platform" class="select select-bordered" required>
+              <select v-model="editForm.platform" @change="changePlatform" class="select select-bordered" required>
                 <option value="" disabled>Odaberi platformu</option>
                 <option v-for="platform in platforms" :key="platform" :value="platform">
                   {{ platform }}
@@ -687,11 +689,12 @@
 </template>
 
 <script>
-import { ref, onMounted, reactive, computed, watch, nextTick } from 'vue';
+import { createGameForm, buildGameUpdate, progressModeForPlatform } from '../services/gameForm';
+import { ref, onMounted, onBeforeUnmount, reactive, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
-import { GAME_STATUS } from '../constants/gameStatus';
+import { GAME_STATUS, GAME_STATUS_MAP } from '../constants/gameStatus';
 import { useUserStore } from '../stores/user';
 import { listGroups, listGameGroups, addGameToGroup, removeGameFromGroup } from '../services/groupsApi';
 import PlatformIcon from '../components/PlatformIcon.vue';
@@ -712,6 +715,9 @@ export default {
     const game = ref(null);
     const loading = ref(true);
     const error = ref(null);
+    const mutationError = ref('');
+    let loadVersion = 0;
+    let hydrating = false;
     const saveLoading = ref(false);
     const deleteLoading = ref(false);
     const editMode = ref(props.editMode);
@@ -768,24 +774,14 @@ export default {
       'Nintendo Switch', 'Nintendo Switch 2', 'iOS', 'Android', 'Other'
     ];
 
-    const editForm = reactive({
-      title: '',
-      platform: '',
-      play_time: 0,
-      genre: '',
-      publisher: '',
-      rating: 0,
-      notes: '',
-      start_date: '',
-      end_date: '',
-      status: '',
-      progress_mode: 'completion_standard',
-      progress_value: null,
-      progress_total: null,
-      progress_unit: '%',
-      progress_source: '',
-      group_ids: []
-    });
+    const editForm = reactive(createGameForm());
+    const resetForm = async () => {
+      hydrating = true;
+      Object.assign(editForm, createGameForm(game.value || {}, gameGroups.value.map(link => link.group_id)));
+      await nextTick();
+      hydrating = false;
+    };
+    const changePlatform = () => { editForm.progress_mode = progressModeForPlatform(editForm.platform); };
 
     const selectedProgressMode = computed(() => PROGRESS_MODE_MAP[editForm.progress_mode] || null);
     
@@ -822,16 +818,7 @@ export default {
       return null;
     });
 
-    const statusBadgeText = computed(() => {
-      const map = {
-        playing: 'Trenutno igram',
-        paused: 'Pauzirano',
-        completed: 'Završeno',
-        dropped: 'Napušteno',
-        backlog: 'Backlog'
-      };
-      return map[gameStatus.value] || gameStatus.value;
-    });
+    const statusBadgeText = computed(() => GAME_STATUS_MAP[gameStatus.value]?.label || gameStatus.value);
 
     const statusBadgeClass = computed(() => {
       const classMap = {
@@ -839,13 +826,14 @@ export default {
         paused: 'badge-warning',
         completed: 'badge-success',
         dropped: 'badge-error',
-        backlog: 'badge-ghost'
+        backlog: 'badge-ghost', wishlist: 'badge-accent'
       };
       return classMap[gameStatus.value] || 'badge-neutral';
     });
     
     
     watch(() => editForm.progress_mode, (newMode) => {
+      if (hydrating) return;
       const mode = PROGRESS_MODE_MAP[newMode];
       if (mode && mode.defaultUnit) {
         editForm.progress_unit = mode.defaultUnit;
@@ -853,85 +841,40 @@ export default {
       }
     });
 
-    // auto set specificno za platformu
-    watch(() => editForm.platform, (newPlatform) => {
-      if (!newPlatform) return;
-      const platformLower = newPlatform.toLowerCase();
-      
-      if (platformLower.includes('playstation')) {
-        editForm.progress_mode = 'trophies_psn';
-      } else if (platformLower.includes('xbox')) {
-        editForm.progress_mode = 'achievements_xbox';
-      } else if (platformLower.includes('steam') || platformLower === 'pc') {
-        editForm.progress_mode = 'achievements_steam';
-      } else if (platformLower.includes('nintendo')) {
-        editForm.progress_mode = 'completion_nintendo';
-      } else if (platformLower.includes('ios')) {
-        editForm.progress_mode = 'achievements_gamecenter';
-      } else {
-        editForm.progress_mode = 'completion_standard';
-      }
-    });
-
     const fetchGame = async () => {
+      const version = ++loadVersion;
       const gameId = route.params.id;
+      const userId = userStore.user?.id;
       loading.value = true;
       error.value = null;
-      
+      mutationError.value = '';
+      game.value = null;
+      gameGroups.value = [];
+      selectedScreenshotIndex.value = null;
+      showDeleteModal.value = false;
+      showNotesModal.value = false;
+      editMode.value = props.editMode;
       try {
-        const { data, error: fetchError } = await supabase
-          .from('games')
-          .select('*')
-          .eq('id', gameId)
-          .single();
-
-        if (fetchError) {
-          console.error('Error fetching game:', fetchError);
-          error.value = 'Igra nije pronađena u bazi podataka';
-          return;
-        }
-        
+        if (!userId) throw new Error('Prijavi se za pregled igre.');
+        const { data, error: fetchError } = await supabase.from('games').select('*').eq('user_id', userId).eq('id', gameId).single();
+        if (fetchError) throw fetchError;
+        const [groups, links] = await Promise.all([listGroups(userId), listGameGroups(gameId, userId)]);
+        if (version !== loadVersion || userId !== userStore.user?.id) return;
         game.value = data;
-
-        if (data) {
-          Object.keys(editForm).forEach(key => {
-            if (data[key] !== null && data[key] !== undefined) {
-              editForm[key] = data[key];
-            }
-          });
-          checkDescriptionOverflow();
-
-          if (data.start_date) {
-            const sd = new Date(data.start_date);
-            if (!isNaN(sd.getTime())) editForm.start_date = sd.toISOString().split('T')[0];
-          }
-          if (data.end_date) {
-            const ed = new Date(data.end_date);
-            if (!isNaN(ed.getTime())) editForm.end_date = ed.toISOString().split('T')[0];
-          }
-        }
-
-        
-        try {
-          await userStore.fetchUser();
-          if (userStore.user?.id) {
-            allGroups.value = await listGroups(userStore.user.id);
-            gameGroups.value = await listGameGroups(gameId, userStore.user.id);
-            // Postavi group_ids na osnovu trenutnih grupa igre
-            editForm.group_ids = gameGroups.value.map(gg => gg.group_id) || [];
-          }
-        } catch (e) {
-          console.error('Error loading groups:', e);
-        }
+        allGroups.value = groups;
+        gameGroups.value = links;
+        await resetForm();
+        checkDescriptionOverflow();
       } catch (fetchError) {
-        console.error('Error fetching game:', fetchError);
-        error.value = 'Greška pri učitavanju igre';
+        if (version === loadVersion) error.value = fetchError.message || 'Greška pri učitavanju igre.';
       } finally {
-        loading.value = false;
+        if (version === loadVersion) loading.value = false;
       }
     };
 
     const enterEditMode = async () => {
+      mutationError.value = '';
+      await resetForm();
       // Osvježi grupe prije nego što uđeš u edit mode
       if (userStore.user?.id && game.value?.id) {
         try {
@@ -940,7 +883,8 @@ export default {
           gameGroups.value = await listGameGroups(game.value.id, userStore.user.id);
           editForm.group_ids = gameGroups.value.map(gg => gg.group_id) || [];
         } catch (e) {
-          console.error('Error loading groups:', e);
+          mutationError.value = 'Grupe nije moguće učitati. Pokušaj ponovno.';
+          return;
         } finally {
           groupsLoading.value = false;
         }
@@ -948,76 +892,44 @@ export default {
       editMode.value = true;
     };
 
-    const cancelEdit = () => {
+    const cancelEdit = async () => {
       editMode.value = false;
-      if (game.value) {
-        Object.keys(editForm).forEach(key => {
-          if (game.value[key] !== null && game.value[key] !== undefined) {
-            editForm[key] = game.value[key];
-          }
-        });
-      }
+      mutationError.value = '';
+      await resetForm();
     };
 
     const saveGame = async () => {
+      if (saveLoading.value) return;
+      mutationError.value = '';
+      const userId = userStore.user?.id;
+      const gameId = game.value?.id;
+      const groupIds = [...editForm.group_ids];
+      let gameSaved = false;
       try {
         saveLoading.value = true;
-        
-        const updateData = {
-          title: editForm.title,
-          platform: editForm.platform,
-          play_time: editForm.play_time || null,
-          genre: editForm.genre,
-          publisher: editForm.publisher,
-          rating: editForm.rating || null,
-          notes: editForm.notes,
-          start_date: editForm.start_date || null,
-          end_date: editForm.end_date || null,
-          status: editForm.status || null,
-          progress_mode: editForm.progress_mode || null,
-          progress_value: editForm.progress_value,
-          progress_total: editForm.progress_total,
-          progress_unit: editForm.progress_unit || null,
-          progress_source: editForm.progress_source || null,
-          updated_at: new Date().toISOString()
-        };
-
-        const { error } = await supabase
-          .from('games')
-          .update(updateData)
-          .eq('id', game.value.id);
-
-        if (error) {
-          console.error('Error updating game:', error);
-          return;
-        }
-
+        if (!userId || !gameId) throw new Error('Prijavi se za spremanje igre.');
+        const updateData = buildGameUpdate(editForm);
+        const { data, error } = await supabase.from('games').update(updateData).eq('user_id', userId).eq('id', gameId).select('id');
+        if (error) throw error;
+        if (!data?.length) throw new Error('Igra više nije dostupna. Osvježi stranicu.');
+        if (gameId !== game.value?.id || userId !== userStore.user?.id) return;
         game.value = { ...game.value, ...updateData };
-
-        // Spremi grupe
-        if (userStore.user?.id && editForm.group_ids.length > 0) {
-          // Prvo ukloni sve stare veze
-          const oldGroupIds = gameGroups.value.map(gg => gg.group_id);
-          for (const groupId of oldGroupIds) {
-            if (!editForm.group_ids.includes(groupId)) {
-              await removeGameFromGroup({ user_id: userStore.user.id, group_id: groupId, game_id: game.value.id });
-            }
-          }
-          
-          // Zatim dodaj nove veze
-          for (const groupId of editForm.group_ids) {
-            if (!oldGroupIds.includes(groupId)) {
-              await addGameToGroup({ user_id: userStore.user.id, group_id: groupId, game_id: game.value.id });
-            }
-          }
-          
-          // Osvježi listu grupa
-          gameGroups.value = await listGameGroups(game.value.id, userStore.user.id);
+        gameSaved = true;
+        const currentGroups = await listGameGroups(gameId, userId);
+        if (userId !== userStore.user?.id || gameId !== game.value?.id) return;
+        const oldIds = currentGroups.map(link => link.group_id);
+        for (const groupId of oldIds) {
+          if (!groupIds.includes(groupId)) await removeGameFromGroup({ user_id: userId, group_id: groupId, game_id: gameId });
         }
-
+        for (const groupId of groupIds) {
+          if (!oldIds.includes(groupId)) await addGameToGroup({ user_id: userId, group_id: groupId, game_id: gameId });
+        }
+        const links = await listGameGroups(gameId, userId);
+        if (userId !== userStore.user?.id || gameId !== game.value?.id) return;
+        gameGroups.value = links;
         editMode.value = false;
       } catch (error) {
-        console.error('Error updating game:', error);
+        mutationError.value = (gameSaved ? 'Igra je spremljena, ali grupe nisu usklađene. Ponovi spremanje. ' : '') + (error.message || 'Spremanje nije uspjelo.');
       } finally {
         saveLoading.value = false;
       }
@@ -1034,16 +946,16 @@ export default {
         const { error } = await supabase
           .from('games')
           .delete()
-          .eq('id', game.value.id);
+          .eq('user_id', userStore.user.id).eq('id', game.value.id);
 
         if (error) {
-          console.error('Error deleting game:', error);
+          mutationError.value = error.message || 'Brisanje igre nije uspjelo.';
           return;
         }
 
         router.push('/library');
       } catch (error) {
-        console.error('Error deleting game:', error);
+        mutationError.value = error.message || 'Brisanje igre nije uspjelo.';
       } finally {
         deleteLoading.value = false;
         showDeleteModal.value = false;
@@ -1057,7 +969,7 @@ export default {
         gameGroups.value = await listGameGroups(game.value.id, userStore.user.id);
         newGroupId.value = '';
       } catch (e) {
-        console.error('Error assigning group:', e);
+        mutationError.value = e.message || 'Grupa nije spremljena.';
       }
     };
 
@@ -1067,7 +979,7 @@ export default {
         await removeGameFromGroup({ user_id: userStore.user.id, group_id: groupId, game_id: game.value.id });
         gameGroups.value = await listGameGroups(game.value.id, userStore.user.id);
       } catch (e) {
-        console.error('Error removing group:', e);
+        mutationError.value = e.message || 'Grupa nije uklonjena.';
       }
     };
 
@@ -1293,8 +1205,14 @@ export default {
     });
     
     onMounted(fetchGame);
+    watch(() => props.editMode, (active) => {
+      if (active && game.value) enterEditMode();
+      else if (!active) cancelEdit();
+    });
+    onBeforeUnmount(() => { loadVersion++; });
     
     return {
+      mutationError, changePlatform,
       PROGRESS_MODES,
       GAME_STATUS,
       selectedProgressMode,

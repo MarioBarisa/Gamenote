@@ -1,4 +1,5 @@
 <template>
+  <div v-if="libraryError" role="alert" class="alert alert-error mb-4">{{ libraryError }}</div>
   <div class="home">
     <LandingView v-if="!userStore.isLoggedIn" />
 
@@ -94,6 +95,7 @@
 </template>
 
 <script>
+import { fetchUserRows } from '../services/libraryData';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabase';
@@ -139,7 +141,9 @@ export default {
     const popularGames = ref([]);
     const recentGames = ref([]);
 
+    const libraryError = ref('');
     const fetchUserGames = async () => {
+      libraryError.value = '';
       if (!userStore.isLoggedIn || !userStore.user) {
         return;
       }
@@ -147,12 +151,9 @@ export default {
       try {
         const userId = userStore.user.id;
 
-        const { data: allGames } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userId)
-          .order('updated_at', { ascending: false });
+        const allGames = await fetchUserRows(supabase, 'games', userId, { order: 'updated_at', ascending: false });
 
+        if (userId !== userStore.user?.id) return;
         if (allGames) {
           currentlyPlaying.value = allGames.filter(g => g.status === 'playing');
 
@@ -173,7 +174,7 @@ export default {
           totalHours.value = allGames.reduce((sum, g) => sum + (Number(g.play_time) || 0), 0);
         }
       } catch (error) {
-        console.error('Error fetching user games:', error);
+        libraryError.value = error.message || 'Knjižnicu nije moguće učitati.';
       } finally {
         userGamesLoading.value = false;
       }
@@ -215,11 +216,17 @@ export default {
     };
 
     onMounted(loadUserData);
-    watch(() => userStore.isLoggedIn, (loggedIn) => {
-      if (loggedIn) loadUserData();
+    watch(() => userStore.user?.id, () => {
+      loaded = false;
+      currentlyPlaying.value = [];
+      todaysPick.value = null;
+      totalGames.value = 0;
+      completedGames.value = 0;
+      totalHours.value = 0;
+      loadUserData();
     });
 
-    return {
+    return { libraryError,
       userStore,
       cardSizeStore,
       loading,

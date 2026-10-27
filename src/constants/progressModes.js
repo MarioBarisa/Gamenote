@@ -76,7 +76,7 @@ export const PROGRESS_MODE_MAP = PROGRESS_MODES.reduce((acc, m) => {
 export function computePercent({ progress_mode, progress_value, progress_total, achievement_percent }) {
   // Prefer new fields when available; fallback to legacy achievement_percent
   const mode = PROGRESS_MODE_MAP[progress_mode];
-  if (mode && (mode.kind === 'percent' || mode.kind === 'ratio')) {
+  if (mode && (mode.kind === 'percent' || mode.kind === 'ratio' || mode.kind === 'count')) {
     const v = Number(progress_value) || 0;
     const t = Number(progress_total) || 0;
     if (t > 0) return Math.max(0, Math.min(100, Math.round((v / t) * 100)));

@@ -1,4 +1,5 @@
 <template>
+  <div v-if="error" role="alert" class="alert alert-error mb-4">{{ error }}</div>
   <div class="group-details">
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-lg"></span>
@@ -197,7 +198,8 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { fetchUserRows } from '../services/libraryData';
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
@@ -264,24 +266,37 @@ export default {
       return (rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(1);
     });
 
+    const error = ref('');
+    let loadVersion = 0;
     const fetchAll = async () => {
+      const version = ++loadVersion;
+      const groupId = route.params.id;
+      const userId = userStore.user?.id;
+      group.value = null;
+      groupGames.value = [];
+      showRenameModal.value = false;
+      showAddModal.value = false;
+      showDeleteModal.value = false;
+      showBulkDeleteModal.value = false;
+      selectedGameIds.value.clear();
+      addSelectedIds.value.clear();
+      error.value = '';
       loading.value = true;
       try {
-        if (!userStore.user) return;
-        const g = await getGroup(route.params.id, userStore.user.id);
-        group.value = g;
-        groupRating.value = g?.rating || 0;
-        groupGames.value = await listGroupGames(route.params.id, userStore.user.id);
-        
-        // FETCHAJ SVE IGRE
-        const { data } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userStore.user.id)
-          .order('title');
-        allUserGames.value = data || [];
+        if (!userId) return;
+        const [item, links, games] = await Promise.all([
+          getGroup(groupId, userId), listGroupGames(groupId, userId),
+          fetchUserRows(supabase, 'games', userId, { order: 'title' })
+        ]);
+        if (version !== loadVersion || userId !== userStore.user?.id) return;
+        group.value = item;
+        groupRating.value = item?.rating || 0;
+        groupGames.value = links;
+        allUserGames.value = games;
+      } catch (failure) {
+        if (version === loadVersion) error.value = failure.message || 'Učitavanje grupe nije uspjelo.';
       } finally {
-        loading.value = false;
+        if (version === loadVersion) loading.value = false;
       }
     };
 
@@ -290,6 +305,8 @@ export default {
       savingRating.value = true;
       try {
         await updateGroup(group.value.id, userStore.user.id, { rating: Number(groupRating.value) || null });
+      } catch (failure) {
+        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
       } finally {
         savingRating.value = false;
       }
@@ -302,12 +319,15 @@ export default {
 
     const confirmRename = async () => {
       if (!group.value || !userStore.user || !renameInput.value.trim()) return;
+      const groupId = group.value.id;
+      const userId = userStore.user.id;
       try {
-        await updateGroup(group.value.id, userStore.user.id, { name: renameInput.value.trim() });
+        await updateGroup(groupId, userId, { name: renameInput.value.trim() });
+        if (group.value?.id !== groupId || userStore.user?.id !== userId) return;
         group.value.name = renameInput.value.trim();
         showRenameModal.value = false;
       } catch (e) {
-        console.error('Error updating group name:', e);
+        error.value = e.message || 'Spremanje naziva nije uspjelo.';
       }
     };
 
@@ -340,6 +360,8 @@ export default {
         }
         closeAddModal();
         await fetchAll();
+      } catch (failure) {
+        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
       } finally {
         adding.value = false;
       }
@@ -347,8 +369,10 @@ export default {
 
     const removeGame = async (gameId) => {
       if (!userStore.user || !group.value) return;
-      await removeGameFromGroup({ user_id: userStore.user.id, group_id: group.value.id, game_id: gameId });
-      await fetchAll();
+      try {
+        await removeGameFromGroup({ user_id: userStore.user.id, group_id: group.value.id, game_id: gameId });
+        await fetchAll();
+      } catch (failure) { error.value = failure.message || 'Uklanjanje nije uspjelo.'; }
     };
 
     const navigateToGame = (id) => {
@@ -382,6 +406,8 @@ export default {
         showBulkDeleteModal.value = false;
         selectMode.value = false;
         await fetchAll();
+      } catch (failure) {
+        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
       } finally {
         bulkRemoving.value = false;
       }
@@ -397,6 +423,8 @@ export default {
       try {
         await deleteGroup(group.value.id, userStore.user.id);
         router.push('/groups');
+      } catch (failure) {
+        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
       } finally {
         deleting.value = false;
         showDeleteModal.value = false;
@@ -404,9 +432,11 @@ export default {
     };
 
     onMounted(fetchAll);
+    watch(() => route.params.id, fetchAll);
+    onBeforeUnmount(() => { loadVersion++; });
 
     return { 
-      loading, 
+      loading, error,
       group, 
       groupGames, 
       cardSizeStore,

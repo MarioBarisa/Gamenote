@@ -10,7 +10,10 @@
     "dev": "vite",
     "dev:netlify": "netlify dev",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:importers": "node --test tests/importers/importers.test.js && node tests/importers/importers.browser.mjs",
+    "test:app": "node --test tests/app/app.test.js && node tests/app/regressions.browser.mjs",
+    "test": "npm run test:app && npm run test:importers"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.4",
@@ -28,6 +31,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@vitejs/plugin-vue": "^6.0.10",
     "daisyui": "^5.7.50",
     "netlify-cli": "^27.14.2",

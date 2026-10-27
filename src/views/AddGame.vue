@@ -1,5 +1,6 @@
 <!-- src/views/AddGame.vue -->
 <template>
+  <div v-if="operationError" role="alert" class="alert alert-error mb-4">{{ operationError }}</div>
   <div class="add-game">
     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">Pretraži igre</h1>
 
@@ -337,6 +338,8 @@
 </template>
 
 <script>
+import { buildGameUpdate, progressFields } from '../services/gameForm';
+import { fetchUserRows } from '../services/libraryData';
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -353,6 +356,11 @@ const PAGE_SIZE = 20;
 export default {
   components: { PlatformIcon },
   setup() {
+    const operationError = ref('');
+    let searchVersion = 0;
+    let searchController;
+    let disposed = false;
+    let detailVersion = 0;
     const userStore = useUserStore();
     const cardSizeStore = useCardSizeStore();
     const router = useRouter();
@@ -453,7 +461,7 @@ export default {
       } else if (platformLower.includes('nintendo')) {
         gameForm.progress_mode = 'completion_nintendo';
       } else if (platformLower.includes('ios')) {
-        gameForm.progress_mode = 'achievements_gamecenter';
+        gameForm.progress_mode = 'achievements_gamecentre';
       } else {
         gameForm.progress_mode = 'completion_standard';
       }
@@ -472,7 +480,7 @@ export default {
       } else if (platformLower.includes('nintendo')) {
         apiGameForm.progress_mode = 'completion_nintendo';
       } else if (platformLower.includes('ios')) {
-        apiGameForm.progress_mode = 'achievements_gamecenter';
+        apiGameForm.progress_mode = 'achievements_gamecentre';
       } else {
         apiGameForm.progress_mode = 'completion_standard';
       }
@@ -481,11 +489,7 @@ export default {
     const loadLibraryGameApiIds = async () => {
       if (!userStore.user?.id) return;
       try {
-        const { data } = await supabase
-          .from('games')
-          .select('game_api_id')
-          .eq('user_id', userStore.user.id)
-          .not('game_api_id', 'is', null);
+        const data = await fetchUserRows(supabase, 'games', userStore.user.id, { columns: 'game_api_id' });
         libraryGameApiIds.value = new Set((data || []).map(g => g.game_api_id).filter(Boolean));
       } catch (error) {
         console.error('Greška pri učitavanju kolekcije:', error);
@@ -532,10 +536,16 @@ export default {
     const searchGames = async () => {
       if (!searchQuery.value.trim()) return;
       
+      const version = ++searchVersion;
+      const query = searchQuery.value.trim();
+      searchController?.abort();
+      searchController = new AbortController();
+      operationError.value = '';
       searchLoading.value = true;
       
       try {
-        const data = await gamesApi.searchGames(searchQuery.value, 1);
+        const data = await gamesApi.searchGames(query, 1, { signal: searchController.signal });
+        if (disposed || version !== searchVersion) return;
         searchResults.value = data.results || [];
         searchPage.value = 1;
         hasMoreResults.value = computeHasMore(data, searchResults.value.length);
@@ -543,9 +553,9 @@ export default {
         sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
         window.scrollTo({ top: 0 });
       } catch (error) {
-        console.error('Greška pri pretraživanju igara:', error);
+        if (version === searchVersion && error.name !== 'AbortError') operationError.value = error.message || 'Pretraživanje nije uspjelo.';
       } finally {
-        searchLoading.value = false;
+        if (version === searchVersion) searchLoading.value = false;
       }
     };
     
@@ -554,10 +564,12 @@ export default {
       if (showApiGameModal.value) return;
       if (!searchQuery.value.trim()) return;
       
+      const version = searchVersion;
       searchLoadingMore.value = true;
       
       try {
         const data = await gamesApi.searchGames(searchQuery.value, searchPage.value + 1);
+        if (disposed || version !== searchVersion) return;
         const newResults = data.results || [];
         const existingIds = new Set(searchResults.value.map(g => g.id));
         const uniqueNew = newResults.filter(g => !existingIds.has(g.id));
@@ -567,7 +579,7 @@ export default {
         hasMoreResults.value = computeHasMore(data, searchResults.value.length);
         sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
       } catch (error) {
-        console.error('Greška pri učitavanju dodatnih rezultata:', error);
+        if (version === searchVersion) operationError.value = error.message || 'Dohvat nije uspio.';
       } finally {
         searchLoadingMore.value = false;
       }
@@ -597,10 +609,14 @@ export default {
     };
     
     const selectGameForCollection = async (game) => {
+      const version = ++detailVersion;
+      operationError.value = '';
+      try {
       selectedGame.value = game;
       apiGameForm.group_ids = [];
       
       const gameDetails = await gamesApi.getGameDetails(game.id);
+      if (disposed || version !== detailVersion) return;
       apiGameDetails.value = gameDetails;
       
       // Popuni formu s detaljima
@@ -632,6 +648,7 @@ export default {
       // Load groups
       await loadApiGameStores();
       
+      if (disposed || version !== detailVersion) return;
       showApiGameModal.value = true;
       
       setTimeout(() => {
@@ -640,6 +657,9 @@ export default {
           formElement.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
+      } catch (failure) {
+        if (version === detailVersion) operationError.value = failure.message || 'Detalje nije moguće učitati.';
+      }
     };
 
     const loadApiGameStores = async () => {
@@ -670,6 +690,9 @@ export default {
     };
     
     const saveGame = async () => {
+      if (saveLoading.value) return;
+      operationError.value = '';
+      const ownerId = userStore.user?.id;
       if (!gameForm.title || !gameForm.platform) {
         return;
       }
@@ -681,11 +704,12 @@ export default {
       try {
         saveLoading.value = true;
         
+        buildGameUpdate(gameForm);
         let gameData = {
           user_id: userStore.user.id,
           title: gameForm.title,
           platform: gameForm.platform,
-          play_time: gameForm.play_time || null,
+          play_time: gameForm.play_time === '' ? null : Number(gameForm.play_time),
           genre: gameForm.genre,
           publisher: gameForm.publisher,
           rating: gameForm.rating || null,
@@ -701,6 +725,7 @@ export default {
           game_api_id: gameForm.game_api_id || null,
           image_url: gameForm.image
         };
+        Object.assign(gameData, progressFields(gameForm), { title: gameForm.title.trim(), currently_playing: gameForm.status === 'playing' });
         if (selectedGame.value) {
           try {
             const gameDetails = await gamesApi.getGameDetails(selectedGame.value.id);
@@ -747,20 +772,21 @@ export default {
           }
         }
 
+        if (disposed || userStore.user?.id !== ownerId) return;
         const { error } = await supabase
           .from('games')
           .insert([gameData])
           .select();
 
         if (error) {
-          console.error('Error saving game:', error);
-          return;
+          throw error;
         }
 
         // resetiraj popunjavanje
         selectedGame.value = null;
         Object.keys(gameForm).forEach(key => {
-          if (typeof gameForm[key] === 'boolean') {
+          if (Array.isArray(gameForm[key])) gameForm[key] = [];
+          else if (typeof gameForm[key] === 'boolean') {
             gameForm[key] = false;
           } else if (typeof gameForm[key] === 'number') {
             gameForm[key] = 0;
@@ -771,13 +797,14 @@ export default {
 
         router.push('/library');
       } catch (error) {
-        console.error('Error saving game:', error);
+        operationError.value = error.message || 'Spremanje igre nije uspjelo.';
       } finally {
         saveLoading.value = false;
       }
     };
     
     const closeApiGameModal = () => {
+      detailVersion++;
       showApiGameModal.value = false;
       apiGameDetails.value = null;
     
@@ -797,6 +824,9 @@ export default {
     };
 
     const saveApiGame = async () => {
+      if (saveLoading.value) return;
+      operationError.value = '';
+      const ownerId = userStore.user?.id;
       if (!apiGameForm.title || !apiGameForm.platform) {
         return;
       }
@@ -808,11 +838,12 @@ export default {
       try {
         saveLoading.value = true;
         
+        buildGameUpdate(apiGameForm);
         let gameData = {
           user_id: userStore.user.id,
           title: apiGameForm.title,
           platform: apiGameForm.platform,
-          play_time: apiGameForm.play_time || null,
+          play_time: apiGameForm.play_time === '' ? null : Number(apiGameForm.play_time),
           genre: apiGameDetails.value?.genres?.map(g => g.name).join(', ') || '',
           publisher: apiGameDetails.value?.publishers?.map(p => p.name).join(', ') || '',
           rating: apiGameForm.rating || null,
@@ -838,6 +869,7 @@ export default {
           platforms_list: JSON.stringify(apiGameDetails.value?.platforms?.map(p => p.platform.name) || []),
           publishers_list: JSON.stringify(apiGameDetails.value?.publishers?.map(p => p.name) || [])
         };
+        Object.assign(gameData, progressFields(apiGameForm), { title: apiGameForm.title.trim(), currently_playing: apiGameForm.status === 'playing' });
 
         try {
           const screenshots = await gamesApi.getGameScreenshots(apiGameDetails.value.id);
@@ -861,6 +893,7 @@ export default {
           console.warn('Could not fetch series data:', error);
         }
 
+        if (disposed || userStore.user?.id !== ownerId) return;
         const { data: insertedGame, error } = await supabase
           .from('games')
           .insert([gameData])
@@ -868,11 +901,11 @@ export default {
           .single();
 
         if (error) {
-          console.error('Error saving game:', error);
-          return;
+          throw error;
         }
 
         const newGameId = insertedGame?.id;
+        let groupFailed = false;
         
         // Dodaj igru u odabrane grupe - isti način kao u GameDetails
         if (newGameId && apiGameForm.group_ids.length > 0) {
@@ -884,15 +917,16 @@ export default {
                 game_id: newGameId 
               });
             } catch (groupError) {
-              console.error(`Greška pri dodavanju igre u grupu ${groupId}:`, groupError);
+              groupFailed = true;
             }
           }
         }
 
+        if (groupFailed) alert('Igra je dodana, ali neke grupe nisu spremljene. Uredi grupe iz detalja igre.');
         closeApiGameModal();
         router.push('/library');
       } catch (error) {
-        console.error('Error saving game:', error);
+        operationError.value = error.message || 'Spremanje igre nije uspjelo.';
       } finally {
         saveLoading.value = false;
       }
@@ -949,6 +983,9 @@ export default {
     });
 
     onUnmounted(() => {
+      disposed = true;
+      searchVersion++;
+      searchController?.abort();
       if (sentinelObserver) {
         sentinelObserver.disconnect();
         sentinelObserver = null;
@@ -956,7 +993,7 @@ export default {
     });
     
     return {
-      PROGRESS_MODES,
+      operationError, PROGRESS_MODES,
       GAME_STATUS,
       selectedProgressMode,
       selectedApiProgressMode,

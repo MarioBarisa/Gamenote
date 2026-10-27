@@ -546,7 +546,8 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch, reactive } from 'vue';
+import { buildGameUpdate, progressFields } from '../services/gameForm';
+import { ref, onMounted, onBeforeUnmount, computed, watch, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGamesApi } from '../services/gamesApi';
 import { useUserStore } from '../stores/user';
@@ -623,66 +624,40 @@ export default {
       }
     };
 
+    let loadVersion = 0;
+    let disposed = false;
     const fetchGame = async () => {
+      const version = ++loadVersion;
       const gameId = route.params.id;
+      const userId = userStore.user?.id;
       loading.value = true;
       error.value = null;
-      
+      game.value = null;
+      gameInLibraryId.value = null;
+      screenshots.value = [];
+      gameSeries.value = [];
+      showAddModal.value = false;
       try {
-        const gameDetails = await gamesApi.getGameDetails(gameId);
-        
-        if (!gameDetails) {
-          error.value = 'Igra nije pronađena na serveru';
-          game.value = null;
-          return;
-        }
-        
-        game.value = gameDetails;
-
-        // Check if game is already in user's library
-        if (userStore.user) {
-          try {
-            const { data } = await supabase
-              .from('games')
-              .select('id')
-              .eq('user_id', userStore.user.id)
-              .eq('game_api_id', gameId.toString())
-              .limit(1);
-              
-            if (data && data.length > 0) {
-              gameInLibraryId.value = data[0].id;
-            } else {
-              gameInLibraryId.value = null;
-            }
-          } catch (err) {
-            console.error('Error checking library status:', err);
-          }
-        }
-        
-        try {
-          const screenshotsData = await gamesApi.getGameScreenshots(gameId);
-          screenshots.value = screenshotsData || [];
-        } catch (screenshotError) {
-          console.warn('Screenshots not available:', screenshotError);
-          screenshots.value = [];
-        }
-
-        try {
-          const gameSeriesData = await gamesApi.getGameSeries(gameId);
-          gameSeries.value = gameSeriesData.results || [];
-        } catch (seriesError) {
-          console.warn('Game series data not available:', seriesError);
-          gameSeries.value = [];
-        }
-      } catch (fetchError) {
-        console.error('Greška pri dohvaćanju igre:', fetchError);
-        error.value = 'Greška pri učitavanju igre. Pokušajte ponovno.';
-        game.value = null;
+        const details = await gamesApi.getGameDetails(gameId);
+        if (!details) throw new Error('Igra nije pronađena.');
+        const [pictures, series, library] = await Promise.all([
+          gamesApi.getGameScreenshots(gameId).catch(() => []),
+          gamesApi.getGameSeries(gameId).catch(() => ({ results: [] })),
+          userId ? supabase.from('games').select('id').eq('user_id', userId).eq('game_api_id', String(gameId)).limit(1) : { data: [] },
+        ]);
+        if (version !== loadVersion || disposed || userId !== userStore.user?.id) return;
+        game.value = details;
+        screenshots.value = pictures;
+        gameSeries.value = series.results || [];
+        gameInLibraryId.value = library.data?.[0]?.id || null;
+      } catch (failure) {
+        if (version === loadVersion) error.value = failure.message || 'Učitavanje nije uspjelo.';
       } finally {
-        loading.value = false;
+        if (version === loadVersion) loading.value = false;
       }
     };
-    
+    onBeforeUnmount(() => { disposed = true; loadVersion++; });
+
     // gledaj za promjene 
     watch(() => route.params.id, (newId, oldId) => {
       if (newId && newId !== oldId) {
@@ -887,7 +862,7 @@ export default {
       if (lower.includes('xbox')) return 'achievements_xbox';
       if (lower.includes('steam') || lower === 'pc') return 'achievements_steam';
       if (lower.includes('nintendo')) return 'completion_nintendo';
-      if (lower.includes('ios')) return 'achievements_gamecenter';
+      if (lower.includes('ios')) return 'achievements_gamecentre';
       
       return 'completion_standard';
     };
@@ -917,7 +892,7 @@ export default {
         } else if (platformLower.includes('nintendo')) {
           newMode = 'completion_nintendo';
         } else if (platformLower.includes('ios')) {
-          newMode = 'achievements_gamecenter';
+          newMode = 'achievements_gamecentre';
         }
         
         collectionForm.progress_mode = newMode;
@@ -953,6 +928,8 @@ export default {
     };
 
     const saveToCollection = async () => {
+      if (saveLoading.value) return;
+      const ownerId = userStore.user?.id;
       if (!collectionForm.title || !collectionForm.platform) {
         return;
       }
@@ -964,11 +941,12 @@ export default {
       try {
         saveLoading.value = true;
         
+        buildGameUpdate(collectionForm);
         let gameData = {
           user_id: userStore.user.id,
           title: collectionForm.title,
           platform: collectionForm.platform,
-          play_time: collectionForm.play_time || null,
+          play_time: collectionForm.play_time === '' ? null : Number(collectionForm.play_time),
           genre: game.value?.genres?.map(g => g.name).join(', ') || '',
           publisher: game.value?.publishers?.map(p => p.name).join(', ') || '',
           rating: collectionForm.rating || null,
@@ -994,6 +972,7 @@ export default {
           platforms_list: JSON.stringify(game.value?.platforms?.map(p => p.platform.name) || []),
           publishers_list: JSON.stringify(game.value?.publishers?.map(p => p.name) || [])
         };
+        Object.assign(gameData, progressFields(collectionForm), { title: collectionForm.title.trim(), currently_playing: collectionForm.status === 'playing' });
 
         
         if (screenshots.value.length > 0) {
@@ -1010,6 +989,7 @@ export default {
           gameData.series_games = JSON.stringify(seriesGames);
         }
 
+        if (disposed || userStore.user?.id !== ownerId) return;
         const { data: insertedGame, error } = await supabase
           .from('games')
           .insert([gameData])
@@ -1018,11 +998,12 @@ export default {
 
         if (error) {
           console.error('Error saving game:', error);
-          showToast('Greška pri dodavanju igre', 'error');
+          showToast(error.message || 'Greška pri dodavanju igre', 'error');
           return;
         }
 
         const newGameId = insertedGame?.id;
+        let groupFailed = false;
         
         // Dodaj igru u odabrane grupe - isti način kao u GameDetails
         if (newGameId && collectionForm.group_ids.length > 0) {
@@ -1034,17 +1015,18 @@ export default {
                 game_id: newGameId 
               });
             } catch (groupError) {
-              console.error(`Greška pri dodavanju igre u grupu ${groupId}:`, groupError);
+              groupFailed = true;
             }
           }
         }
 
-        showToast(`${collectionForm.title} uspješno dodana u kolekciju!`);
+        if (groupFailed) showToast('Igra je dodana, ali neke grupe nisu spremljene. Uredi ih iz detalja igre.', 'error');
+        else showToast(`${collectionForm.title} uspješno dodana u kolekciju!`);
         closeAddModal();
         setTimeout(() => router.push('/library'), 1000);
       } catch (error) {
         console.error('Error saving game:', error);
-        showToast('Greška pri dodavanju igre', 'error');
+        showToast(error.message || 'Greška pri dodavanju igre', 'error');
       } finally {
         saveLoading.value = false;
       }

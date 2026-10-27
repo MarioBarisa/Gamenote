@@ -56,12 +56,12 @@
           </button>
         </form>
 
-        <div v-if="!isRecovery && !successMessage" class="text-center py-4">
+        <div v-if="checking && !successMessage" class="text-center py-4">
           <p class="text-base-content/60 text-sm">Čekanje na potvrdu sesije...</p>
           <span class="loading loading-spinner loading-md mt-2"></span>
         </div>
 
-        <div v-if="successMessage" class="text-center mt-2">
+        <div v-if="successMessage || (!checking && !isRecovery)" class="text-center mt-2">
           <RouterLink to="/login" class="btn btn-primary">Natrag na prijavu</RouterLink>
         </div>
       </div>
@@ -70,16 +70,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
+import { recoveryState, clearRecovery } from '../services/recoveryState'
 import { useAuth } from '../services/useAuth'
 import GamenoteBanner from '../components/GamenoteBanner.vue'
 
 const router = useRouter()
 const { updatePassword } = useAuth()
 
-const isRecovery = ref(false)
+const isRecovery = computed(() => recoveryState.active)
+const checking = ref(true)
 const newPassword = ref('')
 const confirmPassword = ref('')
 const errorMsg = ref('')
@@ -88,15 +90,22 @@ const confirmError = ref('')
 const successMessage = ref('')
 const updating = ref(false)
 
-onMounted(() => {
-  supabase.auth.onAuthStateChange(async (event) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      isRecovery.value = true
-    }
-  })
+onMounted(async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    if (!session || !recoveryState.active) errorMsg.value = recoveryState.error || 'Poveznica je neispravna ili je istekla. Zatraži novu poveznicu na stranici za prijavu.';
+  } catch {
+    errorMsg.value = 'Sesija za resetiranje nije dostupna. Zatraži novu poveznicu.';
+  } finally {
+    checking.value = false;
+  }
 })
 
+watch(isRecovery, active => { if (active) errorMsg.value = ''; })
+
 async function handleUpdate() {
+  if (updating.value || !isRecovery.value) return
   fieldError.value = ''
   confirmError.value = ''
   errorMsg.value = ''
@@ -115,6 +124,7 @@ async function handleUpdate() {
   const result = await updatePassword(newPassword.value)
 
   if (result.success) {
+    clearRecovery()
     successMessage.value = 'Lozinka je uspješno promijenjena.'
     setTimeout(() => router.push('/login'), 2000)
   } else {

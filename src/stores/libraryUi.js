@@ -72,6 +72,16 @@ export const useLibraryUiStore = defineStore('libraryUi', () => {
 
   loadState();
 
+  const reset = () => {
+    activeFilter.value = DEFAULTS.activeFilter;
+    searchQuery.value = DEFAULTS.searchQuery;
+    sortField.value = DEFAULTS.sortField;
+    sortOrder.value = DEFAULTS.sortOrder;
+    savedScrollY.value = 0;
+    shouldRestore.value = false;
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* Spremnik nije obavezan. */ }
+  };
+
   return {
     activeFilter,
     searchQuery,
@@ -81,6 +91,7 @@ export const useLibraryUiStore = defineStore('libraryUi', () => {
     shouldRestore,
     saveViewState,
     markForRestore,
-    consumeRestore
+    consumeRestore,
+    reset
   };
 });

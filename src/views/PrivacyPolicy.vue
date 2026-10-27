@@ -63,15 +63,15 @@
 
             <div class="space-y-2">
               <h2 class="text-xl font-bold">4. Gdje se podaci pohranjuju</h2>
-              <p>Svi podaci pohranjuju se putem <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase</a> — infrastrukturnog partnera za autentifikaciju i bazu podataka. Supabase može pohranjivati podatke i izvan EU/EGP-a, uz zaštitne mjere koje propisuje GDPR (npr. standardne ugovorne klauzule). Korištenjem Gamenotea pristaješ i na <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase Privacy Policy</a>.</p>
-              <p>Osim te infrastrukture, <strong>ne koristimo nikakve druge treće strane</strong> — nema vanjskih alata za analitiku, oglašavanje, praćenje ili AI obradu.</p>
+              <p>Podaci računa i knjižnice pohranjuju se putem <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase</a> — infrastrukturnog partnera za autentifikaciju i bazu podataka. Supabase može pohranjivati podatke i izvan EU/EGP-a, uz zaštitne mjere koje propisuje GDPR (npr. standardne ugovorne klauzule). Korištenjem Gamenotea pristaješ i na <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase Privacy Policy</a>.</p>
+              <p>Aplikaciju poslužuje Netlify. Katalog i vijesti dohvaćaju se preko Gamenote API-ja i RSS2JSON-a, a slike se učitavaju s vanjskih izvora. Avatar koji odabereš za prijenos šalje se ImgBB-u. Steam i PlayStation koriste se kada povežeš odgovarajući importer. Zadani avatar generira se lokalno bez slanja e-mail adrese. Ne koristimo alate za oglašavanje ili analitiku.</p>
             </div>
 
             <div class="space-y-2">
               <h2 class="text-xl font-bold">5. Što nikad ne radimo s tvojim podacima</h2>
               <ul class="list-disc list-inside">
                 <li>Ne prodajemo ih.</li>
-                <li>Ne dijelimo ih s trećim stranama u marketinške ili bilo koje druge svrhe.</li>
+                <li>Ne dijelimo ih za marketing. Navedeni servisi obrađuju zahtjeve potrebne za odabrane funkcije.</li>
                 <li>Ne koristimo ih za treniranje AI modela.</li>
                 <li>Ne analiziramo i ne čitamo tvoj korisnički sadržaj (tvoje bilješke o igrama su isključivo tvoje).</li>
                 <li>Ne prikazujemo oglase niti koristimo alate za praćenje.</li>
@@ -80,7 +80,7 @@
 
             <div class="space-y-2">
               <h2 class="text-xl font-bold">6. Kolačići i lokalna pohrana</h2>
-              <p>Web verzija Gamenotea koristi samo tehnički neophodne kolačiće / lokalnu pohranu (local storage), potrebne za održavanje tvoje prijavljene sjednice putem Supabase Auth. Ne koristimo kolačiće za analitiku ili oglašavanje, pa ne treba ni banner za pristanak na takve kolačiće.</p>
+              <p>Lokalna pohrana čuva Supabase sesiju, postavke prikaza i predmemoriju importera odvojenu po korisniku. PSN tokeni spremaju se šifrirano, s ključem u IndexedDB-u; ako šifriranje nije dostupno, ostaju samo u memoriji otvorene stranice. Vezu i predmemoriju možeš ukloniti u importeru. Ne koristimo kolačiće za analitiku ili oglašavanje.</p>
             </div>
 
             <div class="space-y-2">
@@ -151,15 +151,15 @@
 
             <div class="space-y-2">
               <h2 class="text-xl font-bold">4. Where data is stored</h2>
-              <p>All data is stored via <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase</a>, our infrastructure partner for authentication and database storage. Supabase may store data outside the EU/EEA, with safeguards required under GDPR (e.g. standard contractual clauses). By using Gamenote, you also agree to <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase's Privacy Policy</a>.</p>
-              <p>Beyond this infrastructure, <strong>we don't use any other third parties</strong> — no external analytics, advertising, tracking, or AI-processing tools.</p>
+              <p>Account and library data is stored via <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase</a>, our infrastructure partner for authentication and database storage. Supabase may store data outside the EU/EEA, with safeguards required under GDPR (e.g. standard contractual clauses). By using Gamenote, you also agree to <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" class="link link-primary">Supabase's Privacy Policy</a>.</p>
+              <p>Netlify hosts the application. The catalogue and news use the Gamenote API and RSS2JSON; images load from external providers. An avatar you choose to upload is sent to ImgBB. Steam and PlayStation are used when you connect an importer. The default avatar is generated locally without sending your email address. We do not use advertising or analytics tools.</p>
             </div>
 
             <div class="space-y-2">
               <h2 class="text-xl font-bold">5. What we never do with your data</h2>
               <ul class="list-disc list-inside">
                 <li>We don't sell it.</li>
-                <li>We don't share it with third parties for marketing or any other purpose.</li>
+                <li>We do not share it for marketing. The listed providers process requests needed for the features you use.</li>
                 <li>We don't use it to train AI models.</li>
                 <li>We don't analyze or read your user content (your notes about games are yours alone).</li>
                 <li>We don't show ads or use tracking tools.</li>
@@ -168,7 +168,7 @@
 
             <div class="space-y-2">
               <h2 class="text-xl font-bold">6. Cookies and local storage</h2>
-              <p>The web version of Gamenote uses only strictly necessary cookies / local storage, needed to maintain your logged-in session via Supabase Auth. We don't use cookies for analytics or advertising, so no cookie-consent banner is needed.</p>
+              <p>Local storage keeps the Supabase session, display preferences and importer caches scoped to each user. PSN tokens are encrypted with a key in IndexedDB; if encryption is unavailable, they remain only in the open page memory. Disconnecting an importer removes its local connection and cache. We do not use analytics or advertising cookies.</p>
             </div>
 
             <div class="space-y-2">

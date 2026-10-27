@@ -14,6 +14,7 @@
           <span>{{ errorMessage }}</span>
         </div>
 
+<div v-if="successMessage" role="status" class="alert alert-success mb-4">{{ successMessage }}</div>
         <form @submit.prevent="handleSignup" class="flex flex-col gap-4">
           <div class="form-control">
             <label class="label" for="signup-username">
@@ -123,7 +124,7 @@ import { ref, computed, reactive } from 'vue'
 import { useAuth } from '../services/useAuth'
 import GamenoteBanner from './GamenoteBanner.vue'
 
-const { loading, errorMessage, signUp } = useAuth()
+const { loading, errorMessage, successMessage, signUp } = useAuth()
 
 const name = ref('')
 const email = ref('')

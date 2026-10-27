@@ -4,6 +4,9 @@ import {
   getProfileFromAccountId
 } from 'psn-api';
 import { seal, unseal, isEnvelope, deleteKey } from './tokenVault';
+import { useUserStore } from '../stores/user';
+import { findPsnTrophyTitle } from './psnImport';
+export { normalizeTitle } from './importerMatching';
 
 const TOKENS_KEY = 'gamenote.psn.tokens';
 const SNAPSHOT_KEY = 'gamenote.psn.snapshot';
@@ -20,82 +23,72 @@ export class PsnAuthRequiredError extends Error {
   }
 }
 
-// ---------- localStorage ----------
-let plaintextWarned = false;
+let legacyCleared = false;
+const memoryTokens = new Map();
+
+function ownerId() {
+  const userId = useUserStore().user?.id;
+  if (!userId) throw new PsnAuthRequiredError('Prijavi se za povezivanje PSN računa.');
+  if (!legacyCleared) {
+    for (const key of [TOKENS_KEY, SNAPSHOT_KEY, ACCOUNT_ID_KEY, ONLINE_ID_KEY]) localStorage.removeItem(key);
+    legacyCleared = true;
+  }
+  return userId;
+}
+function assertOwner(userId) {
+  if (useUserStore().user?.id !== userId) throw new PsnAuthRequiredError('Korisnik je promijenjen. Poveži svoj PSN račun.');
+}
+function storageKey(key, userId = ownerId()) { return key + '.' + userId; }
 
 async function readTokens() {
-  let raw = null;
-  try { raw = JSON.parse(localStorage.getItem(TOKENS_KEY)); } catch { raw = null; }
-  if (!raw) return null;
-
-  if (isEnvelope(raw)) {
-    const t = await unseal(raw);
-    if (!t) {
-      localStorage.removeItem(TOKENS_KEY);
-      console.warn('[psn] Tokeni se ne mogu dešifrirati — poveži se ponovno.');
-    }
-    return t;
-  }
-
-  // legacy plaintext → migriraj u šifriranu omotnicu
-  if (raw.accessToken || raw.refreshToken) {
-    const env = await seal(raw);
-    localStorage.setItem(TOKENS_KEY, JSON.stringify(env ?? raw));
-  }
-  return raw;
+  const userId = ownerId();
+  if (memoryTokens.has(userId)) return memoryTokens.get(userId);
+  let raw;
+  try { raw = JSON.parse(localStorage.getItem(storageKey(TOKENS_KEY, userId))); } catch { return null; }
+  if (!isEnvelope(raw)) return null;
+  const tokens = await unseal(raw, 'psn.' + userId);
+  assertOwner(userId);
+  if (tokens) memoryTokens.set(userId, tokens);
+  return tokens;
 }
 
-async function writeTokens(t) {
-  const env = await seal(t);
-  if (env) {
-    localStorage.setItem(TOKENS_KEY, JSON.stringify(env));
-    return;
+async function writeTokens(tokens, userId = ownerId()) {
+  assertOwner(userId);
+  const envelope = await seal(tokens, 'psn.' + userId);
+  assertOwner(userId);
+  memoryTokens.set(userId, tokens);
+  if (envelope) localStorage.setItem(storageKey(TOKENS_KEY, userId), JSON.stringify(envelope));
+  else {
+    localStorage.removeItem(storageKey(TOKENS_KEY, userId));
+    console.warn('[psn] Veza vrijedi samo do zatvaranja stranice.');
   }
-  if (!plaintextWarned) {
-    plaintextWarned = true;
-    console.warn('[psn] Kriptografija nedostupna — tokeni se privremeno spremaju nešifrirano.');
-  }
-  localStorage.setItem(TOKENS_KEY, JSON.stringify(t));
 }
 
-function clearTokens() {
-  localStorage.removeItem(TOKENS_KEY);
-}
 export function hasPsnConnection() {
-  let raw = null;
-  try { raw = JSON.parse(localStorage.getItem(TOKENS_KEY)); } catch { raw = null; }
-  if (!raw) return false;
-  return Boolean(isEnvelope(raw) || raw.accessToken || raw.refreshToken);
+  try {
+    const userId = ownerId();
+    const raw = JSON.parse(localStorage.getItem(storageKey(TOKENS_KEY, userId)));
+    return memoryTokens.has(userId) || isEnvelope(raw);
+  } catch { return false; }
 }
-export function disconnectPsn() {
-  clearTokens();
-  localStorage.removeItem(SNAPSHOT_KEY);
-  localStorage.removeItem(ACCOUNT_ID_KEY);
-  localStorage.removeItem(ONLINE_ID_KEY);
-  deleteKey();
+export function disconnectPsn(userId = ownerId()) {
+  memoryTokens.delete(userId);
+  for (const key of [TOKENS_KEY, SNAPSHOT_KEY, ACCOUNT_ID_KEY, ONLINE_ID_KEY]) localStorage.removeItem(storageKey(key, userId));
+  return deleteKey('psn.' + userId);
 }
+function readCachedAccountId() { return localStorage.getItem(storageKey(ACCOUNT_ID_KEY)) || null; }
+function writeCachedAccountId(id) { if (id) localStorage.setItem(storageKey(ACCOUNT_ID_KEY), String(id)); }
+function readSavedOnlineId() { return localStorage.getItem(storageKey(ONLINE_ID_KEY)) || null; }
 
-// ---------- identitet cache ----------
-function readCachedAccountId() {
-  return localStorage.getItem(ACCOUNT_ID_KEY) || null;
-}
-function writeCachedAccountId(id) {
-  if (id) localStorage.setItem(ACCOUNT_ID_KEY, String(id));
-}
-function readSavedOnlineId() {
-  return localStorage.getItem(ONLINE_ID_KEY) || null;
-}
-
-// ---------- snapshot cache ----------
 export function saveSnapshot(snapshot) {
-  localStorage.setItem(SNAPSHOT_KEY, JSON.stringify({ ...snapshot, syncedAt: Date.now() }));
+  localStorage.setItem(storageKey(SNAPSHOT_KEY), JSON.stringify({ ...snapshot, syncedAt: Date.now() }));
 }
 export function loadSnapshot() {
-  try { return JSON.parse(localStorage.getItem(SNAPSHOT_KEY)); } catch { return null; }
+  try { return JSON.parse(localStorage.getItem(storageKey(SNAPSHOT_KEY))); } catch { return null; }
 }
 
 // ---------- auth ----------
-let idMigrationTried = false;
+const idMigrationTried = new Set();
 
 async function tokensFromResponse(data) {
   const stored = await readTokens();
@@ -115,7 +108,8 @@ async function exchangeRemote(body) {
     res = await fetch(AUTH_ENDPOINT, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
     });
   } catch {
     throw new Error('PSN auth servis nije dostupan. Pokušaj ponovno.');
@@ -129,12 +123,13 @@ async function exchangeRemote(body) {
 }
 
 async function ensureAuthorization({ forceRefresh = false } = {}) {
+  const userId = ownerId();
   const tokens = await readTokens();
   if (!tokens) throw new PsnAuthRequiredError();
 
   // tihi refresh za idToken migraciju
-  const needsIdMigration = !tokens.idToken && !idMigrationTried;
-  if (needsIdMigration) idMigrationTried = true;
+  const needsIdMigration = !tokens.idToken && !idMigrationTried.has(userId);
+  if (needsIdMigration) idMigrationTried.add(userId);
 
   if (!forceRefresh && !needsIdMigration && tokens.accessToken && Date.now() < (tokens.accessTokenExpiresAt || 0) - 60_000) {
     return { accessToken: tokens.accessToken };
@@ -142,7 +137,8 @@ async function ensureAuthorization({ forceRefresh = false } = {}) {
   if (!tokens.refreshToken) throw new PsnAuthRequiredError();
 
   const fresh = await tokensFromResponse(await exchangeRemote({ mode: 'refresh', refreshToken: tokens.refreshToken }));
-  await writeTokens(fresh);
+  assertOwner(userId);
+  await writeTokens(fresh, userId);
   return { accessToken: fresh.accessToken };
 }
 
@@ -156,13 +152,17 @@ async function pace() {
 }
 
 async function psnCall(taskFn, attempts = 4) {
+  const userId = ownerId();
   let lastErr;
   let refreshed = false;
   for (let i = 0; i < attempts; i++) {
     try {
       const auth = await ensureAuthorization();
       await pace();
-      return await taskFn(auth);
+      assertOwner(userId);
+      const result = await taskFn(auth);
+      assertOwner(userId);
+      return result;
     } catch (e) {
       lastErr = e;
       const msg = String(e?.message || '');
@@ -242,7 +242,8 @@ async function relayGet(path, accessToken) {
   let res;
   try {
     res = await fetch(`${RELAY_ENDPOINT}${path}`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(15000),
     });
   } catch {
     throw new Error('PSN relay servis nije dostupan.');
@@ -276,6 +277,7 @@ async function searchAccountId(onlineId) {
   if (!wanted) return null;
   const data = await psnCall(auth => fetch(`${RELAY_ENDPOINT}/api/search/v1/universalSearch`, {
     method: 'POST',
+    signal: AbortSignal.timeout(15000),
     headers: { Authorization: `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       searchTerm: onlineId,
@@ -293,7 +295,9 @@ async function searchAccountId(onlineId) {
 
 // lanac: JWT → cache → Online ID
 async function resolveIdentity({ onlineId } = {}) {
+  const userId = ownerId();
   const fromJwt = accountIdFromTokens(await readTokens());
+  assertOwner(userId);
   if (fromJwt) {
     writeCachedAccountId(fromJwt);
     return fromJwt;
@@ -305,6 +309,7 @@ async function resolveIdentity({ onlineId } = {}) {
   if (!handle) return null;
   try {
     const found = await searchAccountId(handle);
+    assertOwner(userId);
     if (found) writeCachedAccountId(found);
     return found;
   } catch (e) {
@@ -345,20 +350,18 @@ export function extractNpsso(raw) {
 }
 
 export async function connectWithNpsso(npsso) {
+  const userId = ownerId();
   const trimmedNpsso = extractNpsso(npsso);
   if (trimmedNpsso.length < 30) throw new Error('NPSSO token nije ispravnog formata.');
-  const tokens = await tokensFromResponse(await exchangeRemote({ mode: 'npsso', npsso: trimmedNpsso }));
-  await writeTokens(tokens);
-  localStorage.removeItem(SNAPSHOT_KEY);
+  const response = await exchangeRemote({ mode: 'npsso', npsso: trimmedNpsso });
+  assertOwner(userId);
+  const tokens = await tokensFromResponse(response);
+  await writeTokens(tokens, userId);
+  localStorage.removeItem(storageKey(SNAPSHOT_KEY));
 
   const accountId = await resolveIdentity();
   if (!accountId) console.warn('[psn] accountId nije riješen — identitet se preskače.');
   return fetchProfileSafe(accountId);
-}
-
-export function normalizeTitle(s) {
-  return String(s || '').normalize('NFD').toLowerCase()
-    .replace(/[™®©]/g, '').replace(/[:\-–—_]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 export function parseISODurationToHours(iso) {
@@ -369,15 +372,9 @@ export function parseISODurationToHours(iso) {
 }
 
 function mergePlayedWithTrophies(playedGames, trophyTitles) {
-  const trophyMap = new Map();
-  for (const t of trophyTitles) {
-    const key = normalizeTitle(t?.trophyTitleName);
-    if (key && !trophyMap.has(key)) trophyMap.set(key, t);
-  }
-
   const games = playedGames.map(g => {
     const name = g?.localizedName || g?.name;
-    const t = trophyMap.get(normalizeTitle(name));
+    const t = findPsnTrophyTitle(g, trophyTitles);
     const earned = t?.earnedTrophies ? Object.values(t.earnedTrophies).reduce((a, b) => a + Number(b), 0) : null;
     const total = t?.definedTrophies ? Object.values(t.definedTrophies).reduce((a, b) => a + Number(b), 0) : null;
     return {
@@ -402,6 +399,7 @@ function mergePlayedWithTrophies(playedGames, trophyTitles) {
 }
 
 export async function fetchSyncData(onStage) {
+  const userId = ownerId();
   await ensureAuthorization();
 
   onStage?.('Dohvaćam profil…');
@@ -437,6 +435,7 @@ export async function fetchSyncData(onStage) {
     (count) => onStage?.(`Dohvaćam trofeje po igrama… (${count})`)
   );
 
+  assertOwner(userId);
   return {
     profile: {
       accountId,

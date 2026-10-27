@@ -37,7 +37,6 @@ async function psnExchange(payload = {}) {
       }
     };
   } catch (e) {
-    console.error('[psn-exchange] Error:', e?.message || e);
     const msg = String(e?.message || '');
     const invalid = /NPSSO|access code|refresh|expired|invalid/i.test(msg);
     return {
@@ -45,7 +44,7 @@ async function psnExchange(payload = {}) {
       status: invalid ? 401 : 502,
       error: invalid
         ? 'NPSSO / refresh token nije valjan ili je istekao.'
-        : (msg || 'Greška u komunikaciji s PSN-om.')
+        : 'Greška u komunikaciji s PSN-om. Pokušaj ponovno.'
     };
   }
 }

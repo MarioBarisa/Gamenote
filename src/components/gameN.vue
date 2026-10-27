@@ -202,6 +202,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGamesApi } from '../services/gamesApi';
+import { stripHtml as safeStripHtml, httpUrl } from '../services/safeContent';
 
 export default {
   setup() {
@@ -283,8 +284,9 @@ export default {
       if (!newsItem) return;
       stopCarousel();
 
-      if (newsItem.link && newsItem.link !== '#') {
-        window.open(newsItem.link, '_blank', 'noopener,noreferrer');
+      const link = httpUrl(newsItem.link);
+      if (link) {
+        window.open(link, '_blank', 'noopener,noreferrer');
         setTimeout(() => startCarousel(), 300);
       } else {
         try {
@@ -300,17 +302,7 @@ export default {
       }
     };
 
-    const stripHtml = (html) => {
-      if (!html) return 'Nema dostupnog opisa';
-      try {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = html;
-        const text = tmp.textContent || tmp.innerText || '';
-        return text.trim() || 'Nema dostupnog opisa';
-      } catch (e) {
-        return 'Nema dostupnog opisa';
-      }
-    };
+    const stripHtml = (html) => safeStripHtml(html) || 'Nema dostupnog opisa';
 
     const formatDate = (dateString) => {
       if (!dateString) return '';

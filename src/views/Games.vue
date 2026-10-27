@@ -191,6 +191,7 @@
 </template>
 
 <script>
+import { fetchUserRows } from '../services/libraryData';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -265,18 +266,7 @@ export default {
       try {
         const userId = userStore.user.id;
 
-        const { data, error: fetchError } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', userId)
-          .order(sortField.value, { ascending: sortOrder.value === 'asc' });
-
-        if (fetchError) {
-          console.error('Greška pri dohvaćanju igara:', fetchError);
-          error.value = 'Greška pri učitavanju igara. Pokušaj ponovno.';
-          games.value = [];
-          return;
-        }
+        const data = await fetchUserRows(supabase, 'games', userId, { order: sortField.value, ascending: sortOrder.value === 'asc' });
 
         games.value = data || [];
       } catch (err) {

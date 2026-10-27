@@ -263,6 +263,7 @@
 </template>
 
 <script>
+import { localAvatar } from '../services/safeContent';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '../stores/user';
 import { useThemeStore } from '../stores/theme';
@@ -292,7 +293,7 @@ export default {
     
     const profileImageUrl = computed(() => {
       return userStore.user?.user_metadata?.avatar_url || 
-             'https://i.pravatar.cc/300?u=' + (userStore.user?.email || 'default');
+             localAvatar(userStore.user?.user_metadata?.name);
     });
     
     const userName = computed(() => {

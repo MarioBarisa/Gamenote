@@ -7,16 +7,25 @@ const ALLOWED = [
 ];
 
 async function psnRelay(pathWithQuery, authHeader, { method = 'GET', body = null } = {}) {
-  const rule = ALLOWED.find(r => pathWithQuery && pathWithQuery.startsWith(r.prefix));
+  let target;
+  try {
+    if (typeof pathWithQuery !== 'string' || pathWithQuery.length > 4096 || !pathWithQuery.startsWith('/') || /[%\\#]/.test(pathWithQuery.split('?')[0])) throw new Error();
+    target = new URL(pathWithQuery, TARGET_HOST);
+    if (target.origin !== TARGET_HOST || target.pathname !== pathWithQuery.split('?')[0]) throw new Error();
+  } catch { return { ok: false, status: 403, error: 'Nedozvoljeni put.' }; }
+  const rule = ALLOWED.find(r => target.pathname.startsWith(r.prefix));
   if (!rule) return { ok: false, status: 403, error: 'Nedozvoljeni put.' };
   if (!rule.methods.includes(method)) return { ok: false, status: 405, error: 'Metoda nije dozvoljena.' };
   if (!authHeader || !/^Bearer\s+\S+/i.test(authHeader)) {
     return { ok: false, status: 401, error: 'Nedostaje Authorization header.' };
   }
+  if (body != null && (typeof body !== 'string' || Buffer.byteLength(body) > 65536)) return { ok: false, status: 413, error: 'Zahtjev je prevelik.' };
 
   try {
-    const upstream = await fetch(`${TARGET_HOST}${pathWithQuery}`, {
+    const upstream = await fetch(target, {
       method,
+      signal: AbortSignal.timeout(12000),
+      redirect: 'error',
       headers: {
         Authorization: authHeader,
         Accept: 'application/json',
