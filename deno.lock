@@ -20,7 +20,7 @@
         "npm:daisyui@^5.7.50",
         "npm:hover-tilt@1",
         "npm:html2canvas@^1.4.1",
-        "npm:netlify-cli@^27.14.2",
+        "npm:netlify-cli@^27.15.0",
         "npm:pinia-plugin-persistedstate@^4.7.1",
         "npm:pinia@^4.1.0",
         "npm:psn-api@^2.18.1",

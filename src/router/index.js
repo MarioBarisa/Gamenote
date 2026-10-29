@@ -98,6 +98,7 @@ const router = createRouter({
     {
       path: '/reset-password',
       name: 'reset-password',
+      meta: { skipAuthLoading: true },
       component: () => import('../views/ResetPasswordView.vue')
     },
     {
@@ -119,11 +120,13 @@ const router = createRouter({
     {
       path: '/privacy',
       name: 'privacy',
+      meta: { skipAuthLoading: true },
       component: () => import('../views/PrivacyPolicy.vue')
     },
     {
       path: '/tos',
       name: 'tos',
+      meta: { skipAuthLoading: true },
       component: () => import('../views/TermsOfService.vue')
     }
   ]
@@ -148,14 +151,14 @@ router.afterEach(() => {
 });
 
 router.beforeEach(async (to) => {
-  if (!to.meta.requiresAuth && to.name !== 'shared-game') return;
+  if (!to.meta.requiresAuth && !['home', 'login', 'register', 'shared-game'].includes(to.name)) return;
   try {
     const userStore = useUserStore();
-    await userStore.fetchUser();
+    await userStore.initializeAuth();
     if (to.meta.requiresAuth && !userStore.isLoggedIn) return { name: 'login' };
   } catch (error) {
     console.error('Provjera prijave nije uspjela:', error);
-    if (to.meta.requiresAuth) return { name: 'login' };
+    // Pogrešku prikazuje početni ekran.
   }
 });
 

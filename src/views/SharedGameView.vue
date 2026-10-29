@@ -4,9 +4,9 @@
     <div v-if="!userStore.isLoggedIn" class="bg-base-100 text-base-content border-b border-base-300 shadow-sm sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
         <div class="flex items-center justify-between w-full sm:w-auto">
-          <a href="https://gamenote.eu" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2">
-            <img src="/apple-touch-icon.png" alt="Gamenote Logo" class="w-6 h-6 rounded" />
-            <span class="font-bold text-sm sm:text-base">Gamenote</span>
+          <a href="https://gamenote.eu" target="_blank" rel="noopener noreferrer" class="flex items-center shrink-0" aria-label="Gamenote početna">
+            <GamenoteLogo class="lg:hidden w-10 h-9 text-base-content" />
+            <GamenoteBanner class="hidden lg:block h-9 w-auto max-w-52 object-contain" />
           </a>
           <div class="flex gap-2 sm:hidden">
             <router-link to="/register" class="btn btn-xs btn-primary">Registracija</router-link>
@@ -299,10 +299,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useGamesApi } from '../services/gamesApi';
 import PlatformIcon from '../components/PlatformIcon.vue';
+import GamenoteLogo from '../components/GamenoteLogo.vue';
+import GamenoteBanner from '../components/GamenoteBanner.vue';
 
 export default {
   name: 'SharedGameView',
-  components: { PlatformIcon },
+  components: { PlatformIcon, GamenoteLogo, GamenoteBanner },
   setup() {
     const route = useRoute();
     const router = useRouter();

@@ -1,9 +1,9 @@
 <template>
   <div v-if="libraryError" role="alert" class="alert alert-error mb-4">{{ libraryError }}</div>
   <div class="home">
-    <LandingView v-if="!userStore.isLoggedIn" />
+    <LandingView v-if="userStore.authReady && !userStore.isLoggedIn" />
 
-    <template v-if="userStore.isLoggedIn">
+    <template v-if="userStore.authReady && userStore.isLoggedIn">
       <section v-if="themeStore.showNewsWidget"
         class="hero py-8 sm:py-12 bg-base-300 rounded-box mb-6 sm:mb-10">
         <gameN />

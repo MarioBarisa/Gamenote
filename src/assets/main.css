@@ -11,6 +11,19 @@ height: 100%;
 margin: 0;
 }
 
+/* Na telefonima koristi izvorni birač. */
+@media (max-width: 767px), (pointer: coarse) {
+  select,
+  select::picker(select) {
+    appearance: auto;
+  }
+
+  select {
+    background-image: none;
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding-left: 1rem;

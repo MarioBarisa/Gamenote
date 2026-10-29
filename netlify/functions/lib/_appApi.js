@@ -1,4 +1,5 @@
 const { allowRequest, authenticatedUser } = require('./_requestSafety.js');
+const { avatarImage, imageMime } = require('./_avatarImage.js');
 const cache = new Map();
 const feeds = [
   ['GameSpot', 'https://www.gamespot.com/feeds/mashup/', 'gamespot.com'],
@@ -15,6 +16,11 @@ async function appApi(payload, authorization, options = {}) {
   try {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return { status: 400, data: { error: 'Neispravan zahtjev.' } };
     if (!allowRequest(`api:${options.ip || 'unknown'}`, 1200)) return { status: 429, data: { error: 'Previše zahtjeva. Pričekaj minutu.' } };
+    if (payload.action === 'avatar-image') {
+      const user = await authenticatedUser(authorization, env, request);
+      if (!allowRequest(`avatar-image:${user.id}`, 30)) return { status: 429, data: { error: 'Pričekaj prije ponovnog dohvata slike.' } };
+      return await avatarImage(payload.url, options.fetchImage);
+    }
     if (payload.action === 'avatar') {
       const user = await authenticatedUser(authorization, env, request);
       if (!allowRequest(`avatar:${user.id}`, 5)) return { status: 429, data: { error: 'Pričekaj prije sljedećeg prijenosa.' } };
@@ -22,12 +28,11 @@ async function appApi(payload, authorization, options = {}) {
       if (!key) return { status: 503, data: { error: 'Prijenos slika nije konfiguriran.' } };
       if (typeof payload.image !== 'string' || payload.image.length > 4200000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(payload.image)) return { status: 400, data: { error: 'Odaberi PNG, JPEG, GIF ili WebP sliku do 3 MB.' } };
       const bytes = Buffer.from(payload.image, 'base64');
-      const isImage = bytes.subarray(0, 3).equals(Buffer.from([255, 216, 255])) || bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) || /^GIF8[79]a/.test(bytes.toString('ascii', 0, 6)) || (bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP');
-      if (!isImage || bytes.length > 3 * 1024 * 1024) return { status: 400, data: { error: 'Odaberi PNG, JPEG, GIF ili WebP sliku do 3 MB.' } };
+      if (!imageMime(bytes) || bytes.length > 3 * 1024 * 1024) return { status: 400, data: { error: 'Odaberi PNG, JPEG, GIF ili WebP sliku do 3 MB.' } };
       const form = new URLSearchParams({ image: payload.image });
       const response = await request(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(key)}`, { method: 'POST', body: form, signal: AbortSignal.timeout(20000) });
       const result = await response.json();
-      if (!response.ok || !result.success || !result.data?.url?.startsWith('https://')) throw new Error('Prijenos slike nije uspio.');
+      if (!response.ok || !result.success || !result.data?.url?.startsWith('https://')) return { status: 502, data: { error: 'Usluga trenutačno nije dostupna. Pokušaj ponovno.' } };
       return { status: 200, data: { url: result.data.url } };
     }
     let url;

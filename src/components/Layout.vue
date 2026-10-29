@@ -5,38 +5,14 @@
         <div class="navbar py-2 sm:py-3">
           <div class="navbar-start">
             <router-link to="/" class="group flex items-center rounded-lg px-2 py-1 sm:px-3" aria-label="Gamenote početna">
-              <svg
-                viewBox="0 0 896 722"
-                role="img"
-                aria-hidden="true"
-                shape-rendering="crispEdges"
-                class="h-8 sm:h-9 w-auto text-base-content transition-all duration-200 group-hover:scale-105 group-hover:text-[#E44423]"
-              >
-                <g fill="currentColor">
-                  <rect x="162" y="0" width="70" height="70" />
-                  <rect x="308" y="0" width="70" height="70" />
-                  <rect x="84" y="70" width="364" height="60" />
-                  <rect x="84" y="130" width="70" height="70" />
-                  <rect x="232" y="130" width="70" height="70" />
-                  <rect x="378" y="130" width="70" height="70" />
-                  <rect x="0" y="200" width="532" height="52" />
-                  <rect x="0" y="252" width="70" height="70" />
-                  <rect x="154" y="252" width="70" height="70" />
-                  <rect x="308" y="252" width="70" height="70" />
-                  <rect x="462" y="252" width="70" height="70" />
-                  <rect x="532" y="0" width="364" height="70" />
-                  <rect x="826" y="0" width="70" height="722" />
-                  <rect x="0" y="652" width="896" height="70" />
-                  <rect x="0" y="376" width="70" height="276" />
-                </g>
-              </svg>
+              <GamenoteLogo class="h-8 sm:h-9 w-auto text-base-content transition-all duration-200 group-hover:scale-105 group-hover:text-[#E44423]" />
             </router-link>
           </div>
 
-          <div class="navbar-center hidden lg:flex">
-            <ul class="menu menu-horizontal px-1">
+          <nav class="navbar-center hidden lg:flex" aria-label="Glavna navigacija">
+            <ul class="flex items-center gap-1 px-1">
               <li>
-                <router-link to="/">
+                <router-link class="desktop-nav-link" to="/">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                   </svg>
@@ -44,7 +20,7 @@
                 </router-link>
               </li>
               <li>
-                <router-link to="/games">
+                <router-link class="desktop-nav-link" to="/library">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
                   </svg>
@@ -52,7 +28,7 @@
                 </router-link>
               </li>
               <li>
-                <router-link to="/add-game">
+                <router-link class="desktop-nav-link" to="/add-game">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                   </svg>
@@ -60,7 +36,7 @@
                 </router-link>
               </li>
               <li>
-                <router-link to="/stats">
+                <router-link class="desktop-nav-link" to="/stats">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
@@ -69,13 +45,13 @@
                 </router-link>
               </li>
               <li>
-                <router-link to="/groups">
+                <router-link class="desktop-nav-link" to="/groups">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 16h12V4h-2v6.125q0 .3-.25.45t-.5-.025l-1.225-.725q-.25-.15-.537-.15t-.513.15l-1.225.725q-.275.175-.513.025t-.237-.45V4H8zm0 2q-.825 0-1.412-.587T6 16V4q0-.825.588-1.412T8 2h12q.825 0 1.413.588T22 4v12q0 .825-.587 1.413T20 18zm-4 4q-.825 0-1.412-.587T2 20V7q0-.425.288-.712T3 6t.713.288T4 7v13h13q.425 0 .713.288T18 21t-.288.713T17 22zM8 4v12zm5 6.125q0 .3.238.45t.512-.025l1.225-.725q.225-.15.513-.15t.537.15l1.225.725q.25.175.5.025t.25-.45q0 .3-.25.45t-.5-.025l-1.225-.725q-.25-.15-.537-.15t-.513.15l-1.225.725q-.275.175-.513.025t-.237-.45"/></svg>
                   Grupe
                 </router-link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           <div class="navbar-end">
             <div class="flex items-center gap-3">
@@ -263,6 +239,7 @@
 </template>
 
 <script>
+import GamenoteLogo from './GamenoteLogo.vue';
 import { localAvatar } from '../services/safeContent';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '../stores/user';
@@ -272,6 +249,7 @@ import bannerLightUrl from '../assets/newAssets/GamenoteBannerLightMode.png';
 import bannerDarkUrl from '../assets/newAssets/GamenoteBannerDarkMode.png';
 
 export default {
+  components: { GamenoteLogo },
   setup() {
     const userStore = useUserStore();
     const themeStore = useThemeStore();
@@ -481,3 +459,24 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.desktop-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.desktop-nav-link:hover {
+  color: var(--color-primary);
+}
+
+.desktop-nav-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+</style>

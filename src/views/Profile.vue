@@ -4,253 +4,227 @@
   <div class="profile">
     <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Profil</h1>
     
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-      <div class="col-span-1">
-        <div class="card bg-base-200">
-          <div class="card-body p-4 sm:p-6">
-            <h2 class="text-lg sm:text-xl mb-4">Osobni podaci</h2>
-            
-            <!-- Profilna slika -->
-            <div class="avatar mb-4 flex justify-center">
-              <div class="w-24 rounded-full ring ring-primary ring-offset-2">
-                <img :src="profileImageUrl" alt="Profile" @error="handleImageError" />
-              </div>
-            </div>
-            
-            <!-- Forma za ažuriranje profila -->
-            <form @submit.prevent="updateProfile">
-              <div class="form-control">
-                <label class="label">Ime</label>
-                <input 
-                  type="text" 
-                  v-model="profileForm.name" 
-                  class="input input-bordered" 
-                  placeholder="Vaše ime"
-                  required 
-                />
-              </div>
-              
-              <div class="form-control mt-2">
-                <label class="label">Email</label>
-                <input 
-                  type="email" 
-                  :value="userStore.user?.email" 
-                  class="input input-bordered opacity-50" 
-                  disabled 
-                />
-              </div>
-              
-              <div class="form-control mt-2">
-                <label class="label">Profilna slika</label>
-                <input 
-                  type="file" 
-                  @change="handleFileUpload"
-                  accept="image/*"
-                  class="file-input file-input-bordered w-full"
-                  :disabled="uploading"
-                />
-                <div class="label">
-                  <span class="label-text-alt">Maksimalno 3 MB (JPG, PNG, GIF, WebP)</span>
-                  <span v-if="uploading" class="label-text-alt text-info">Uploadam...</span>
+    <div class="profile-sections">
+      <div class="profile-sidebar">
+        <section class="card bg-base-200 profile-details" aria-labelledby="profile-details-title">
+          <div class="card-body">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="avatar shrink-0">
+                <div class="w-16 rounded-full ring ring-primary ring-offset-2">
+                  <img :src="profileImageFailed ? fallbackAvatar : profileImageUrl" alt="Profilna slika" @error="handleImageError" />
                 </div>
               </div>
-              
-              <div class="form-control mt-4">
-                <button type="submit" class="btn btn-primary" :disabled="updating">
-                  <span v-if="updating" class="loading loading-spinner"></span>
-                  <span v-else>Spremi promjene</span>
-                </button>
-              </div>
-            </form>
-            
-            <!--Pass -->
-            <div class="divider">Sigurnost</div>
-            
-            <form @submit.prevent="updatePassword">
+              <h2 id="profile-details-title" class="text-lg sm:text-xl font-semibold">Osobni podaci</h2>
+            </div>
+
+            <form class="profile-form" @submit.prevent="updateProfile">
               <div class="form-control">
-                <label class="label">Nova lozinka</label>
-                <input 
-                  type="password" 
-                  v-model="passwordForm.newPassword" 
-                  class="input input-bordered" 
-                  placeholder="Minimalno 6 znakova"
-                  minlength="6"
-                />
+                <label for="profile-name" class="label mb-1">Ime</label>
+                <input id="profile-name" v-model="profileForm.name" type="text" autocomplete="nickname"
+                  class="input input-bordered w-full" placeholder="Vaše ime" required />
               </div>
-              
-              <div class="form-control mt-2">
-                <label class="label">Potvrdi lozinku</label>
-                <input 
-                  type="password" 
-                  v-model="passwordForm.confirmPassword" 
-                  class="input input-bordered" 
-                  placeholder="Ponovite lozinku"
-                />
+              <div class="form-control">
+                <label for="profile-email" class="label mb-1">Email</label>
+                <input id="profile-email" type="email" :value="userStore.user?.email"
+                  class="input input-bordered w-full opacity-50" disabled />
               </div>
-              
-              <div class="form-control mt-4">
-                <button 
-                  type="submit" 
-                  class="btn btn-secondary" 
-                  :disabled="updatingPassword || !passwordsMatch"
-                >
-                  <span v-if="updatingPassword" class="loading loading-spinner"></span>
-                  <span v-else>Promijeni lozinku</span>
-                </button>
+              <div class="form-control">
+                <label for="profile-avatar" class="label mb-1">Profilna slika</label>
+                <input id="profile-avatar" type="file" accept="image/*" class="file-input file-input-bordered w-full"
+                  :disabled="uploading" @change="handleFileUpload" />
+                <div class="flex flex-wrap justify-between gap-1 mt-2 text-xs text-base-content/60">
+                  <span>Maksimalno 3 MB (JPG, PNG, GIF, WebP)</span>
+                  <span v-if="uploading" class="text-info">Uploadam...</span>
+                </div>
               </div>
-              
-              <div v-if="passwordForm.newPassword && !passwordsMatch" class="text-error text-sm mt-1">
+              <button type="submit" class="btn btn-primary w-full" :disabled="updating">
+                <span v-if="updating" class="loading loading-spinner"></span>
+                <span v-else>Spremi promjene</span>
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section class="card bg-base-200 profile-security" aria-labelledby="profile-security-title">
+          <div class="card-body">
+            <h2 id="profile-security-title" class="text-lg sm:text-xl font-semibold mb-4">Sigurnost</h2>
+            <form class="profile-form" @submit.prevent="updatePassword">
+              <div class="form-control">
+                <label for="profile-new-password" class="label mb-1">Nova lozinka</label>
+                <input id="profile-new-password" v-model="passwordForm.newPassword" type="password" autocomplete="new-password"
+                  class="input input-bordered w-full" placeholder="Minimalno 6 znakova" minlength="6" />
+              </div>
+              <div class="form-control">
+                <label for="profile-confirm-password" class="label mb-1">Potvrdi lozinku</label>
+                <input id="profile-confirm-password" v-model="passwordForm.confirmPassword" type="password" autocomplete="new-password"
+                  class="input input-bordered w-full" placeholder="Ponovite lozinku" />
+              </div>
+              <div v-if="passwordForm.newPassword && !passwordsMatch" class="text-error text-sm">
                 Lozinke se ne poklapaju
               </div>
+              <button type="submit" class="btn btn-secondary w-full" :disabled="updatingPassword || !passwordsMatch">
+                <span v-if="updatingPassword" class="loading loading-spinner"></span>
+                <span v-else>Promijeni lozinku</span>
+              </button>
             </form>
-            
-            <!-- Odjava -->
-            <div class="divider">Sesija</div>
-            <button @click="logout" class="btn btn-outline btn-error w-full">
-              Odjavi se
-            </button>
-
-            <!-- Brisanje računa -->
-            <div class="divider">Brisanje računa</div>
-            <button @click="showDeleteModal = true" class="btn btn-error w-full" :disabled="deletingAccount">
-              <span v-if="deletingAccount" class="loading loading-spinner"></span>
-              <span v-else>Obriši račun</span>
-            </button>
-
-            </div>
-        </div>
-      </div>
-      
-      <div class="col-span-1 lg:col-span-2">
-      <!-- Gaming card export -->
-        <div class="card bg-base-200 mb-4 sm:mb-6">
-          <div class="card-body p-4 sm:p-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-              <h2 class="text-lg sm:text-xl font-semibold">Tvoja Gamenote kartica</h2>
-              <div class="dropdown dropdown-end">
-                <label tabindex="0" class="btn btn-sm btn-primary">
-                  📸 Izvezi karticu
-                </label>
-                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                  <li><a @click="exportCard('png')">💾 Spremi kao PNG</a></li>
-                  <li><a @click="exportCard('jpg')">💾 Spremi kao JPG</a></li>
-                </ul>
-              </div>
-            </div>
-            <!-- Gaming Card -->
-            <div ref="gamingCardRef" id="gaming-card" class="bg-gradient-to-br from-slate-800 to-amber-600/80 p-4 sm:p-8 rounded-2xl text-white relative overflow-hidden border border-amber-500/30 shadow-xl">
-              <!-- Background pattern -->
-              <div class="absolute inset-0 opacity-5">
-                <div class="absolute top-4 right-4 text-6xl">🎮</div>
-                <div class="absolute bottom-4 left-4 text-4xl">🏆</div>
-                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-8xl opacity-20">⭐</div>
-              </div>
-              
-              <!-- Subtle overlay for better text readability -->
-              <div class="absolute inset-0 bg-gradient-to-br from-black/10 to-black/5"></div>
-              
-              <!-- Header s logom -->
-              <div class="relative z-10 flex justify-between items-start mb-8">
-                <div class="flex items-center gap-4">
-                  <div class="avatar">
-                    <div class="w-16 rounded-full ring-2 ring-amber-400/60 shadow-lg">
-                      <img :src="profileImageUrl" alt="Profile" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 class="text-2xl font-bold drop-shadow-sm">{{ userStore.user?.user_metadata?.name || 'Gaming Entuzijast' }}</h3>
-                    <p class="text-amber-200/90 drop-shadow-sm">{{ userLevel }}</p>
-                  </div>
-                </div>
-                
-                <!-- GameNote Logo -->
-                <div class="text-right">
-                  <div class="flex items-center gap-2 text-white/95">
-                    <span class="text-xl bg-white/15 px-3 py-1 rounded-lg backdrop-blur-md border border-amber-400/30 shadow-sm">
-                      <span class="font-bold font-italic drop-shadow-sm text-white">GameNote</span>
-                    </span>
-                  </div>
-                  <p class="text-xs text-amber-200/70 mt-1 drop-shadow-sm">Gaming Tracker</p>
-                </div>
-              </div>
-              
-              <!-- Stats Grid -->
-              <div class="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-2 sm:p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-lg sm:text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.totalGames }}</div>
-                  <div class="text-xs text-amber-200/90">Ukupno igara</div>
-                </div>
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-2 sm:p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-lg sm:text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.totalPlayTime }}</div>
-                  <div class="text-xs text-amber-200/90">Ukupno sati</div>
-                </div>
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-2 sm:p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-lg sm:text-2xl font-bold drop-shadow-sm text-amber-100">{{ statistics.completed }}</div>
-                  <div class="text-xs text-amber-200/90">Završene</div>
-                </div>
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 text-center border border-amber-400/20 shadow-sm">
-                  <div class="text-2xl font-bold drop-shadow-sm text-amber-100">{{ completionRate }}%</div>
-                  <div class="text-xs text-amber-200/90">Completion Rate</div>
-                </div>
-              </div>
-              
-              <!-- Omiljena igra i žanr -->
-              <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 border border-amber-400/20 shadow-sm">
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="text-amber-300">🏆</span>
-                    <span class="text-sm font-semibold drop-shadow-sm text-amber-100">Omiljena igra</span>
-                  </div>
-                  <div v-if="favoriteGame">
-                    <p class="font-bold drop-shadow-sm text-white">{{ favoriteGame.title }}</p>
-                    <p class="text-xs text-amber-200/90">{{ favoriteGame.play_time }}h odigrano</p>
-                  </div>
-                  <div v-else class="text-amber-200/70 text-sm">Dodaj prvu igru!</div>
-                </div>
-                
-                <div class="bg-white/15 backdrop-blur-md rounded-lg p-4 border border-amber-400/20 shadow-sm">
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="text-amber-300">🎯</span>
-                    <span class="text-sm font-semibold drop-shadow-sm text-amber-100">Omiljeni žanr</span>
-                  </div>
-                  <div v-if="favoriteGenre">
-                    <p class="font-bold drop-shadow-sm text-white">{{ favoriteGenre.name }}</p>
-                    <p class="text-xs text-amber-200/90">{{ favoriteGenre.count }} igara</p>
-                  </div>
-                  <div v-else class="text-amber-200/70 text-sm">Dodaj igre za analizu</div>
-                </div>
-              </div>
-              
-              <!-- propaganda (reklama) -->
-              <div class="relative z-10 mt-6 pt-4 border-t border-amber-400/30 flex justify-between items-center text-xs text-amber-200/80">
-                <span class="drop-shadow-sm">Član od {{ formatDate(userStore.user?.created_at) }}</span>
-                <span class="drop-shadow-sm">{{ totalPlayDays }} dana igranja <br>gamenote.io</span>
-              </div>
-            </div>
           </div>
-        </div>
+        </section>
+      </div>
 
-        <!-- Gamenote achivments -->
-        <div class="card bg-base-200 mt-6">
+      <div class="profile-main">
+        <!-- Kartica i izvoz dijele prikaz -->
+        <section class="card bg-base-200 profile-gamercard" aria-labelledby="profile-gamercard-title">
           <div class="card-body">
-            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <span class="text-yellow-500">🏅</span> Postignuća
-            </h3>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 id="profile-gamercard-title" class="text-lg sm:text-xl font-semibold">Tvoja Gamenote kartica</h2>
+                  <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" aria-label="O Gamenote signature boji i titulama" @click="cardInfo.showModal()">
+                    <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg>
+                  </button>
+                </div>
+                <p class="text-sm text-base-content/60 mt-1"></p>
+              </div>
+              <div class="flex flex-wrap gap-2" role="group" aria-label="Izvoz kartice" :aria-busy="exporting">
+                <button type="button" class="btn btn-sm btn-ghost" :disabled="loading || !!loadError" @click="openCardEditor">Uredi karticu</button>
+                <button type="button" class="btn btn-sm btn-primary" aria-label="Preuzmi karticu" title="Preuzmi PNG" :disabled="exporting || loading || !!loadError" @click="exportCard">
+                  <span v-if="exporting" class="loading loading-spinner loading-xs" aria-hidden="true"></span>
+                  <svg v-else class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>
+                  <span class="hidden sm:inline">Preuzmi karticu</span><span class="sm:hidden">PNG</span>
+                </button>
+              </div>
+            </div>
+            <p v-if="cardColor === 'signature'" class="text-xs text-base-content/60 mb-3">
+              Gamenote signature · {{ signature.genre || 'Automatski' }}
+            </p>
+            <div v-if="loading" class="skeleton h-80 w-full" role="status" aria-label="Učitavanje kartice"></div>
+            <GamerCard v-else-if="!loadError" ref="gamingCardRef" card-id="gaming-card" :games="games"
+              :name="userStore.user?.user_metadata?.name || 'Igrač'" :email="userStore.user?.email || ''" :avatar-url="profileImageUrl"
+              :created-at="userStore.user?.created_at || ''" :color="cardColor" :theme="cardTheme" />
+            <p v-if="exporting" role="status" class="text-sm text-base-content/70 mt-2">Pripremam sliku visoke rezolucije…</p>
+          </div>
+        </section>
+
+        <section class="card bg-base-200 profile-achievements" aria-labelledby="profile-achievements-title">
+          <div class="card-body">
+            <h2 id="profile-achievements-title" class="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
+              <AchievementIcon name="medal" class="size-5 text-warning" />
+              Postignuća
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <div v-for="achievement in achievements" :key="achievement.id"
                    class="flex flex-col items-center p-4 bg-base-100 rounded-lg"
                    :class="achievement.unlocked ? 'opacity-100' : 'opacity-50'">
-                <div class="text-2xl mb-2">{{ achievement.emoji }}</div>
+                <AchievementIcon :name="achievement.icon" class="size-7 mb-2" :class="achievement.iconColor" />
                 <p class="font-medium text-sm text-center">{{ achievement.title }}</p>
                 <p class="text-xs text-base-content/70 text-center">{{ achievement.description }}</p>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
+
+      <section class="card bg-base-200 profile-account" aria-labelledby="profile-account-title">
+        <div class="card-body">
+          <h2 id="profile-account-title" class="text-lg sm:text-xl font-semibold mb-4">Račun</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <h3 class="font-medium">Sesija</h3>
+                <p class="text-sm text-base-content/60 mt-1">Odjavi se na ovom uređaju.</p>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline shrink-0" @click="logout">Odjavi se</button>
+            </div>
+            <div class="flex items-center justify-between gap-4 border-t border-base-content/10 pt-5 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-6">
+              <div>
+                <h3 class="font-medium">Brisanje računa</h3>
+                <p class="text-sm text-base-content/60 mt-1">Trajno ukloni račun i podatke.</p>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline btn-error shrink-0" :disabled="deletingAccount" @click="showDeleteModal = true">
+                <span v-if="deletingAccount" class="loading loading-spinner"></span>
+                <span v-else>Obriši račun</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
     
     
+    <dialog ref="cardInfo" class="modal" aria-labelledby="card-info-title">
+      <div class="modal-box card-info-copy">
+        <h2 id="card-info-title" class="text-xl font-semibold shrink-0 mb-4">Gamenote signature i titule</h2>
+        <div class="card-info-scroll">
+          <h3 class="font-semibold mb-2">Tvoja signature boja</h3>
+          <p class="text-sm text-base-content/75">Zadana boja Gamercarda prati omiljeni žanr: žanr koji se pojavljuje na najviše igara u tvojoj biblioteci. Jedna igra može pripadati više žanrova. Kod izjednačenja koristi se prvi među jednako zastupljenim žanrovima.</p>
+          <div class="overflow-x-auto mt-3">
+            <table class="table table-sm">
+              <thead><tr><th>Žanrovi</th><th>daisyUI paleta</th></tr></thead>
+              <tbody>
+                <tr v-for="rule in GENRE_THEMES" :key="rule.theme">
+                  <td class="whitespace-normal">{{ rule.genres.join(', ') }}</td>
+                  <td><span class="inline-flex items-center gap-2"><CardThemePreview :theme="signatureForGenre(rule.genres[0])" />{{ rule.theme }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h3 class="font-semibold mt-6 mb-2">Kako dobivaš titulu</h3>
+          <p class="text-sm text-base-content/75">Zbrajaju se zabilježeni sati svih igara u biblioteci. Dobivaš najvišu titulu čiji si prag dosegnuo; prag vrijedi od navedenog broja sati, uključivo.</p>
+          <table class="table table-sm mt-3">
+            <thead><tr><th>Titula</th><th>Ukupno sati</th></tr></thead>
+            <tbody><tr v-for="title in PLAYER_TITLES" :key="title.hours"><td>{{ title.label }}</td><td>Od {{ formatCardNumber(title.hours) }} h</td></tr></tbody>
+          </table>
+          <p class="text-sm text-base-content/75 mt-3">Omiljena igra je ona s najviše zabilježenih sati. Igra bez vremena igranja ne ulazi u taj izbor.</p>
+        </div>
+        <form method="dialog" class="modal-action"><button class="btn btn-primary">Razumijem</button></form>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori informacije">Zatvori</button></form>
+    </dialog>
+
+    <dialog ref="cardEditor" class="modal" aria-labelledby="card-editor-title" @close="onCardEditorClose">
+      <div v-if="cardEditorOpen" class="modal-box card-editor-box">
+        <div class="flex items-start justify-between gap-3 mb-5">
+          <div>
+            <h2 id="card-editor-title" class="text-xl font-semibold">Uredi Gamenote karticu</h2>
+            <p class="text-sm text-base-content/60 mt-1">Odaberi temu i boju podloge pa provjeri izgled prije spremanja.</p>
+          </div>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" aria-label="Zatvori uređivanje kartice" @click="closeCardEditor">✕</button>
+        </div>
+        <div class="card-palette-controls mb-5" role="group" aria-label="daisyUI palete">
+          <button type="button" class="btn btn-sm btn-ghost signature-choice" :aria-pressed="draftCardColor === 'signature'" @click="selectSignature">
+            <span class="signature-swatch" :style="{ backgroundColor: signature.primary }" aria-hidden="true"></span>
+            Gamenote signature
+            <span class="sr-only"> · {{ signature.genre || 'Prema omiljenom žanru' }}</span>
+          </button>
+          <div class="card-quick-themes" role="group" aria-label="Predefinirane teme">
+            <button v-for="theme in SIGNATURE_THEMES" :key="theme.value" type="button"
+              class="btn btn-sm sm:btn-circle btn-ghost theme-choice tooltip tooltip-bottom" :data-tip="theme.label"
+              :aria-label="theme.label" :aria-pressed="draftCardColor === theme.value"
+              @click="selectDraftTheme(theme.value)">
+              <span class="theme-swatch" :style="{ backgroundColor: theme.primary }" aria-hidden="true"></span>
+              <span class="sm:hidden">{{ theme.label }}</span>
+            </button>
+          </div>
+          <div class="card-custom-controls">
+            <label class="btn btn-sm btn-ghost card-color-choice" title="Vlastita boja" :class="{ 'card-choice-active': draftCardColor.startsWith('#') }">
+              <input type="color" aria-label="Vlastita boja kartice" :value="draftColorHex"
+                class="card-custom-color" @input="draftCardColor = $event.target.value" />
+              <span>Vlastita boja</span>
+            </label>
+            <CardThemePicker :model-value="draftCardTheme" @update:model-value="changeDraftTheme" />
+          </div>
+        </div>
+        <GamerCard class="card-editor-preview" card-id="gaming-card-preview" :games="games" :color="draftCardColor" :theme="draftCardTheme"
+          :name="userStore.user?.user_metadata?.name || 'Igrač'" :email="userStore.user?.email || ''" :avatar-url="profileImageUrl"
+          :created-at="userStore.user?.created_at || ''" />
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" @click="closeCardEditor">Odustani</button>
+          <button type="button" class="btn btn-primary" @click="saveCardEditor">Spremi izgled</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori uređivač">Zatvori</button></form>
+    </dialog>
+
     <div v-if="toast.show" class="toast toast-top toast-end">
       <div class="alert" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
         <span>{{ toast.message }}</span>
@@ -326,17 +300,24 @@ import { clearImporterChoices } from '../services/importerResolution';
 import { fetchUserRows } from '../services/libraryData';
 import { requestAppApi } from '../services/appApi';
 import { localAvatar } from '../services/safeContent';
-import { ref, reactive, onMounted, computed, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, computed, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
 import Chart from 'chart.js/auto';
 import GamenoteBanner from '../components/GamenoteBanner.vue';
+import GamerCard from '../components/GamerCard.vue';
+import CardThemePicker from '../components/CardThemePicker.vue';
+import CardThemePreview from '../components/CardThemePreview.vue';
+import AchievementIcon from '../components/AchievementIcon.vue';
+import { getProfileAchievements } from '../services/profileAchievements.js';
+import { getGamerCardStats, PLAYER_TITLES, formatCardNumber } from '../services/gamerCard.js';
+import { SIGNATURE_THEMES, GENRE_THEMES, signatureForGenre, cardColorValue, cardColorHex, validCardColor, loadCardColor, saveCardColor, loadCardTheme, saveCardTheme } from '../services/cardAppearance.js';
 
 const THROW = (err) => { if (err) throw err; };
 
 export default {
-  components: { GamenoteBanner },
+  components: { GamenoteBanner, GamerCard, CardThemePicker, CardThemePreview, AchievementIcon },
   setup() {
     const router = useRouter();
     const userStore = useUserStore();
@@ -348,6 +329,58 @@ export default {
     const genreChartRef = ref(null);
     const platformChartRef = ref(null);
     const gamingCardRef = ref(null);
+    const exporting = ref(false);
+    const cardColor = ref(loadCardColor(userStore.user?.id));
+    const cardTheme = ref(loadCardTheme(userStore.user?.id));
+    const cardInfo = ref(null);
+    const cardEditor = ref(null);
+    const cardEditorOpen = ref(false);
+    const draftCardColor = ref('signature');
+    const draftCardTheme = ref('');
+    const signature = computed(() => signatureForGenre(getGamerCardStats(games.value).favoriteGenre?.name));
+    const draftColorHex = computed(() => cardColorHex(cardColorValue(draftCardColor.value, signature.value.genre)));
+
+    const openCardEditor = async () => {
+      draftCardColor.value = cardColor.value;
+      draftCardTheme.value = cardTheme.value || signature.value.value;
+      if (cardColor.value === 'signature') draftCardTheme.value = signature.value.value;
+      else if (cardColor.value.startsWith('theme:')) draftCardTheme.value = cardColor.value;
+      cardEditorOpen.value = true;
+      await nextTick();
+      cardEditor.value.showModal();
+    };
+    const closeCardEditor = () => {
+      cardEditor.value.close();
+      cardEditorOpen.value = false;
+    };
+    const onCardEditorClose = () => {
+      if (!cardEditor.value?.open) cardEditorOpen.value = false;
+    };
+    const selectSignature = () => {
+      draftCardColor.value = 'signature';
+      draftCardTheme.value = signature.value.value;
+    };
+    const selectDraftTheme = (value) => {
+      draftCardColor.value = value;
+      draftCardTheme.value = value;
+    };
+    const changeDraftTheme = (value) => {
+      draftCardTheme.value = value;
+      if (!validCardColor(draftCardColor.value)) draftCardColor.value = value;
+    };
+    const saveCardEditor = () => {
+      cardColor.value = draftCardColor.value;
+      cardTheme.value = draftCardTheme.value;
+      closeCardEditor();
+    };
+    watch(cardColor, value => saveCardColor(userStore.user?.id, value));
+    watch(cardTheme, value => saveCardTheme(userStore.user?.id, value));
+    watch(() => userStore.user?.id, id => {
+      cardColor.value = loadCardColor(id);
+      cardTheme.value = loadCardTheme(id);
+    });
+    const profileImageFailed = ref(false);
+    const fallbackAvatar = computed(() => localAvatar(userStore.user?.user_metadata?.name));
     let genreChart = null;
     let platformChart = null;
     
@@ -357,6 +390,11 @@ export default {
       avatarUrl: userStore.user?.user_metadata?.avatar_url || ''
     });
     
+    watch(() => profileForm.avatarUrl, () => { profileImageFailed.value = false; });
+    watch(() => userStore.user?.user_metadata?.avatar_url, value => {
+      if (!profileForm.avatarUrl) profileForm.avatarUrl = value || '';
+    });
+
     const passwordForm = reactive({
       newPassword: '',
       confirmPassword: ''
@@ -386,24 +424,16 @@ export default {
       return passwordForm.newPassword === passwordForm.confirmPassword && passwordForm.newPassword.length >= 6;
     });
     
-    const statistics = computed(() => { 
-      if (!games.value.length) {
-        return {
-          totalGames: 0,
-          currentlyPlaying: 0,
-          completed: 0,
-          totalPlayTime: 0
-        };
-      }
-      
+    const statistics = computed(() => {
+      const card = getGamerCardStats(games.value);
       return {
-        totalGames: games.value.length,
-        currentlyPlaying: games.value.filter(g => g.status === 'playing').length,
-        completed: games.value.filter(g => g.status === 'completed').length,
-        totalPlayTime: games.value.reduce((sum, game) => sum + (game.play_time || 0), 0)
+        totalGames: card.total,
+        currentlyPlaying: card.playing,
+        completed: card.completed,
+        totalPlayTime: card.hours
       };
     });
-    
+
     const recentGames = computed(() => {
       return games.value.slice(0, 6).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     });
@@ -445,7 +475,7 @@ export default {
     };
     
     const handleImageError = () => {
-      profileForm.avatarUrl = localAvatar(userStore.user?.user_metadata?.name);
+      profileImageFailed.value = true;
     };
     
     // pošalji na imgBB
@@ -468,7 +498,7 @@ export default {
       
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData.session) throw new Error('Prijavi se ponovno.');
+        if (sessionError || !sessionData.session) THROW(new Error('Prijavi se ponovno.'));
         const image = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(String(reader.result).split(',')[1]);
@@ -629,344 +659,32 @@ export default {
       if (platformChart) platformChart.destroy();
     });
     
-    const userLevel = computed(() => {
-      const totalHours = statistics.value.totalPlayTime;
-      if (totalHours < 10) return 'Početnik';
-      if (totalHours < 50) return 'Casual Gamer';
-      if (totalHours < 200) return 'Entuzijast';
-      if (totalHours < 500) return 'Hardcore Gamer';
-      return 'Gaming Legend';
-    });
+    const achievements = computed(() => getProfileAchievements(games.value));
 
-    const totalPlayDays = computed(() => {
-      return Math.floor(statistics.value.totalPlayTime / 24);
-    });
-
-    const completionRate = computed(() => {
-      if (statistics.value.totalGames === 0) return 0;
-      return Math.round((statistics.value.completed / statistics.value.totalGames) * 100);
-    });
-
-    const activePlayers = computed(() => {
-      return Math.floor(Math.random() * 1000) + 500;
-    });
-
-    const gamingStreak = computed(() => {
-      const recent = recentGames.value.slice(0, 7);
-      return recent.length;
-    });
-
-    const favoriteGame = computed(() => {
-      if (games.value.length === 0) return null;
-      return games.value.reduce((prev, current) => 
-        (current.play_time || 0) > (prev.play_time || 0) ? current : prev
-      );
-    });
-
-    const favoriteGenre = computed(() => {
-      if (Object.keys(genreData.value).length === 0) return null;
-      const genres = Object.entries(genreData.value);
-      const [name, count] = genres.reduce((prev, current) => 
-        current[1] > prev[1] ? current : prev
-      );
-      return { name, count };
-    });
-
-    const achievements = computed(() => [ // TREBA DODATI JOŠ!!!
-      {
-        id: 1,
-        emoji: '🎮',
-        title: 'Prvi korak',
-        description: 'Dodaj prvu igru',
-        unlocked: statistics.value.totalGames > 0
-      },
-      {
-        id: 2,
-        emoji: '⭐',
-        title: 'Kolekcionar',
-        description: '10+ igara',
-        unlocked: statistics.value.totalGames >= 10
-      },
-      {
-        id: 3,
-        emoji: '🏆',
-        title: 'Završivač',
-        description: 'Završi 5 igara',
-        unlocked: statistics.value.completed >= 5
-      },
-      {
-        id: 4,
-        emoji: '⚡',
-        title: 'Brzinski',
-        description: '100+ sati',
-        unlocked: statistics.value.totalPlayTime >= 100
-      },
-      {
-        id: 5,
-        emoji: '🔥',
-        title: 'Hardcore',
-        description: '500+ sati',
-        unlocked: statistics.value.totalPlayTime >= 500
-      },
-      {
-        id: 6,
-        emoji: '👑',
-        title: 'Legend',
-        description: '1000+ sati',
-        unlocked: statistics.value.totalPlayTime >= 1000
+    const exportCard = async () => {
+      if (!gamingCardRef.value || exporting.value || loading.value || loadError.value) return;
+      exporting.value = true;
+      let downloadUrl;
+      try {
+        const blob = await gamingCardRef.value.exportImage();
+        downloadUrl = URL.createObjectURL(blob);
+        const userName = (userStore.user?.user_metadata?.name || 'igrac').replace(/[^\p{L}\p{N}_-]+/gu, '_').slice(0, 80);
+        const link = document.createElement('a');
+        link.download = `gamenote-kartica-${userName}.png`;
+        link.href = downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        showToast('Kartica je spremna za preuzimanje (PNG).');
+      } catch (error) {
+        console.error('Greška pri izvozu kartice:', error);
+        showToast(error.message || 'Karticu nije moguće izvesti. Pokušaj ponovno.', 'error');
+      } finally {
+        exporting.value = false;
+        if (downloadUrl) setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
       }
-    ]);
-
-    const getGenreEmoji = (genre) => {
-      const emojiMap = {
-        'Action': '⚔️',
-        'Adventure': '🗺️',
-        'RPG': '🧙‍♂️',
-        'Strategy': '🧠',
-        'Simulation': '🏗️',
-        'Racing': '🏎️',
-        'Sports': '⚽',
-        'Puzzle': '🧩',
-        'Horror': '👻',
-        'Shooter': '🔫'
-      };
-      return emojiMap[genre] || '🎮';
     };
-    
-    const exportCard = async (format = 'png') => {
-  if (!gamingCardRef.value) return;
 
-  try {
-    showToast('Pripremam karticu za export...', 'info');
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const isMobile = window.innerWidth < 768;
-    canvas.width = isMobile ? 600 : 800;
-    canvas.height = isMobile ? 450 : 600;
-
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width *= dpr;
-    canvas.height *= dpr;
-    ctx.scale(dpr, dpr);
-
-    const actualWidth = canvas.width / dpr;
-    const actualHeight = canvas.height / dpr;
-
-    function drawRoundedRect(ctx, x, y, width, height, radius, fill = true, stroke = false) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-      if (fill) ctx.fill();
-      if (stroke) ctx.stroke();
-    }
-    const gradient = ctx.createLinearGradient(0, 0, actualWidth, actualHeight);
-    gradient.addColorStop(0, '#1e293b'); 
-    gradient.addColorStop(1, '#d97706'); 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, actualWidth, actualHeight);
-
-
-    const overlayGradient = ctx.createLinearGradient(0, 0, actualWidth, actualHeight);
-    overlayGradient.addColorStop(0, 'rgba(0, 0, 0, 0.1)');
-    overlayGradient.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
-    ctx.fillStyle = overlayGradient;
-    ctx.fillRect(0, 0, actualWidth, actualHeight);
-    const nameSize = isMobile ? 24 : 32;
-    const titleSize = isMobile ? 14 : 18;
-    const headerXPos = isMobile ? 100 : 120; 
-    const headerYPos = isMobile ? 50 : 80;
-    const radius = isMobile ? 15 : 20; 
-    const avatarSrc = userStore.user?.user_metadata?.avatar_url || ''; 
-    if (avatarSrc) {
-      const img = await new Promise((resolve, reject) => {
-        const i = new Image();
-        i.crossOrigin = 'anonymous'; 
-        i.onload = () => resolve(i);
-        i.onerror = reject;
-        i.src = avatarSrc;
-      });
-      const avatarRadius = isMobile ? 30 : 40;
-      const avatarX = 40;
-      const avatarY = headerYPos - avatarRadius + 10;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.drawImage(img, avatarX - avatarRadius, avatarY - avatarRadius, avatarRadius * 2, avatarRadius * 2);
-      ctx.restore();
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.fillStyle = '#ffffff'; 
-    ctx.font = `bold ${nameSize}px Arial, sans-serif`;
-    ctx.fillText(userStore.user?.user_metadata?.name || 'Gaming Entuzijast', headerXPos, headerYPos);
-
-    ctx.font = `${titleSize}px Arial, sans-serif`;
-    ctx.fillStyle = '#fcd34d'; 
-    ctx.fillText(userLevel.value || 'Gaming Legend', headerXPos, headerYPos + 25);
-    const logoX = actualWidth - (isMobile ? 160 : 200);
-    const logoY = headerYPos - 30;
-    const logoWidth = isMobile ? 140 : 180;
-    const logoHeight = isMobile ? 50 : 60;
-    ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; 
-    drawRoundedRect(ctx, logoX, logoY, logoWidth, logoHeight, radius, true, false);
-
-    ctx.font = `bold ${isMobile ? 18 : 24}px Arial, sans-serif`;
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillText('GameNote', logoX + 20, headerYPos);
-
-    ctx.font = `${isMobile ? 10 : 12}px Arial, sans-serif`;
-    ctx.fillStyle = '#fcd34d';
-    ctx.fillText('Gaming Tracker', logoX + 40, headerYPos + 20);
-    const statsY = isMobile ? 130 : 200;
-    const statBoxWidth = isMobile ? 130 : 170; 
-    const statMargin = isMobile ? 10 : 15; 
-
-    const stats = [
-      { label: 'Ukupno igara', value: statistics.value?.totalGames ?? 0 },
-      { label: 'Ukupno sati', value: statistics.value?.totalPlayTime ?? 0 },
-      { label: 'Završene', value: statistics.value?.completed ?? 0 },
-      { label: 'Completion Rate', value: `${completionRate.value ?? 0}%` }
-    ];
-
-    let currentX = 30;
-    ctx.textAlign = 'center';
-    stats.forEach(stat => {
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'; 
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, currentX, statsY - 40, statBoxWidth, 80, radius, true, true);
-
-      const centerX = currentX + statBoxWidth / 2;
-
-      ctx.fillStyle = '#ffffff'; 
-      ctx.font = `bold ${isMobile ? 18 : 24}px Arial, sans-serif`;
-      ctx.fillText(stat.value.toString(), centerX, statsY - 10);
-
-      ctx.font = `${isMobile ? 10 : 12}px Arial, sans-serif`;
-      ctx.fillStyle = '#fcd34d';
-      ctx.fillText(stat.label, centerX, statsY + 10);
-
-      currentX += statBoxWidth + statMargin;
-    });
-    ctx.textAlign = 'left';
-
-
-    const favoriteY = isMobile ? 240 : 320;
-    const favoriteBoxWidth = isMobile ? 260 : 340; 
-    const favoriteBoxHeight = isMobile ? 100 : 120;
-
-    if (favoriteGame.value) {
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.2)';
-      drawRoundedRect(ctx, 30, favoriteY, favoriteBoxWidth, favoriteBoxHeight, radius, true, false);
-
-      ctx.fillStyle = '#fcd34d'; // Zlatna za label
-      ctx.font = `bold ${isMobile ? 14 : 16}px Arial, sans-serif`;
-      ctx.fillText('🏆 Omiljena igra', 40, favoriteY + 25);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${isMobile ? 16 : 20}px Arial, sans-serif`;
-      let gameName = favoriteGame.value.title;
-      if (isMobile && gameName.length > 20) {
-        gameName = gameName.substring(0, 17) + '...';
-      } else if (ctx.measureText(gameName).width > favoriteBoxWidth - 20) {
-        while (ctx.measureText(gameName + '...').width > favoriteBoxWidth - 20) {
-          gameName = gameName.substring(0, gameName.length - 1);
-        }
-        gameName += '...';
-      }
-      ctx.fillText(gameName, 40, favoriteY + 50);
-
-      ctx.font = `${isMobile ? 12 : 14}px Arial, sans-serif`;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillText(`${favoriteGame.value.play_time || 0}h odigrano`, 40, favoriteY + 70);
-    }
-
-    if (favoriteGenre.value) {
-      const genreX = actualWidth - (isMobile ? 270 : 350);
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.2)';
-      drawRoundedRect(ctx, genreX, favoriteY, favoriteBoxWidth, favoriteBoxHeight, radius, true, false);
-
-      ctx.fillStyle = '#fcd34d';
-      ctx.font = `bold ${isMobile ? 14 : 16}px Arial, sans-serif`;
-      ctx.fillText('🎯 Omiljeni žanr', genreX + 10, favoriteY + 25);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${isMobile ? 16 : 20}px Arial, sans-serif`;
-      let genreName = favoriteGenre.value.name;
-      if (ctx.measureText(genreName).width > favoriteBoxWidth - 20) {
-        while (ctx.measureText(genreName + '...').width > favoriteBoxWidth - 20) {
-          genreName = genreName.substring(0, genreName.length - 1);
-        }
-        genreName += '...';
-      }
-      ctx.fillText(genreName, genreX + 10, favoriteY + 50);
-
-      ctx.font = `${isMobile ? 12 : 14}px Arial, sans-serif`;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillText(`${favoriteGenre.value.count || 0} igara`, genreX + 10, favoriteY + 70);
-    }
-
-    // Footer
-    const footerY = isMobile ? 370 : 480;
-    const footerLineY = isMobile ? 360 : 480;
-
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(30, footerLineY);
-    ctx.lineTo(actualWidth - 30, footerLineY);
-    ctx.stroke();
-
-    ctx.fillStyle = '#fcd34d';
-    ctx.font = `${isMobile ? 10 : 12}px Arial, sans-serif`;
-    const joinDate = userStore.user?.created_at ? formatDate(userStore.user.created_at) : 'nepoznato';
-    ctx.fillText(`Član od ${joinDate}.`, 30, footerY);
-    ctx.fillText(`${totalPlayDays.value || 0} dana igranja gamenote.io`, actualWidth - 200, footerY); // Prilagođeno slici
-
-    // Izvezivanje
-    const userName = (userStore.user?.user_metadata?.name || 'user').replace(/\s+/g, '_');
-    const link = document.createElement('a');
-    link.download = `gamenote-kartica-${userName}.${format}`;
-
-    let dataUrl;
-    if (format === 'jpg') {
-      dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    } else if (format === 'png') {
-      dataUrl = canvas.toDataURL('image/png');
-    } else {
-      console.warn(`Nepodržani format '${format}', koristim PNG.`);
-      dataUrl = canvas.toDataURL('image/png');
-      format = 'png';
-    }
-    link.href = dataUrl;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    showToast(`Kartica spremljena kao ${format.toUpperCase()}!`);
-
-  } catch (error) {
-    console.error('Export greška:', error);
-    showToast('Greška pri exportu kartice', 'error');
-  }
-};
-
-    
     const closeDeleteModal = () => {
       showDeleteModal.value = false;
       deleteConfirmInput.value = '';
@@ -1049,6 +767,29 @@ export default {
       profileForm,
       passwordForm,
       profileImageUrl,
+      profileImageFailed,
+      fallbackAvatar,
+      SIGNATURE_THEMES,
+      cardTheme,
+      draftCardTheme,
+      selectSignature,
+      selectDraftTheme,
+      changeDraftTheme,
+      GENRE_THEMES,
+      signatureForGenre,
+      PLAYER_TITLES,
+      formatCardNumber,
+      cardInfo,
+      signature,
+      cardEditor,
+      cardEditorOpen,
+      draftCardColor,
+      draftColorHex,
+      openCardEditor,
+      closeCardEditor,
+      onCardEditorClose,
+      saveCardEditor,
+      cardColor,
       passwordsMatch,
       toast,
       updateProfile,
@@ -1074,16 +815,10 @@ export default {
       platformData,
       genreChartRef,
       platformChartRef,
+      games,
       gamingCardRef,
-      userLevel,
-      totalPlayDays,
-      completionRate,
-      activePlayers,
-      gamingStreak,
-      favoriteGame,
-      favoriteGenre,
+      exporting,
       achievements,
-      getGenreEmoji,
       exportCard
     };
   }
@@ -1094,7 +829,57 @@ export default {
 .profile {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 0;
+}
+
+.profile-sections {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.profile-sidebar,
+.profile-main {
+  display: contents;
+}
+
+.profile-details { order: 1; }
+.profile-gamercard { order: 2; }
+.profile-achievements { order: 3; }
+.profile-security { order: 4; }
+.profile-account { order: 5; }
+
+.profile-form {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-form .form-control {
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .profile-sections {
+    grid-template-columns: minmax(300px, 1fr) minmax(0, 2fr);
+    align-items: start;
+    gap: 24px;
+  }
+
+  .profile-sidebar,
+  .profile-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+
+  .profile-security {
+    order: 2;
+  }
+
+  .profile-account {
+    grid-column: 1 / -1;
+  }
 }
 
 .card {
@@ -1103,7 +888,8 @@ export default {
 }
 
 .card-body {
-  padding: 24px;
+  padding: clamp(16px, 2vw, 24px);
+  min-width: 0;
 }
 
 .toast {
@@ -1123,25 +909,141 @@ export default {
   animation: spin 0.8s linear infinite;
 }
 
-#gaming-card {
-  min-height: 400px;
-  position: relative;
-  transition: all 0.3s ease;
+.card-info-copy {
+  display: flex;
+  flex-direction: column;
+  width: min(640px, calc(100vw - 32px));
+  max-width: 800px;
+  height: 560px;
+  max-height: calc(100dvh - 96px);
+  padding: clamp(28px, 4vw, 32px);
+  overflow: hidden;
 }
 
-#gaming-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(217, 119, 6, 0.2), 0 10px 10px -5px rgba(217, 119, 6, 0.1);
-  border-color: rgba(251, 191, 36, 0.5);
+.card-info-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 8px;
 }
 
-/* Export optimizacija (nekuzim) */
-@media print {
-  #gaming-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+.card-info-copy .modal-action {
+  flex-shrink: 0;
+  margin-top: 20px;
+}
+
+@media (min-width: 768px) {
+  .card-info-copy {
+    width: min(800px, calc(100vw - 64px));
+    height: 720px;
   }
+}
+
+.card-info-copy p {
+  text-align: justify;
+}
+
+.card-editor-box {
+  width: min(1000px, calc(100vw - 24px));
+  max-width: 1000px;
+  max-height: 90dvh;
+  padding: clamp(14px, 3vw, 28px);
+}
+
+.card-editor-box > .card-editor-preview {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.card-palette-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-custom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.card-quick-themes {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .signature-choice {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .card-quick-themes {
+    width: 100%;
+    padding: 3px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .card-custom-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.card-palette-controls .btn {
+  flex-shrink: 0;
+  padding-block: 0;
+}
+
+.signature-choice,
+.card-color-choice {
+  padding-inline: 8px;
+}
+
+.signature-choice[aria-pressed="true"],
+.card-quick-themes [aria-pressed="true"],
+.card-choice-active,
+.card-color-choice:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.signature-swatch,
+.theme-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgb(128 128 128 / 35%);
+}
+
+.card-custom-color {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid rgb(128 128 128 / 35%);
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card-custom-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.card-custom-color::-webkit-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+
+.card-custom-color::-moz-color-swatch {
+  border: 0;
+  border-radius: 50%;
 }
 
 @keyframes spin {

@@ -10,7 +10,7 @@ import { importers, existingRow, catalogGame, sourcePoster, userId, steamId } fr
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const cacheDir = await mkdtemp(join(tmpdir(), 'gamenote-importers-'));
 const screenshots = process.argv.includes('--screenshots') ? await mkdtemp(join(tmpdir(), 'gamenote-importer-previews-')) : null;
-const html = `<!doctype html><html><body><div id="app" class="p-4"></div><script type="module">
+const html = `<!doctype html><html lang="hr"><body><div id="app" class="p-4"></div><script type="module">
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
@@ -167,6 +167,13 @@ try {
         const newGame = layout.locator(`[data-game-key="${provider.newKey}"]`);
         const existingGame = layout.locator(`[data-game-key="${provider.existingKey}"]`);
         await expect(newGame).toBeVisible();
+        if (viewport.width < 768) {
+          for (const label of [`Status za ${provider.newName}`, `Grupa za ${provider.newName}`]) {
+            const select = newGame.getByLabel(label, { exact: true });
+            await expect(select).toHaveCSS('appearance', 'auto');
+            assert.ok((await select.boundingBox()).height >= 44);
+          }
+        }
         await expect(newGame.getByText('Postoji na drugoj platformi', { exact: true })).toBeVisible();
         const foreignBefore = structuredClone(state.rows[1]);
         await expect(existingGame).toBeVisible();
