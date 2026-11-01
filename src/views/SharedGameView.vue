@@ -294,6 +294,7 @@
 </template>
 
 <script>
+import { usePageTitle } from '../composables/usePageTitle';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -314,6 +315,7 @@ export default {
     const sharedData = ref(null);
     const error = ref(null);
     const apiGame = ref(null);
+    usePageTitle(() => String(apiGame.value?.id) === String(route.query.id || sharedData.value?.apiId) ? apiGame.value?.name : '');
     const screenshots = ref([]);
     const gameSeries = ref([]);
     const isLoadingApi = ref(false);

@@ -5,7 +5,7 @@
         <div class="navbar py-2 sm:py-3">
           <div class="navbar-start">
             <router-link to="/" class="group flex items-center rounded-lg px-2 py-1 sm:px-3" aria-label="Gamenote početna">
-              <GamenoteLogo class="h-8 sm:h-9 w-auto text-base-content transition-all duration-200 group-hover:scale-105 group-hover:text-[#E44423]" />
+              <GamenoteLogo class="h-8 sm:h-9 w-auto text-base-content transition-colors duration-200 group-hover:text-[#E44423]" />
             </router-link>
           </div>
 
@@ -63,7 +63,7 @@
                   ref="profileDropdownLabel"
                 >
                   <span class="w-12 sm:w-10 rounded-full block aspect-square overflow-hidden">
-                    <img :src="profileImageUrl" alt="Avatar" />
+                    <ProfileAvatar :source="profileImageUrl" :name="userName" :owner="userStore.user?.id" />
                   </span>
                 </label>
                 <ul 
@@ -179,7 +179,7 @@
             <img :src="footerBannerUrl" loading="lazy" class="sm:hidden w-3/4 max-w-56 h-auto" alt="Gamenote" />
           </router-link>
           <p class="text-xs sm:text-sm text-base-content/70 max-w-xs">
-            Tvoja osobna biblioteka videoigara.
+            Tvoj gaming dnevnik.
             <br />Prati, ocijeni i podijeli.
           </p>
         </aside>
@@ -214,6 +214,7 @@
               </svg>
             </a>
           </div>
+          <KoFiBadge href="https://ko-fi.com/mariobarisa" />
           <p class="text-sm text-base-content/70">
             Izradio ❤️ <a href="https://barisa.me" target="_blank" rel="noopener noreferrer" class="link link-hover font-medium">Mario Bariša</a>
           </p>
@@ -240,7 +241,8 @@
 
 <script>
 import GamenoteLogo from './GamenoteLogo.vue';
-import { localAvatar } from '../services/safeContent';
+import KoFiBadge from './KoFiBadge.vue';
+import ProfileAvatar from './ProfileAvatar.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '../stores/user';
 import { useThemeStore } from '../stores/theme';
@@ -249,7 +251,7 @@ import bannerLightUrl from '../assets/newAssets/GamenoteBannerLightMode.png';
 import bannerDarkUrl from '../assets/newAssets/GamenoteBannerDarkMode.png';
 
 export default {
-  components: { GamenoteLogo },
+  components: { GamenoteLogo, ProfileAvatar, KoFiBadge },
   setup() {
     const userStore = useUserStore();
     const themeStore = useThemeStore();
@@ -270,8 +272,8 @@ export default {
     const isLoggedIn = computed(() => userStore.isLoggedIn);
     
     const profileImageUrl = computed(() => {
-      return userStore.user?.user_metadata?.avatar_url || 
-             localAvatar(userStore.user?.user_metadata?.name);
+      const metadata = userStore.user?.user_metadata;
+      return (metadata?.avatar_url || metadata?.picture || '').trim();
     });
     
     const userName = computed(() => {

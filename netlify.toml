@@ -23,7 +23,7 @@
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/spa.html"
   status = 200
 
 [[edge_functions]]

@@ -295,6 +295,7 @@
 </template>
 
 <script>
+import { usePageTitle } from '../composables/usePageTitle';
 import { disconnectPsn } from '../services/psnService';
 import { clearImporterChoices } from '../services/importerResolution';
 import { fetchUserRows } from '../services/libraryData';
@@ -321,6 +322,7 @@ export default {
   setup() {
     const router = useRouter();
     const userStore = useUserStore();
+    usePageTitle(() => userStore.user?.user_metadata?.name || userStore.user?.user_metadata?.full_name || userStore.user?.email?.split('@')[0]);
     const games = ref([]);
     const loading = ref(false);
     const updating = ref(false);

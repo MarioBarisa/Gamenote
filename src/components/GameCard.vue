@@ -41,7 +41,7 @@
         </span>
       </div>
       <div v-else class="mb-2" aria-hidden="true">
-        <span :class="`badge ${sizeCfg.badge} font-semibold invisible`">Trenutno igram</span>
+        <span :class="`badge ${sizeCfg.badge} font-semibold invisible`">Playing</span>
       </div>
       
       <div class="flex items-center text-xs sm:text-sm mb-2">
@@ -84,7 +84,7 @@
         </div>
       </Teleport>
       
-      <div class="flex items-center mb-2">
+      <div v-if="game.rating != null" class="flex items-center mb-2">
         <div class="flex">
           <template v-for="star in 5" :key="star">
             <svg class="w-3 h-3 sm:w-4 sm:h-4" 
@@ -162,6 +162,7 @@
 import { useCardSizeStore } from '../stores/cardSize';
 import { useThemeStore } from '../stores/theme';
 import { ref, watch } from 'vue';
+import { GAME_STATUS_MAP } from '../constants/gameStatus';
 import PlatformIcon from './PlatformIcon.vue';
 import GenreIcon from './GenreIcon.vue';
 
@@ -180,6 +181,10 @@ export default {
       type: Boolean,
       default: false
     },
+    tcg: {
+      type: Boolean,
+      default: undefined
+    },
     noTcg: {
       type: Boolean,
       default: false
@@ -189,7 +194,7 @@ export default {
       default: true
     }
   },
-  setup() {
+  setup(props) {
     const cardSizeStore = useCardSizeStore();
     const themeStore = useThemeStore();
     const showNotesModal = ref(false);
@@ -201,7 +206,7 @@ export default {
       }
     };
     watch(
-      () => themeStore.tcgMode,
+      () => (props.tcg ?? themeStore.tcgMode) && !props.noTcg,
       (on) => { if (on) ensureHoverTilt(); },
       { immediate: true }
     );
@@ -228,7 +233,7 @@ export default {
       return this.genreList.slice(0, this.sizeCfg.maxGenres ?? 3);
     },
     tcgActive() {
-      return this.themeStore.tcgMode && !this.noTcg;
+      return (this.tcg ?? this.themeStore.tcgMode) && !this.noTcg;
     },
     perfectRating() {
       return (this.game?.rating || 0) === 5;
@@ -305,15 +310,7 @@ export default {
       return null;
     },
     statusBadgeText() {
-      const statusMap = {
-        'playing': 'Trenutno igram',
-        'paused': 'Pauzirano',
-        'completed': 'Završeno',
-        'dropped': 'Napušteno',
-        'backlog': 'Backlog',
-        'wishlist': 'Wishlist'
-      };
-      return statusMap[this.gameStatus] || this.gameStatus;
+      return GAME_STATUS_MAP[this.gameStatus]?.label || this.gameStatus;
     },
     statusBadgeClass() {
       const classMap = {

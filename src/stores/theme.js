@@ -38,7 +38,7 @@ export const useThemeStore = defineStore('theme', () => {
   ];
 
   const currentTheme = ref('dark');
-  const showNewsWidget = ref(true);
+  const showNewsWidget = ref(false);
   const tcgMode = ref(false);
   // Funkcija za postavljanje teme
   const setTheme = (themeName) => {
@@ -96,7 +96,7 @@ export const useThemeStore = defineStore('theme', () => {
 }, {
   persist: {
     key: 'gamenote-theme',
-    storage: localStorage,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     paths: ['currentTheme', 'showNewsWidget', 'tcgMode'] // Samo spremi currentTheme
   }
 });

@@ -245,6 +245,7 @@ try {
   const card = page.locator('#gaming-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Leo');
+  await expect(page).toHaveTitle('Leo');
   await expect(card).toContainText('300');
   const achievementCards = page.locator('.profile-achievements .grid > div');
   await expect(achievementCards).toHaveCount(8);
@@ -543,6 +544,7 @@ try {
     view.games = [{ ...view.games[0], status: 'playing', title: 'W'.repeat(150), genre: 'Action' }];
     window.auditStore.user.user_metadata.name = 'W'.repeat(100);
   });
+  await expect(page).toHaveTitle('W'.repeat(100));
   await expect(card).not.toContainText('Playing · 1 igara');
   await expect(card.locator('.card-metric').last().locator('text').first()).toHaveText('1');
   assert.notEqual(await card.locator('g > rect').first().getAttribute('fill'), previousColor);
@@ -576,6 +578,7 @@ try {
     () => window.auditView().editForm.progress_mode,
   );
   assert.equal(hydrated, 'pokedex');
+  await expect(page).toHaveTitle('Game A');
   findings.push({
     fixed: 'saved-progress-mode-preserved',
     stored: 'pokedex',
@@ -603,6 +606,7 @@ try {
   await page.waitForFunction(
     () => window.auditView()?.game?.id === 'b' && !window.auditView()?.loading,
   );
+  await expect(page).toHaveTitle('Game B');
   const carried = await page.evaluate(() => ({
     notes: window.auditView().editForm.notes,
     rating: window.auditView().editForm.rating,
@@ -631,6 +635,7 @@ try {
   });
   await navigate('/groups/g1');
   await page.waitForFunction(() => window.auditView()?.group?.id === 'g1');
+  await expect(page).toHaveTitle('Group g1');
   await navigate('/groups/g2');
   await expect
     .poll(() =>
@@ -638,7 +643,14 @@ try {
     )
     .toBe('g2');
   await page.waitForFunction(() => window.auditView()?.group?.id === 'g2');
+  await expect(page).toHaveTitle('Group g2');
   findings.push({ fixed: 'group-route-reloads-data' });
+  await navigate('/library');
+  await expect(page).toHaveTitle('Moje igre');
+  await navigate('/api-games/' + Buffer.from('Catalog Title').toString('base64url'));
+  await expect(page).toHaveTitle('Catalog Title');
+  await navigate('/groups/g2');
+  await expect(page).toHaveTitle('Group g2');
   await page.evaluate(async () => {
     window.auditSession = null;
     await window.auditStore.fetchUser();

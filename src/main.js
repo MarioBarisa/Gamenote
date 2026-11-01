@@ -16,4 +16,8 @@ app.use(pinia)
 useUserStore(pinia).initializeAuth().catch(() => { /* Pogrešku prikazuje početni ekran. */ })
 app.use(router)
 
-app.mount('#app')
+if (['/', '/privacy', '/tos'].includes(window.location.pathname.replace(/\/+$/, '') || '/')) {
+  router.isReady().then(() => app.mount('#app'))
+} else {
+  app.mount('#app')
+}

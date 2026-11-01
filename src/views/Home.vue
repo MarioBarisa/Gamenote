@@ -1,7 +1,11 @@
 <template>
   <div v-if="libraryError" role="alert" class="alert alert-error mb-4">{{ libraryError }}</div>
   <div class="home">
-    <LandingView v-if="userStore.authReady && !userStore.isLoggedIn" />
+    <div v-if="userStore.authError && !userStore.isLoggedIn" role="alert" class="alert m-4 w-auto">
+      <span>Prijavu nije moguće provjeriti. Javni sadržaj i dalje je dostupan.</span>
+      <button class="btn btn-sm" @click="userStore.initializeAuth().catch(() => {})">Pokušaj ponovno</button>
+    </div>
+    <LandingView v-if="!userStore.isLoggedIn" />
 
     <template v-if="userStore.authReady && userStore.isLoggedIn">
       <section v-if="themeStore.showNewsWidget"

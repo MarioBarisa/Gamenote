@@ -219,10 +219,12 @@
 </template>
 
 <script setup>
+import { usePageTitle } from '../composables/usePageTitle'
 import { ref } from 'vue'
 import GamenoteBanner from '../components/GamenoteBanner.vue'
 
 const lang = ref('hr')
+if (!import.meta.env.SSR) usePageTitle(() => lang.value === 'hr' ? 'Pravila privatnosti – Gamenote' : 'Privacy Policy – Gamenote')
 
 const effectiveDate = {
   hr: '19. lipnja 2026.',

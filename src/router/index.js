@@ -1,3 +1,4 @@
+import { updateMetadata } from '../services/seo';
 import { useUserStore } from '../stores/user';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -7,6 +8,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      meta: { skipAuthLoading: true },
       component: () => import('../views/Home.vue')
     },
     {
@@ -115,6 +117,7 @@ const router = createRouter({
     {
       path: '/shared',
       name: 'shared-game',
+      meta: { skipAuthLoading: true },
       component: () => import('../views/SharedGameView.vue')
     },
     {
@@ -133,7 +136,9 @@ const router = createRouter({
 });
 
 
-router.afterEach(() => {
+router.afterEach((to, from, failure) => {
+  if (failure) return;
+  updateMetadata(to);
   setTimeout(() => {
     const labels = document.querySelectorAll('label[tabindex]');
     labels.forEach(label => {
@@ -151,7 +156,7 @@ router.afterEach(() => {
 });
 
 router.beforeEach(async (to) => {
-  if (!to.meta.requiresAuth && !['home', 'login', 'register', 'shared-game'].includes(to.name)) return;
+  if (!to.meta.requiresAuth && !['login', 'register'].includes(to.name)) return;
   try {
     const userStore = useUserStore();
     await userStore.initializeAuth();

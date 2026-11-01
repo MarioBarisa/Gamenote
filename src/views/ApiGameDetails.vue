@@ -39,8 +39,8 @@
         <img v-if="screenshots[0]?.image" :src="screenshots[0].image" alt="" class="hidden lg:block absolute inset-0 w-full h-full object-cover" />
         <div class="hero-overlay bg-gradient-to-t from-base-100 to-transparent opacity-90"></div>
         <div class="hero-content text-neutral-content w-full h-full flex flex-col justify-between items-start !p-4 sm:!p-8">
-          <div class="flex w-full justify-between items-start">
-            <router-link to="/add-game" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">❮ Natrag</router-link>
+          <div v-if="!previewGameId" class="flex w-full justify-between items-start">
+            <router-link v-if="!previewGameId" to="/add-game" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">❮ Natrag</router-link>
             <button @click="shareGame" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
               Podijeli
@@ -52,7 +52,7 @@
             </div>
             <div class="w-full">
               <p class="text-sm sm:text-base font-semibold text-white/80 drop-shadow">{{ formatDate(game.released) }}</p>
-              <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{{ game.name }}</h1>
+              <component :is="previewGameId ? 'h4' : 'h1'" class="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{{ game.name }}</component>
               <div v-if="game.genres?.length" class="text-sm sm:text-base text-white/80 drop-shadow mt-1">{{ getGenres() }}</div>
             </div>
           </div>
@@ -134,7 +134,7 @@
               <a :href="game.website" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm font-semibold">Otvori</a>
             </div>
 
-            <div class="flex gap-2 mt-4 pt-3 border-t border-base-300">
+            <div v-if="!previewGameId" class="flex gap-2 mt-4 pt-3 border-t border-base-300">
               <button @click="openAddToCollectionModal" class="btn btn-primary btn-sm flex-1 px-1">
                 Dodaj u kolekciju
               </button>
@@ -546,6 +546,7 @@
 </template>
 
 <script>
+import { usePageTitle } from '../composables/usePageTitle';
 import { buildGameUpdate, progressFields } from '../services/gameForm';
 import { ref, onMounted, onBeforeUnmount, computed, watch, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -559,13 +560,18 @@ import PlatformIcon from '../components/PlatformIcon.vue';
 
 export default {
   components: { PlatformIcon },
-  setup() {
+  props: {
+    previewGameId: { type: String, default: '' },
+    previewPlatforms: { type: Array, default: () => [] }
+  },
+  setup(props) {
     const route = useRoute();
     const router = useRouter();
     const gamesApi = useGamesApi();
     const userStore = useUserStore();
     
     const game = ref(null);
+    if (!props.previewGameId) usePageTitle(() => String(game.value?.id) === String(route.params.id) ? game.value?.name : '');
     const gameInLibraryId = ref(null);
     const loading = ref(true);
     const error = ref(null);
@@ -628,8 +634,8 @@ export default {
     let disposed = false;
     const fetchGame = async () => {
       const version = ++loadVersion;
-      const gameId = route.params.id;
-      const userId = userStore.user?.id;
+      const gameId = props.previewGameId || route.params.id;
+      const userId = props.previewGameId ? null : userStore.user?.id;
       loading.value = true;
       error.value = null;
       game.value = null;
@@ -645,7 +651,7 @@ export default {
           gamesApi.getGameSeries(gameId).catch(() => ({ results: [] })),
           userId ? supabase.from('games').select('id').eq('user_id', userId).eq('game_api_id', String(gameId)).limit(1) : { data: [] },
         ]);
-        if (version !== loadVersion || disposed || userId !== userStore.user?.id) return;
+        if (version !== loadVersion || disposed || (!props.previewGameId && userId !== userStore.user?.id)) return;
         game.value = details;
         screenshots.value = pictures;
         gameSeries.value = series.results || [];
@@ -659,7 +665,7 @@ export default {
     onBeforeUnmount(() => { disposed = true; loadVersion++; });
 
     // gledaj za promjene 
-    watch(() => route.params.id, (newId, oldId) => {
+    watch(() => props.previewGameId || route.params.id, (newId, oldId) => {
       if (newId && newId !== oldId) {
         activeInfoTab.value = 'info';
         fetchGame();
@@ -818,6 +824,7 @@ export default {
     };
 
     const platformList = computed(() => {
+      if (props.previewGameId && props.previewPlatforms.length) return props.previewPlatforms;
       if (!game.value?.platforms) return [];
       return [...new Set(game.value.platforms.map(p => p?.platform?.name || p?.name).filter(Boolean))];
     });
@@ -868,6 +875,7 @@ export default {
     };
 
     const openAddToCollectionModal = async () => {
+      if (props.previewGameId) return;
       if (!userStore.user) {
         return;
       }
@@ -904,7 +912,7 @@ export default {
       }
       
       try {
-        const achievementsData = await gamesApi.getGameAchievements(route.params.id);
+        const achievementsData = await gamesApi.getGameAchievements(props.previewGameId || route.params.id);
         
         if (achievementsData && achievementsData.count > 0) {
           collectionForm.progress_total = achievementsData.count;
@@ -928,6 +936,7 @@ export default {
     };
 
     const saveToCollection = async () => {
+      if (props.previewGameId) return;
       if (saveLoading.value) return;
       const ownerId = userStore.user?.id;
       if (!collectionForm.title || !collectionForm.platform) {

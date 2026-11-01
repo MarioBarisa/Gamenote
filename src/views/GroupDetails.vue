@@ -198,6 +198,7 @@
 </template>
 
 <script>
+import { usePageTitle } from '../composables/usePageTitle';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -219,6 +220,7 @@ export default {
     const adding = ref(false);
     const deleting = ref(false);
     const group = ref(null);
+    usePageTitle(() => String(group.value?.id) === String(route.params.id) ? group.value?.name : '');
     const groupGames = ref([]);
     const groupRating = ref(0);
     const allUserGames = ref([]);

@@ -83,9 +83,9 @@ export async function checkAuthStartup(browser, origin, artifacts) {
     await page.waitForFunction(() => window.startupMounted);
     return { page, context };
   };
-  const loading = page => page.getByRole('status').filter({ hasText: 'Učitavam Gamenote' });
+  const loading = page => new URL(page.url()).pathname === '/' ? page.getByRole('heading', { name: 'Tvoj gaming dnevnik.' }) : page.getByRole('status').filter({ hasText: 'Učitavam Gamenote' });
   const dashboard = page => page.getByRole('heading', { name: 'Trenutno igraš', exact: true });
-  const noLanding = async page => assert.equal(await page.evaluate(() => window.startupControl.landingSeen), false, 'Landing se nije pojavio ni u međukoraku');
+  const noLanding = async page => { if (new URL(page.url()).pathname === '/') return; assert.equal(await page.evaluate(() => window.startupControl.landingSeen), false, 'Landing se nije pojavio ni u međukoraku'); };
 
   for (const width of [320, 390, 1440]) {
     const { page, context } = await open('/', width);
@@ -206,6 +206,51 @@ export async function checkAuthStartup(browser, origin, artifacts) {
     });
     await expect(page.getByLabel('Nova lozinka', { exact: true })).toBeVisible();
     await noLanding(page);
+    await context.close();
+    checks++;
+  }
+
+  for (const width of [390, 1440]) {
+    const { page, context } = await open('/', width);
+    await expect(page.getByRole('heading', { name: 'Tvoj gaming dnevnik.' })).toBeVisible();
+    await page.evaluate(() => window.startupControl.release());
+    await expect(dashboard(page)).toBeVisible();
+    const donation = page.getByRole('link', { name: 'Podrži me i daljnji razvoj Gamenotea putem Ko-fija' });
+    await expect(donation).toHaveAttribute('href', 'https://ko-fi.com/mariobarisa');
+    await donation.click();
+    const donationDialog = page.getByRole('dialog', { name: 'Podrži Gamenote na Ko-fiju' });
+    await expect(donationDialog).toBeVisible();
+    await expect(donationDialog.locator('iframe')).toHaveAttribute('src', /ko-fi\.com\/mariobarisa\/\?hidefeed=true/);
+    await donationDialog.getByRole('button', { name: 'Zatvori' }).click();
+    await expect(donationDialog).not.toBeVisible();
+    const headerLogo = page.locator('header a[aria-label="Gamenote početna"] svg');
+    const logoBefore = await headerLogo.boundingBox();
+    await headerLogo.hover();
+    const logoAfter = await headerLogo.boundingBox();
+    assert.ok(Math.abs(logoAfter.width - logoBefore.width) < .1);
+    assert.ok(Math.abs(logoAfter.height - logoBefore.height) < .1);
+    let attempts = 0;
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+    await page.route('https://avatar.test/**', route => {
+      assert.equal(route.request().headers().referer, undefined);
+      attempts++;
+      if (attempts === 1 || route.request().url().endsWith('/broken')) return route.abort();
+      return route.fulfill({ contentType: 'image/png', body: png });
+    });
+    const setAvatar = (url, owner = 'startup-user') => page.evaluate(({ url, owner }) => {
+      window.startupStore.setUser({ id: owner, email: 'avatar@example.test', user_metadata: { name: 'Avatar', avatar_url: url } });
+    }, { url, owner });
+    await setAvatar('https://avatar.test/transient');
+    const avatar = page.locator('header img[alt="Profilna slika"]');
+    await expect.poll(() => attempts).toBe(2);
+    await expect.poll(() => avatar.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    await setAvatar('https://avatar.test/broken');
+    await expect(avatar).toHaveCount(0);
+    await expect.poll(() => page.locator('header img[alt=""]').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    await setAvatar('https://avatar.test/new', 'another-user');
+    await expect(avatar).toHaveAttribute('src', 'https://avatar.test/new');
+    await expect.poll(() => avatar.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    await page.screenshot({ path: join(artifacts, 'navbar-avatar-' + width + '.png') });
     await context.close();
     checks++;
   }

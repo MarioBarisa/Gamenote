@@ -689,6 +689,7 @@
 </template>
 
 <script>
+import { usePageTitle } from '../composables/usePageTitle';
 import { createGameForm, buildGameUpdate, progressModeForPlatform } from '../services/gameForm';
 import { ref, onMounted, onBeforeUnmount, reactive, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -713,6 +714,7 @@ export default {
     const userStore = useUserStore();
     
     const game = ref(null);
+    usePageTitle(() => String(game.value?.id) === String(route.params.id) ? game.value?.title : '', ['game-details', 'edit-game']);
     const loading = ref(true);
     const error = ref(null);
     const mutationError = ref('');

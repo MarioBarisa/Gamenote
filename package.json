@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "vite",
     "dev:netlify": "netlify dev",
-    "build": "vite build",
+    "build": "node scripts/build.mjs",
     "preview": "vite preview",
     "test:importers": "node --test tests/importers/importers.test.js && node tests/importers/importers.browser.mjs",
     "test:app": "node --test tests/app/app.test.js && node tests/app/regressions.browser.mjs",
-    "test": "npm run test:app && npm run test:importers"
+    "test:public": "npm run build && node tests/app/public.browser.mjs",
+    "test": "npm run test:app && npm run test:importers && npm run test:public"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.4",
