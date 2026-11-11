@@ -21,9 +21,7 @@
               </li>
               <li>
                 <router-link class="desktop-nav-link" to="/library">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
-                  </svg>
+                  <CollectionNavIcon name="games" class="h-5 w-5" />
                   Moje igre
                 </router-link>
               </li>
@@ -37,16 +35,13 @@
               </li>
               <li>
                 <router-link class="desktop-nav-link" to="/stats">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                  </svg>
+                  <CollectionNavIcon name="stats" class="h-5 w-5" />
                   Statistika
                 </router-link>
               </li>
               <li>
                 <router-link class="desktop-nav-link" to="/groups">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 16h12V4h-2v6.125q0 .3-.25.45t-.5-.025l-1.225-.725q-.25-.15-.537-.15t-.513.15l-1.225.725q-.275.175-.513.025t-.237-.45V4H8zm0 2q-.825 0-1.412-.587T6 16V4q0-.825.588-1.412T8 2h12q.825 0 1.413.588T22 4v12q0 .825-.587 1.413T20 18zm-4 4q-.825 0-1.412-.587T2 20V7q0-.425.288-.712T3 6t.713.288T4 7v13h13q.425 0 .713.288T18 21t-.288.713T17 22zM8 4v12zm5 6.125q0 .3.238.45t.512-.025l1.225-.725q.225-.15.513-.15t.537.15l1.225.725q.25.175.5.025t.25-.45q0 .3-.25.45t-.5-.025l-1.225-.725q-.25-.15-.537-.15t-.513.15l-1.225.725q-.275.175-.513.025t-.237-.45"/></svg>
+                  <CollectionNavIcon name="groups" class="h-5 w-5" />
                   Grupe
                 </router-link>
               </li>
@@ -68,7 +63,7 @@
                 </label>
                 <ul 
                   tabindex="0"
-                  class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 rounded-box w-52 z-[100]">
+                  class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 rounded-box w-52 z-100">
                   <li class="menu-title">
                     <span class="text-base-content/70 text-xs">{{ userStore.user?.email }}</span>
                   </li>
@@ -104,7 +99,7 @@
       </div>
     </header>
 
-    <main :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow max-w-[1600px] pb-28 lg:pb-0' : 'flex-grow'">
+    <main :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 grow max-w-[1600px] pb-28 lg:pb-0' : 'grow'">
       <slot />
     </main>
     
@@ -112,7 +107,7 @@
     <nav
       v-if="isLoggedIn"
       class="btm-nav lg:hidden z-50 fixed left-0 right-0 bg-base-200/90 backdrop-blur border border-base-300 grid grid-flow-col auto-cols-fr transition-all duration-300 ease-in-out overflow-visible p-2 gap-2 items-center"
-      :class="isCompact ? 'mx-3 rounded-[32px] shadow-2xl h-14' : 'mx-4 rounded-[32px] shadow-2xl h-20'"
+      :class="isCompact ? 'mx-3 rounded-4xl shadow-2xl h-14' : 'mx-4 rounded-4xl shadow-2xl h-20'"
       :style="navStyle"
       aria-label="Primary"
     >
@@ -241,6 +236,7 @@
 
 <script>
 import GamenoteLogo from './GamenoteLogo.vue';
+import CollectionNavIcon from './CollectionNavIcon.vue';
 import KoFiBadge from './KoFiBadge.vue';
 import ProfileAvatar from './ProfileAvatar.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
@@ -251,7 +247,7 @@ import bannerLightUrl from '../assets/newAssets/GamenoteBannerLightMode.png';
 import bannerDarkUrl from '../assets/newAssets/GamenoteBannerDarkMode.png';
 
 export default {
-  components: { GamenoteLogo, ProfileAvatar, KoFiBadge },
+  components: { CollectionNavIcon, GamenoteLogo, ProfileAvatar, KoFiBadge },
   setup() {
     const userStore = useUserStore();
     const themeStore = useThemeStore();

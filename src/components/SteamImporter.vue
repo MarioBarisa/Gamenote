@@ -238,6 +238,8 @@ function disconnect() {
   warning.value = '';
 }
 
+// Greške dijele postojeći catch i finally.
+// noinspection ExceptionCaughtLocallyJS
 async function saveSelected(existing) {
   if (busy.value || !libraryReady.value) return;
   const toSave = games.value.filter(game => selected.value[game.appId] && !game._ambiguous && Boolean(game._match) === existing);
@@ -326,7 +328,7 @@ async function saveSelected(existing) {
       notice.value = `${existing ? 'Sinkronizirano' : 'Uvezeno'} ${saved} od ${toSave.length} odabranih igara.`;
       const warnings = [];
       if (unresolved.length) warnings.push(`Odaberi postojeću igru ili zaseban unos za: ${unresolved.join(', ')}.`);
-      if (missingMetadata.length) warnings.push(`Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj igru.`);
+      if (missingMetadata.length) warnings.push(`Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj u Gamenote.`);
       if (unavailable) warnings.push(`Za ${unavailable} igara postignuća nisu dostupna. Postojeći napredak je sačuvan.`);
       if (groupFailures) warnings.push(`${groupFailures} igara je uvezeno bez grupe. Grupu dodaj u kolekciji.`);
       warning.value = warnings.join(' ');

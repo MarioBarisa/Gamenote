@@ -1,27 +1,7 @@
 <template>
   <div class="shared-game-view min-h-screen bg-base-100 pb-12">
     <!-- Kompaktni banner bez gradijenta s logom -->
-    <div v-if="!userStore.isLoggedIn" class="bg-base-100 text-base-content border-b border-base-300 shadow-sm sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <div class="flex items-center justify-between w-full sm:w-auto">
-          <a href="https://gamenote.eu" target="_blank" rel="noopener noreferrer" class="flex items-center shrink-0" aria-label="Gamenote početna">
-            <GamenoteLogo class="lg:hidden w-10 h-9 text-base-content" />
-            <GamenoteBanner class="hidden lg:block h-9 w-auto max-w-52 object-contain" />
-          </a>
-          <div class="flex gap-2 sm:hidden">
-            <router-link to="/register" class="btn btn-xs btn-primary">Registracija</router-link>
-            <router-link to="/login" class="btn btn-xs btn-outline">Prijava</router-link>
-          </div>
-        </div>
-        <p class="text-sm sm:text-base font-medium opacity-90 text-center sm:text-left w-full sm:w-auto mt-1 sm:mt-0">
-          Napravi profil ili se prijavi kako bi dobio puno iskustvo!
-        </p>
-        <div class="hidden sm:flex gap-2">
-          <router-link to="/register" class="btn btn-sm btn-primary">Napravi profil</router-link>
-          <router-link to="/login" class="btn btn-sm btn-outline">Prijavi se</router-link>
-        </div>
-      </div>
-    </div>
+    <ShareGuestHeader v-if="!userStore.isLoggedIn" />
 
     <div v-if="error" class="text-center my-12">
       <div class="alert alert-error shadow-lg max-w-md mx-auto">
@@ -36,8 +16,9 @@
       <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
     </div>
 
-    <div v-else-if="isLoadingApi" class="flex justify-center my-12">
-      <span class="loading loading-spinner loading-lg"></span>
+    <div v-else-if="isLoadingApi" class="max-w-7xl mx-auto px-4" aria-busy="true">
+      <div class="skeleton min-h-[220px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[380px] mt-4 mb-6 w-full rounded-box" aria-hidden="true"></div>
+      <LoadingCardGrid :layout="{ container: 'grid-cols-1 lg:grid-cols-[2fr_3fr]', gap: 'gap-4 lg:gap-6', cardBody: 'p-4' }" variant="panels" label="Učitavam igru…" />
     </div>
 
     <div v-else-if="apiGame" class="max-w-7xl mx-auto px-4">
@@ -137,7 +118,7 @@
 
             <div class="flex gap-2 mt-4 pt-3 border-t border-base-300">
               <button @click="goToApp" class="btn btn-primary btn-sm flex-1 px-1">
-                Dodaj u svoju biblioteku
+                Dodaj u Gamenote
               </button>
             </div>
           </div>
@@ -300,12 +281,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useGamesApi } from '../services/gamesApi';
 import PlatformIcon from '../components/PlatformIcon.vue';
-import GamenoteLogo from '../components/GamenoteLogo.vue';
-import GamenoteBanner from '../components/GamenoteBanner.vue';
+import ShareGuestHeader from '../components/ShareGuestHeader.vue';
+import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 
 export default {
   name: 'SharedGameView',
-  components: { PlatformIcon, GamenoteLogo, GamenoteBanner },
+  components: { PlatformIcon, ShareGuestHeader, LoadingCardGrid },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -318,7 +299,7 @@ export default {
     usePageTitle(() => String(apiGame.value?.id) === String(route.query.id || sharedData.value?.apiId) ? apiGame.value?.name : '');
     const screenshots = ref([]);
     const gameSeries = ref([]);
-    const isLoadingApi = ref(false);
+    const isLoadingApi = ref(true);
     const selectedScreenshotIndex = ref(null);
     const activeInfoTab = ref('info');
 
@@ -352,7 +333,6 @@ export default {
 
         // Fetch extra API info only for guests
         if (apiIdToFetch) {
-          isLoadingApi.value = true;
           try {
             apiGame.value = await gamesApi.getGameDetails(apiIdToFetch);
             
@@ -373,13 +353,13 @@ export default {
           } catch(e) {
             console.error('Failed to load API data:', e);
             error.value = 'Greška pri dohvaćanju informacija o igri.';
-          } finally {
-            isLoadingApi.value = false;
           }
         }
       } catch (err) {
         console.error('Error parsing shared data:', err);
         error.value = 'Poveznica je neispravna ili je oštećena.';
+      } finally {
+        isLoadingApi.value = false;
       }
     });
 

@@ -38,3 +38,17 @@ for (const path of ['/login', '/register', '/reset-password', '/shared']) {
   await mkdir(`dist${path}`, { recursive: true });
   await writeFile(`dist${path}/index.html`, documentHtml(path));
 }
+
+// Serverski prikaz koristi istu SVG karticu.
+await build({
+  configFile: false,
+  publicDir: false,
+  ssr: { noExternal: ['daisyui'] },
+  plugins: [(await import('@vitejs/plugin-vue')).default()],
+  build: {
+    ssr: 'scripts/render-library-card.js',
+    outDir: 'netlify/functions/lib/card-renderer',
+    emptyOutDir: true,
+    rollupOptions: { output: { format: 'cjs', entryFileNames: '_renderCard.cjs' } },
+  },
+});

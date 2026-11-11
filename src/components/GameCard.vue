@@ -12,16 +12,17 @@
         { 'relative overflow-hidden': !!foilVariant }
       ]"
     >
-    <figure :class="`relative w-full ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).poster} overflow-hidden`">
+    <figure :class="`relative w-full ${sizeCfg.poster} overflow-hidden`">
       <img
         :src="getGameImage(game)"
         :alt="game.title"
         class="w-full h-full object-cover"
         decoding="async"
+        @error="posterError"
         :loading="lazy ? 'lazy' : undefined"
       />
       <!-- TCG folija -->
-      <div v-if="foilVariant" class="tcg-foil" :class="`tcg-foil--${foilVariant}`" aria-hidden="true"></div>
+      <div v-if="foilVariant" class="tcg-foil" :class="{ 'tcg-foil--gold': foilVariant === 'gold', 'tcg-foil--holo': foilVariant === 'holo', 'tcg-foil--prism': foilVariant === 'prism' }" aria-hidden="true"></div>
       <!-- 100% Badge --->
       <div v-if="achievementPercent === 100 && !foilVariant" class="absolute top-0 left-0 m-1 sm:m-2">
         <div class="badge bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-black font-bold text-xs sm:text-sm p-2 sm:p-3 shadow-lg border-2 border-yellow-300">
@@ -32,8 +33,8 @@
         </div>
       </div>
     </figure>
-    <div :class="`card-body ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).cardBody} flex flex-col`">
-      <h2 :class="`card-title ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).titleSize} font-bold mb-1 line-clamp-1`">{{ game.title }}</h2>
+    <div :class="`card-body ${sizeCfg.cardBody} flex flex-col`">
+      <h2 :class="`card-title ${sizeCfg.titleSize} font-bold mb-1 line-clamp-1`">{{ game.title }}</h2>
       <!-- Status badge -->
       <div v-if="gameStatus" class="mb-2">
         <span :class="[`badge ${sizeCfg.badge} font-semibold`, statusBadgeClass]">
@@ -153,7 +154,7 @@
     </div>
 
     <!-- EX-holo preko cijele kartice -->
-    <div v-if="foilVariant" class="tcg-exholo" :class="`tcg-exholo--${foilVariant}`" aria-hidden="true"></div>
+    <div v-if="foilVariant" class="tcg-exholo" :class="{ 'tcg-exholo--gold': foilVariant === 'gold', 'tcg-exholo--prism': foilVariant === 'prism' }" aria-hidden="true"></div>
   </div>
   </component>
 </template>
@@ -176,6 +177,10 @@ export default {
     game: {
       type: Object,
       required: true
+    },
+    size: {
+      type: String,
+      default: ''
     },
     lazy: {
       type: Boolean,
@@ -215,7 +220,7 @@ export default {
   },
   computed: {
     sizeCfg() {
-      return this.cardSizeStore.getSizeConfig(this.cardSizeStore.cardSize);
+      return this.cardSizeStore.getSizeConfig(this.size || this.cardSizeStore.cardSize);
     },
     hasDates() {
       return !!(this.game?.start_date || this.game?.end_date);
@@ -330,17 +335,18 @@ export default {
       return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     },
     getGameImage(game) {
-      //FUNKCIJA SLIKE
-      if (game.image_url) return game.image_url;
-      if (game.background_image) return game.background_image;
-      
-      
-      if (game.game_api_id && game.background_image) {
-        return game.background_image;
+      return game.image_url || game.background_image || '/game-placeholder.svg';
+    },
+    posterError(event) {
+      const image = event.target;
+      const fallback = this.game.background_image;
+      if (fallback && image.dataset.fallback !== 'used' && image.src !== new URL(fallback, location.origin).href) {
+        image.dataset.fallback = 'used';
+        image.src = fallback;
+        return;
       }
-      
-      
-      return 'https://placehold.co/600x400?text=No+Image';
+      image.onerror = null;
+      if (!image.src.endsWith('/game-placeholder.svg')) image.src = '/game-placeholder.svg';
     },
     renderStars(rating) {
       const stars = [];
@@ -384,6 +390,8 @@ export default {
 /* Folija: cijeli poster, sijaj prati nagib kartice (hover-tilt varijable, 0–1).
    Gradijenti su "trakasti" — crni razmaci ne mijenjaju sliku uz color-dodge,
    pa detalji ostaju vidljivi između sjajnih traka. */
+/* Varijable postavlja hover-tilt. */
+/*noinspection CssUnresolvedCustomProperty*/
 .tcg-foil {
   position: absolute;
   inset: 0;
@@ -429,6 +437,7 @@ export default {
 }
 
 /* Glare bez tamnog ruba */
+/*noinspection CssUnusedSymbol,CssUnresolvedCustomProperty*/
 .tcg-round {
   --hover-tilt-custom-gradient: radial-gradient(
     farthest-corner circle at var(--gradient-x) var(--gradient-y),
@@ -438,6 +447,7 @@ export default {
   );
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .tcg-exholo {
   position: absolute;
   inset: 0;
@@ -469,6 +479,7 @@ export default {
 }
 
 /* Zlatna varijanta — topla šampanj folija */
+/*noinspection CssUnresolvedCustomProperty*/
 .tcg-exholo--gold {
   background-image:
     url('../assets/newAssets/GamenoteMainLogo.png'),
@@ -489,8 +500,10 @@ export default {
 
 <!-- ::part mora biti globalno -->
 <style>
+/*noinspection CssUnusedSymbol*/
 .tcg-round::part(container),
 .tcg-round::part(tilt) {
+  height: 100%;
   border-radius: var(--radius-box, 1rem);
   isolation: isolate;
 }

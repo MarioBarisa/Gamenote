@@ -1,8 +1,9 @@
 <template>
   <div v-if="error" role="alert" class="alert alert-error mb-4">{{ error }}</div>
   <div class="group-details">
-    <div v-if="loading" class="flex justify-center py-8">
-      <span class="loading loading-spinner loading-lg"></span>
+    <div v-if="loading" class="space-y-6">
+      <div class="skeleton h-8 w-64 max-w-full" aria-hidden="true"></div>
+      <LoadingCardGrid :layout="cardSizeStore.getSizeConfig(cardSizeStore.cardSize)" />
     </div>
     <div v-else-if="!group" class="text-sm opacity-70">Grupa nije pronađena.</div>
     <div v-else>
@@ -206,10 +207,11 @@ import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
 import { supabase } from '../supabase';
 import GameCard from '../components/GameCard.vue';
+import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 import { getGroup, listGroupGames, updateGroup, removeGameFromGroup, addGameToGroup, deleteGroup } from '../services/groupsApi';
 
 export default {
-  components: { GameCard },
+  components: { GameCard, LoadingCardGrid },
   setup() {
     const route = useRoute();
     const router = useRouter();

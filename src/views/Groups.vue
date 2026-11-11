@@ -40,68 +40,35 @@
     </div>
 
     <!-- Groups List -->
-    <div v-if="loading" class="flex justify-center py-8">
-      <span class="loading loading-spinner loading-lg"></span>
-    </div>
+    <LoadingCardGrid v-if="loading" :layout="groupLayout" variant="groups" banner label="Učitavam grupe…" />
     <div v-else>
       <div v-if="groups.length === 0" class="card bg-base-200 shadow-xl">
         <div class="card-body text-center">
           <p class="text-sm opacity-70">Nema grupa. Kreiraj prvu!</p>
         </div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div 
-          v-for="g in groupsWithGames" 
-          :key="g.id" 
-          class="card bg-base-200 shadow-xl hover:shadow-2xl transition-all cursor-pointer overflow-hidden"
-          @click="openGroup(g.id)"
-        >
-          <!-- Game Images Banner -->
-          <figure v-if="g.gameImages && g.gameImages.length > 0" class="relative h-32 overflow-hidden">
-            <div class="flex w-full h-full">
-              <div 
-                v-for="(img, idx) in g.gameImages.slice(0, 4)" 
-                :key="idx"
-                class="flex-1 bg-cover bg-center"
-                :style="{ backgroundImage: `url(${img})` }"
-              ></div>
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-base-200 to-transparent"></div>
-          </figure>
-          
-          <div class="card-body p-4">
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <h3 class="font-bold text-lg">{{ g.name }}</h3>
-                <div class="flex items-center gap-2 mt-1">
-                  <span class="badge badge-sm badge-outline">{{ g.type }}</span>
-                  <span v-if="g.gameCount > 0" class="text-xs opacity-70">{{ g.gameCount }} igre/a</span>
-                </div>
-                <div v-if="g.rating" class="flex items-center gap-1 mt-2">
-                  <div class="rating rating-xs">
-                    <input v-for="star in 5" :key="star" type="radio" class="mask mask-star-2 bg-orange-400" :checked="star <= g.rating" disabled />
-                  </div>
-                  <span class="text-xs opacity-70">{{ g.rating }}/5</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="grid" :class="[groupLayout.container, groupLayout.gap]">
+        <GroupCard v-for="group in groupsWithGames" :key="group.id" :group="group" @open="openGroup(group.id)" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import LoadingCardGrid from '../components/LoadingCardGrid.vue';
+import GroupCard from '../components/GroupCard.vue';
+import { GROUP_LAYOUT } from '../constants/groupLayout.js';
 import { supabase } from '../supabase';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
-import { listGroups, createGroup, listGroupGames } from '../services/groupsApi';
+import { listGroups, createGroup } from '../services/groupsApi';
 
 export default {
+  components: { LoadingCardGrid, GroupCard },
   setup() {
+    const groupLayout = GROUP_LAYOUT;
     const router = useRouter();
     const userStore = useUserStore();
     const loading = ref(true);
@@ -174,6 +141,7 @@ export default {
     onMounted(fetchGroups);
 
     return {
+      groupLayout,
       error, loading,
       creating, 
       groups, 

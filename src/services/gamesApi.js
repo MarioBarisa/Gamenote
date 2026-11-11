@@ -31,11 +31,11 @@ export const useGamesApi = () => {
     if (data && !data.description_raw) data.description_raw = data.description || null;
     return data;
   }
-  async function getGameScreenshots(id) {
-    return (await request(`/games/${encodeURIComponent(id)}/screenshots`)).results || [];
+  async function getGameScreenshots(id, options = {}) {
+    return (await request(`/games/${encodeURIComponent(id)}/screenshots`, {}, options)).results || [];
   }
-  async function getGameSeries(id) {
-    return request(`/games/${encodeURIComponent(id)}/game-series`);
+  async function getGameSeries(id, options = {}) {
+    return request(`/games/${encodeURIComponent(id)}/game-series`, {}, options);
   }
   async function getGameAchievements(id) {
     const data = await getGameDetails(id);

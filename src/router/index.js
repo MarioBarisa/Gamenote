@@ -104,6 +104,18 @@ const router = createRouter({
       component: () => import('../views/ResetPasswordView.vue')
     },
     {
+      path: '/u/:username([a-zA-Z0-9][a-zA-Z0-9_-]{2,29})',
+      name: 'library-visitor',
+      meta: { requiresAuth: true },
+      component: () => import('../views/PublicLibrary.vue')
+    },
+    {
+      path: '/:username([a-zA-Z0-9][a-zA-Z0-9_-]{2,29})',
+      name: 'public-library',
+      meta: { skipAuthLoading: true },
+      component: () => import('../views/PublicLibrary.vue')
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       redirect: '/'
@@ -156,6 +168,16 @@ router.afterEach((to, from, failure) => {
 });
 
 router.beforeEach(async (to) => {
+  if (to.name === 'public-library') {
+    const userStore = useUserStore();
+    try { await userStore.initializeAuth(); } catch { /* Javni prikaz ostaje dostupan. */ }
+    if (userStore.isLoggedIn) return { name: 'library-visitor', params: to.params, query: to.query };
+  }
+  if (to.name === 'library-visitor') {
+    const userStore = useUserStore();
+    try { await userStore.initializeAuth(); } catch { /* Gost koristi javni prikaz. */ }
+    if (!userStore.isLoggedIn) return { name: 'public-library', params: to.params, query: to.query };
+  }
   if (!to.meta.requiresAuth && !['login', 'register'].includes(to.name)) return;
   try {
     const userStore = useUserStore();

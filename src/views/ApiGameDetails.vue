@@ -136,7 +136,7 @@
 
             <div v-if="!previewGameId" class="flex gap-2 mt-4 pt-3 border-t border-base-300">
               <button @click="openAddToCollectionModal" class="btn btn-primary btn-sm flex-1 px-1">
-                Dodaj u kolekciju
+                Dodaj u Gamenote
               </button>
             </div>
           </div>
@@ -293,7 +293,7 @@
     <!-- dodaj kolekciju -->
     <div v-if="showAddModal" class="modal modal-open">
       <div class="modal-box max-w-2xl">
-        <h3 class="font-bold text-2xl mb-4">Dodaj igru u kolekciju</h3>
+        <h3 class="font-bold text-2xl mb-4">Dodaj u Gamenote</h3>
         
         <div v-if="game" class="mb-6">
           <div class="flex gap-4 mb-4">
@@ -527,7 +527,7 @@
           <div class="modal-action">
             <button type="submit" class="btn btn-primary" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
-              <span v-else>Dodaj igru</span>
+              <span v-else>Dodaj u Gamenote</span>
             </button>
             <button type="button" @click="closeAddModal" class="btn btn-secondary">
               Odustani
@@ -632,6 +632,7 @@ export default {
 
     let loadVersion = 0;
     let disposed = false;
+    // noinspection ExceptionCaughtLocallyJS
     const fetchGame = async () => {
       const version = ++loadVersion;
       const gameId = props.previewGameId || route.params.id;

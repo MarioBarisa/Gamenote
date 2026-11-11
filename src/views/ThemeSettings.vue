@@ -70,59 +70,6 @@
     </div>
 
 
-    <!-- Teme Sekcija -->
-    <div>
-      <h2 class="text-2xl font-bold mb-4">Dostupne teme</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <div v-for="theme in themeStore.availableThemes" :key="theme.name" class="rounded-lg">
-          <div @click="switchTheme(theme.name)" :data-theme="theme.name"
-            class="card cursor-pointer hover:scale-105 transition-all duration-300 border-2 bg-base-100 shadow-md overflow-hidden"
-            :class="{
-              'border-primary shadow-xl scale-105 ring-2 ring-primary': themeStore.currentTheme === theme.name,
-              'border-base-300 hover:border-primary': themeStore.currentTheme !== theme.name
-            }">
-            <div class="card-body p-4">
-              <div class="font-bold text-sm mb-3 text-base-content">{{ theme.label }}</div>
-
-              <div class="flex gap-1 mb-2">
-                <div class="bg-primary rounded flex-1 h-8"></div>
-                <div class="bg-secondary rounded flex-1 h-8"></div>
-                <div class="bg-accent rounded flex-1 h-8"></div>
-              </div>
-
-              <div class="grid grid-cols-4 gap-1 mb-2">
-                <div
-                  class="bg-success rounded h-6 flex items-center justify-center text-xs text-success-content font-bold">
-                  OK</div>
-                <div
-                  class="bg-warning rounded h-6 flex items-center justify-center text-xs text-warning-content font-bold">
-                  !</div>
-                <div class="bg-error rounded h-6 flex items-center justify-center text-xs text-error-content font-bold">
-                  X</div>
-                <div class="bg-info rounded h-6 flex items-center justify-center text-xs text-info-content font-bold">i
-                </div>
-              </div>
-
-              <div class="bg-base-200 rounded p-2 mb-2">
-                <div class="bg-base-300 rounded p-1 text-xs text-base-content text-center">
-                  Background
-                </div>
-              </div>
-
-              <div class="flex gap-1">
-                <button class="btn btn-primary btn-xs flex-1">Primary</button>
-                <button class="btn btn-ghost btn-xs flex-1">Ghost</button>
-              </div>
-
-              <div v-if="themeStore.currentTheme === theme.name" class="mt-2 badge badge-primary badge-sm w-full">
-                ✓ Odabrano
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Veličina Kartica Sekcija -->
     <div>
       <h2 class="text-2xl font-bold mb-4">Veličina Kartica</h2>
@@ -216,6 +163,59 @@
       </div>
     </div>
 
+    <!-- Teme Sekcija -->
+    <div>
+      <h2 class="text-2xl font-bold mb-4">Dostupne teme</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div v-for="theme in themeStore.availableThemes" :key="theme.name" class="rounded-lg">
+          <div @click="switchTheme(theme.name)" :data-theme="theme.name"
+            class="card cursor-pointer hover:scale-105 transition-all duration-300 border-2 bg-base-100 shadow-md overflow-hidden"
+            :class="{
+              'border-primary shadow-xl scale-105 ring-2 ring-primary': themeStore.currentTheme === theme.name,
+              'border-base-300 hover:border-primary': themeStore.currentTheme !== theme.name
+            }">
+            <div class="card-body p-4">
+              <div class="font-bold text-sm mb-3 text-base-content">{{ theme.label }}</div>
+
+              <div class="flex gap-1 mb-2">
+                <div class="bg-primary rounded flex-1 h-8"></div>
+                <div class="bg-secondary rounded flex-1 h-8"></div>
+                <div class="bg-accent rounded flex-1 h-8"></div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-1 mb-2">
+                <div
+                  class="bg-success rounded h-6 flex items-center justify-center text-xs text-success-content font-bold">
+                  OK</div>
+                <div
+                  class="bg-warning rounded h-6 flex items-center justify-center text-xs text-warning-content font-bold">
+                  !</div>
+                <div class="bg-error rounded h-6 flex items-center justify-center text-xs text-error-content font-bold">
+                  X</div>
+                <div class="bg-info rounded h-6 flex items-center justify-center text-xs text-info-content font-bold">i
+                </div>
+              </div>
+
+              <div class="bg-base-200 rounded p-2 mb-2">
+                <div class="bg-base-300 rounded p-1 text-xs text-base-content text-center">
+                  Background
+                </div>
+              </div>
+
+              <div class="flex gap-1">
+                <button class="btn btn-primary btn-xs flex-1">Primary</button>
+                <button class="btn btn-ghost btn-xs flex-1">Ghost</button>
+              </div>
+
+              <div v-if="themeStore.currentTheme === theme.name" class="mt-2 badge badge-primary badge-sm w-full">
+                ✓ Odabrano
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="alert">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -228,62 +228,26 @@
       </div>
     </div>
 
-    <!-- Mobilno upozorenje za TCG način -->
-    <div v-if="showTcgWarning" class="modal modal-open">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">⚠️ Mobilni uređaj otkriven</h3>
-        <p class="py-4 text-sm">
-          TCG način koristi 3D animacije i sjene koje mogu usporiti pregledavanje ili uzrokovati probleme s prikazom
-          na mobilnim uređajima. Ako primijetiš probleme, uvijek ga možeš isključiti ovdje u postavkama.
-        </p>
-        <label class="flex items-center gap-2 cursor-pointer mb-2">
-          <input type="checkbox" v-model="tcgDontShowAgain" class="checkbox checkbox-sm" />
-          <span class="text-sm">Ne prikazuj više ovu poruku</span>
-        </label>
-        <div class="modal-action">
-          <button class="btn btn-ghost" @click="showTcgWarning = false">Odustani</button>
-          <button class="btn btn-primary" @click="confirmTcgMobile">Ipak omogući</button>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop" @click.stop="showTcgWarning = false"></form>
-    </div>
+    <TcgConfirmation ref="tcgConfirmation" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import TcgConfirmation from '../components/TcgConfirmation.vue';
 import { useThemeStore } from '../stores/theme';
 import { useCardSizeStore } from '../stores/cardSize';
 
 const themeStore = useThemeStore();
 const cardSizeStore = useCardSizeStore();
 
-const showTcgWarning = ref(false);
-const tcgDontShowAgain = ref(false);
-
-const isCoarsePointer = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia('(hover: none), (pointer: coarse)').matches;
-
-const onTcgToggle = (event) => {
-  const want = event.target.checked;
-  const dismissed = localStorage.getItem('gamenote_tcg_warning_dismissed') === '1';
-  if (want && isCoarsePointer() && !dismissed) {
-    event.target.checked = false;
-    tcgDontShowAgain.value = false;
-    showTcgWarning.value = true;
-    return;
-  }
-  themeStore.setTcgMode(want);
-};
-
-const confirmTcgMobile = () => {
-  if (tcgDontShowAgain.value) {
-    localStorage.setItem('gamenote_tcg_warning_dismissed', '1');
-  }
-  themeStore.setTcgMode(true);
-  showTcgWarning.value = false;
-};
+const tcgConfirmation = ref(null);
+async function onTcgToggle(event) {
+  const enabled = event.target.checked;
+  event.target.checked = themeStore.tcgMode;
+  if (enabled && !await tcgConfirmation.value.requestEnable()) return;
+  themeStore.setTcgMode(enabled);
+}
 
 const getCurrentThemeLabel = () => {
   const theme = themeStore.availableThemes.find(t => t.name === themeStore.currentTheme);

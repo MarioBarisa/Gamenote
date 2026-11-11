@@ -49,7 +49,17 @@ export function metadataHtml(metadata) {
 
 export function updateMetadata(route) {
   const template = document.createElement('template');
-  template.innerHTML = metadataHtml(pageMetadata(route.path, route.query));
+  const metadata = pageMetadata(route.path, route.query);
+  if (route.publicLibrary) {
+    metadata.title = `Zbirka: ${route.publicLibrary.name} | Gamenote`;
+    metadata.description = `Pogledaj zbirku @${route.publicLibrary.username} na Gamenoteu.`;
+  }
+  template.innerHTML = metadataHtml(metadata);
+  if (route.publicLibrary) {
+    for (const tag of template.content.querySelectorAll('[property="og:image"], [name="twitter:image"]')) {
+      tag.setAttribute('content', `${siteUrl}/.netlify/functions/library-card?username=${encodeURIComponent(route.publicLibrary.username)}`);
+    }
+  }
   for (const tag of template.content.children) {
     const attribute = tag.hasAttribute('name') ? 'name' : tag.hasAttribute('property') ? 'property' : 'rel';
     const selector = tag.tagName === 'TITLE' ? 'title' : `${tag.tagName.toLowerCase()}[${attribute}="${tag.getAttribute(attribute)}"]`;

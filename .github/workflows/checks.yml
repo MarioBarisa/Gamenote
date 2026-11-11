@@ -4,6 +4,9 @@ on:
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -20,4 +23,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm test
-      - run: npm run build
+      - name: Provjera zapakirane gamercard funkcije
+        run: node tests/app/libraryShare.package.mjs
+      - name: Provjera Netlify dijeljenja
+        run: node tests/app/libraryShare.netlify.mjs

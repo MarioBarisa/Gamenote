@@ -29,3 +29,12 @@
 [[edge_functions]]
   path = "/shared"
   function = "og-shared"
+
+[functions."library-card"]
+  node_bundler = "esbuild"
+  external_node_modules = ["@resvg/resvg-js"]
+  included_files = ["netlify/functions/lib/fonts/**", "netlify/functions/lib/card-renderer/**"]
+
+[[edge_functions]]
+  path = "/:username"
+  function = "og-library"

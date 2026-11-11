@@ -910,6 +910,8 @@ const refreshDoneCount = ref(0);
         }
       };
   
+      // Greške dijele postojeći catch i finally.
+      // noinspection ExceptionCaughtLocallyJS
       const importSelected = async () => {
         if (importLoading.value) return;
         importError.value = '';
@@ -963,7 +965,7 @@ const refreshDoneCount = ref(0);
         } finally {
           try { assertOwner(); await markExisting(); }
           catch (error) { if (!disposed) importError.value += ` ${error.message}`; }
-          if (missingMetadata.length) metadataWarning.value = `Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj igru.`;
+          if (missingMetadata.length) metadataWarning.value = `Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj u Gamenote.`;
           if (unresolved.length) metadataWarning.value += ` Odaberi postojeću igru ili zaseban unos za: ${unresolved.join(', ')}.`;
           importLoading.value = false;
           importProgress.value = '';
@@ -971,6 +973,7 @@ const refreshDoneCount = ref(0);
         }
       };
 
+      // noinspection ExceptionCaughtLocallyJS
       const updateSelected = async () => {
         if (importLoading.value) return;
         importError.value = '';
@@ -1224,19 +1227,17 @@ const refreshDoneCount = ref(0);
         seriesGames = (sr && sr.results) || [];
       } catch (e) { console.error('[Importers] series failed:', e); }
 
-      if (details && details.id != null) {
-        update.background_image = details.background_image || null;
-        update.image_url = details.background_image || null;
-        if (details.released != null) update.release_date = details.released;
-        if (details.description_raw != null) update.description = details.description_raw;
-        if (details.website != null) update.website_url = details.website;
-        if (details.metacritic != null) update.metacritic_score = details.metacritic;
-        if (details.esrb_rating?.name != null) update.esrb_rating = details.esrb_rating.name;
-        update.developers = JSON.stringify((details.developers || []).map(d => d.name));
-        update.genres_list = JSON.stringify((details.genres || []).map(x => x.name));
-        update.platforms_list = JSON.stringify((details.platforms || []).map(p => p.platform ? normalizePlatformName(p.platform.name) : null).filter(Boolean));
-        update.publishers_list = JSON.stringify((details.publishers || []).map(p => p.name));
-      }
+      update.background_image = details.background_image || null;
+      update.image_url = details.background_image || null;
+      if (details.released != null) update.release_date = details.released;
+      if (details.description_raw != null) update.description = details.description_raw;
+      if (details.website != null) update.website_url = details.website;
+      if (details.metacritic != null) update.metacritic_score = details.metacritic;
+      if (details.esrb_rating?.name != null) update.esrb_rating = details.esrb_rating.name;
+      update.developers = JSON.stringify((details.developers || []).map(d => d.name));
+      update.genres_list = JSON.stringify((details.genres || []).map(x => x.name));
+      update.platforms_list = JSON.stringify((details.platforms || []).map(p => p.platform ? normalizePlatformName(p.platform.name) : null).filter(Boolean));
+      update.publishers_list = JSON.stringify((details.publishers || []).map(p => p.name));
 
       if (screenshots.length > 0) {
         update.screenshot_urls = JSON.stringify(screenshots.map(s => s.image));

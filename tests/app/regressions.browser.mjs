@@ -1,3 +1,5 @@
+import { checkLibrarySharing } from './libraryShare.browser.mjs';
+import { checkLoadingSkeletons } from './loadingSkeletons.browser.mjs';
 import { createRequire } from 'node:module';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -912,6 +914,8 @@ try {
   );
   await context.close();
   await checkAuthStartup(browser, server.resolvedUrls.local[0], cardArtifacts);
+  await checkLibrarySharing(browser, server.resolvedUrls.local[0], cardArtifacts);
+  await checkLoadingSkeletons(browser, server.resolvedUrls.local[0], cardArtifacts);
 } finally {
   await browser?.close();
   await server.close();

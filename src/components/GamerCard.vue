@@ -68,11 +68,14 @@
 import { computed, ref, onMounted, onUnmounted, watch, useId, nextTick } from 'vue';
 import GamenoteLogo from './GamenoteLogo.vue';
 import { cardDisplayPalette } from '../services/cardAppearance.js';
-import { loadCardAvatar } from '../services/cardAvatar.js';
+
 import { GAME_STATUS_MAP } from '../constants/gameStatus.js';
-import { getGamerCardStats, formatCardNumber, exportGamerCard } from '../services/gamerCard.js';
+import { getGamerCardStats, formatCardNumber, exportGamerCard, PLAYER_TITLES } from '../services/gamerCard.js';
 
 const props = defineProps({
+  username: { type: String, default: '' },
+  cardStats: { type: Object, default: null },
+  preparedAvatar: { type: String, default: '' },
   games: { type: Array, default: () => [] },
   name: { type: String, default: 'Igrač' },
   email: { type: String, default: '' },
@@ -86,7 +89,7 @@ const uid = useId();
 const container = ref(null);
 const cardSvg = ref(null);
 const compact = ref(false);
-const avatarData = ref('');
+const avatarData = ref(props.preparedAvatar);
 const avatarLoading = ref(false);
 const avatarFailed = ref(false);
 const avatarAttempt = ref(0);
@@ -96,7 +99,12 @@ const avatarSource = computed(() => avatarData.value || (!avatarPreviewFailed.va
 let observer;
 let resizeFrame;
 let avatarReady = Promise.resolve();
-const stats = computed(() => getGamerCardStats(props.games));
+const stats = computed(() => {
+  const value = props.cardStats || getGamerCardStats(props.games);
+  let level = 'Početnik';
+  for (const title of PLAYER_TITLES) { if (value.hours >= title.hours) level = title.label; }
+  return { ...value, level };
+});
 const palette = computed(() => cardDisplayPalette(props.color, stats.value.favoriteGenre?.name, props.theme));
 const width = computed(() => compact.value ? 600 : 960);
 const height = computed(() => compact.value ? 880 : 600);
@@ -106,8 +114,8 @@ const summaryWidth = computed(() => compact.value ? width.value - margin.value *
 const identity = computed(() => {
   const totalWidth = compact.value ? 390 : 730;
   const emailSize = compact.value ? 18 : 19;
-  const email = fitText(props.email, compact.value ? 220 : 320, emailSize, 1, 500)[0] || '';
-  const context = document.createElement('canvas').getContext('2d');
+  const email = fitText(props.username ? '– @' + props.username : props.email, compact.value ? 220 : 320, emailSize, 1, 500)[0] || '';
+  const context = textContext();
   context.font = `500 ${emailSize}px Arial`;
   const emailWidth = email ? context.measureText(email).width + 14 : 0;
   const nameSize = compact.value ? 38 : 44;
@@ -125,12 +133,20 @@ const memberSince = computed(() => {
   const date = new Date(props.createdAt);
   return Number.isNaN(date.getTime()) ? 'Tvoja osobna gaming priča' : `Član od ${date.toLocaleDateString('hr-HR', { month: '2-digit', year: 'numeric' })}`;
 });
-const description = computed(() => `${props.name}. ${props.email ? props.email + '. ' : ''}${stats.value.hours} sati igranja, ${stats.value.total} igara, ${stats.value.completed} ${GAME_STATUS_MAP.completed.label}, ${stats.value.playing} ${GAME_STATUS_MAP.playing.label}. Omiljena igra: ${stats.value.favoriteGame?.title || 'nema podataka'}. Omiljeni žanr: ${stats.value.favoriteGenre?.name || 'nema podataka'}. gamenote.eu.`);
+const description = computed(() => `${props.name}. ${props.username ? '@' + props.username + '. ' : props.email ? props.email + '. ' : ''}${stats.value.hours} sati igranja, ${stats.value.total} igara, ${stats.value.completed} ${GAME_STATUS_MAP.completed.label}, ${stats.value.playing} ${GAME_STATUS_MAP.playing.label}. Omiljena igra: ${stats.value.favoriteGame?.title || 'nema podataka'}. Omiljeni žanr: ${stats.value.favoriteGenre?.name || 'nema podataka'}. gamenote.eu.`);
 const favoriteLines = computed(() => fitText(stats.value.favoriteGame?.title || 'Još nema podataka', compact.value ? 512 : 436, 31, 2));
 const genreLines = computed(() => fitText(stats.value.favoriteGenre?.name || 'Još nema podataka', compact.value ? 400 : 364, 31, 2));
 
+function textContext() {
+  if (typeof document !== 'undefined') return document.createElement('canvas').getContext('2d');
+  return { font: '', measureText(value) {
+    const size = Number(this.font.match(/(\d+)px/)?.[1] || 31);
+    return { width: Array.from(value).length * size * 0.56 };
+  } };
+}
+
 function fitText(value, maxWidth, fontSize, maxLines = 1, fontWeight = 700) {
-  const context = document.createElement('canvas').getContext('2d');
+  const context = textContext();
   context.font = `${fontWeight} ${fontSize}px Arial`;
   const lines = [];
   let remaining = String(value).replace(/\s+/g, ' ').trim();
@@ -162,6 +178,7 @@ function onAvatarPreviewError() {
 }
 
 watch([() => props.avatarUrl, avatarAttempt], ([url], [previousUrl] = [], onCleanup) => {
+  if (typeof window === 'undefined') return;
   if (url !== previousUrl) {
     avatarPreviewLoaded.value = false;
     avatarPreviewFailed.value = false;
@@ -174,6 +191,7 @@ watch([() => props.avatarUrl, avatarAttempt], ([url], [previousUrl] = [], onClea
   avatarReady = (async () => {
     if (!url) return;
     try {
+      const { loadCardAvatar } = await import('../services/cardAvatar.js');
       const data = await loadCardAvatar(url, controller.signal);
       if (!controller.signal.aborted) avatarData.value = data;
     } catch {

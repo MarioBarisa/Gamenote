@@ -83,7 +83,7 @@
                     @click.stop="selectGameForCollection(game)" 
                     class="btn btn-xs sm:btn-sm btn-primary"
                   >
-                    Dodaj u kolekciju
+                    Dodaj u Gamenote
                   </button>
                 </div>
               </div>
@@ -99,7 +99,7 @@
     <!-- API dodaj igru -->
     <div v-if="showApiGameModal" class="modal modal-open">
       <div class="modal-box max-w-2xl">
-        <h3 class="font-bold text-2xl mb-4">Dodaj igru u kolekciju</h3>
+        <h3 class="font-bold text-2xl mb-4">Dodaj u Gamenote</h3>
         
         <div v-if="apiGameDetails" class="mb-6">
           <div class="flex gap-4 mb-4">
@@ -325,7 +325,7 @@
           <div class="modal-action">
             <button type="submit" class="btn btn-primary" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
-              <span v-else>Dodaj igru</span>
+              <span v-else>Dodaj u Gamenote</span>
             </button>
             <button type="button" @click="closeApiGameModal" class="btn btn-secondary">
               Odustani
@@ -689,6 +689,7 @@ export default {
       return new Date(date).toLocaleDateString('hr-HR');
     };
     
+    // noinspection ExceptionCaughtLocallyJS
     const saveGame = async () => {
       if (saveLoading.value) return;
       operationError.value = '';
@@ -823,6 +824,7 @@ export default {
       router.replace({ path: '/add-game' });
     };
 
+    // noinspection ExceptionCaughtLocallyJS
     const saveApiGame = async () => {
       if (saveLoading.value) return;
       operationError.value = '';

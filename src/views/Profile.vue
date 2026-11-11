@@ -28,14 +28,9 @@
                 <input id="profile-email" type="email" :value="userStore.user?.email"
                   class="input input-bordered w-full opacity-50" disabled />
               </div>
-              <div class="form-control">
-                <label for="profile-avatar" class="label mb-1">Profilna slika</label>
-                <input id="profile-avatar" type="file" accept="image/*" class="file-input file-input-bordered w-full"
-                  :disabled="uploading" @change="handleFileUpload" />
-                <div class="flex flex-wrap justify-between gap-1 mt-2 text-xs text-base-content/60">
-                  <span>Maksimalno 3 MB (JPG, PNG, GIF, WebP)</span>
-                  <span v-if="uploading" class="text-info">Uploadam...</span>
-                </div>
+              <div class="profile-identity-actions flex items-center gap-2 min-w-0">
+                <ProfileInfoButton :avatar-url="profileForm.avatarUrl" @avatar-saved="profileForm.avatarUrl = $event" />
+                <LibraryShareButton settings />
               </div>
               <button type="submit" class="btn btn-primary w-full" :disabled="updating">
                 <span v-if="updating" class="loading loading-spinner"></span>
@@ -295,11 +290,12 @@
 </template>
 
 <script>
+import ProfileInfoButton from '../components/ProfileInfoButton.vue';
+import LibraryShareButton from '../components/LibraryShareButton.vue';
 import { usePageTitle } from '../composables/usePageTitle';
 import { disconnectPsn } from '../services/psnService';
 import { clearImporterChoices } from '../services/importerResolution';
 import { fetchUserRows } from '../services/libraryData';
-import { requestAppApi } from '../services/appApi';
 import { localAvatar } from '../services/safeContent';
 import { ref, reactive, onMounted, computed, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
@@ -318,7 +314,7 @@ import { SIGNATURE_THEMES, GENRE_THEMES, signatureForGenre, cardColorValue, card
 const THROW = (err) => { if (err) throw err; };
 
 export default {
-  components: { GamenoteBanner, GamerCard, CardThemePicker, CardThemePreview, AchievementIcon },
+  components: { ProfileInfoButton, LibraryShareButton, GamenoteBanner, GamerCard, CardThemePicker, CardThemePreview, AchievementIcon },
   setup() {
     const router = useRouter();
     const userStore = useUserStore();
@@ -327,7 +323,6 @@ export default {
     const loading = ref(false);
     const updating = ref(false);
     const updatingPassword = ref(false);
-    const uploading = ref(false);
     const genreChartRef = ref(null);
     const platformChartRef = ref(null);
     const gamingCardRef = ref(null);
@@ -480,53 +475,13 @@ export default {
       profileImageFailed.value = true;
     };
     
-    // pošalji na imgBB
-    const handleFileUpload = async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      // sprijeci velike slike
-      if (file.size > 3 * 1024 * 1024) {
-        showToast('Slika je prevelika. Maksimalno 3 MB.', 'error');
-        return;
-      }
-      
-      if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
-        showToast('Molimo odaberite sliku.', 'error');
-        return;
-      }
-      
-      uploading.value = true;
-      
-      try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData.session) THROW(new Error('Prijavi se ponovno.'));
-        const image = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result).split(',')[1]);
-          reader.onerror = () => reject(new Error('Sliku nije moguće pročitati.'));
-          reader.readAsDataURL(file);
-        });
-        const data = await requestAppApi({ action: 'avatar', image }, { token: sessionData.session.access_token });
-        profileForm.avatarUrl = data.url;
-        showToast('Slika uspješno prenesena!');
-      } catch (error) {
-        console.error('Greška pri uploadu:', error);
-        showToast(error.message || 'Greška pri uploadu slike', 'error');
-      } finally {
-        uploading.value = false;
-        event.target.value = '';
-      }
-    };
-    
     const updateProfile = async () => {
       updating.value = true;
       
       try {
         const { error } = await supabase.auth.updateUser({
           data: {
-            name: profileForm.name,
-            avatar_url: profileForm.avatarUrl
+            name: profileForm.name
           }
         });
         
@@ -765,7 +720,6 @@ export default {
       loading,
       updating,
       updatingPassword,
-      uploading,
       profileForm,
       passwordForm,
       profileImageUrl,
@@ -798,7 +752,6 @@ export default {
       updatePassword,
       logout,
       handleImageError,
-      handleFileUpload,
       handleDeleteAccount,
       handleReauthAndDelete,
       closeDeleteModal,
@@ -858,6 +811,13 @@ export default {
 
 .profile-form .form-control {
   margin: 0;
+}
+
+.profile-identity-actions :deep(.btn) {
+  padding-inline: .625rem;
+  min-width: 0;
+  flex-shrink: 1;
+  white-space: normal;
 }
 
 @media (min-width: 1024px) {

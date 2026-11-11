@@ -24,7 +24,7 @@ let requests = 0;
 globalThis.fetch = async () => { requests++; return Response.json({ name: 'Test <game>', description_raw: 'Opis', background_image: 'https://image.test/game.jpg' }); };
 for (const agent of ['Mozilla/5.0', 'Twitterbot']) {
   const response = await sharedPreview(new Request('https://gamenote.eu/shared?id=42&utm_source=test', { headers: { 'user-agent': agent } }), {
-    next: async () => new Response(`<html><head>${metadataHtml(pageMetadata('/shared'))}</head></html>`, { headers: { 'content-type': 'text/html' } }),
+    next: async () => new Response(`<html lang="hr"><head>${metadataHtml(pageMetadata('/shared'))}</head></html>`, { headers: { 'content-type': 'text/html' } }),
   });
   const html = await response.text();
   assert.equal((html.match(/rel="canonical"/g) || []).length, 1);
@@ -103,7 +103,7 @@ try {
         await expect(page.locator('.preview-details .api-game-details')).toContainText('Katalog 134588');
         await expect(page).toHaveTitle('Gamenote');
         assert.deepEqual(await page.locator('.preview-details span.tooltip[title]').evaluateAll(elements => elements.map(el => el.title)), ['PlayStation 5', 'PC', 'Xbox Series X/S']);
-        await expect(page.locator('.preview-details')).not.toContainText('Dodaj u kolekciju');
+        await expect(page.locator('.preview-details')).not.toContainText('Dodaj u Gamenote');
         await expect(page.locator('.preview-details').getByRole('button', { name: 'Podijeli', exact: true })).toHaveCount(0);
       }
       await expect(page.getByRole('heading', { name: 'Sve o igri, na jednom mjestu' })).toBeVisible();

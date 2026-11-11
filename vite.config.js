@@ -124,6 +124,29 @@ function appApiDevServer(env) {
   };
 }
 
+function libraryCardDevServer(env) {
+  const require = createRequire(import.meta.url);
+  const { libraryCard } = require('./netlify/functions/lib/_libraryCard.js');
+  return {
+    name: 'library-card-dev-server',
+    configureServer(server) {
+      server.middlewares.use('/.netlify/functions/library-card', async (req, res) => {
+        const username = new URL(req.url, 'http://localhost').searchParams.get('username');
+        const result = await libraryCard(req.method, username, {
+          env, ip: req.socket.remoteAddress,
+          metadata: new URL(req.url, 'http://localhost').searchParams.get('format') === 'metadata',
+          render: async (header, avatar) => {
+            const renderer = await server.ssrLoadModule('/scripts/render-library-card.js');
+            return renderer.renderLibraryCard(header, avatar);
+          },
+        });
+        res.writeHead(result.status, result.headers);
+        res.end(result.binary ? Buffer.from(result.body, 'base64') : result.body);
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
@@ -135,6 +158,7 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     psnDevServer(),
+    libraryCardDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
     appApiDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
     steamDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
   ],

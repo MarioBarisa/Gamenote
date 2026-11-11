@@ -49,3 +49,6 @@ opencode.json
 
 # Lokalne kopije
 /.nvmrc 2
+
+# Generirani serverski prikaz kartice
+netlify/functions/lib/card-renderer/

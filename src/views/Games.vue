@@ -57,7 +57,7 @@
               </div>
               <div class="card-actions">
                 <button @click="navigateToAddGame(apiGameDetails.id)" class="btn btn-primary">
-                  Dodaj u moju kolekciju
+                  Dodaj u Gamenote
                 </button>
               </div>
             </div>
@@ -73,75 +73,26 @@
         </div>
 
         <!-- Filter Tabs -->
-        <div class="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div class="flex flex-nowrap gap-2 min-w-max">
-            <button class="btn btn-sm" :class="filterBtnClass('all')" @click="filterGames('all')">Sve</button>
-            <button class="btn btn-sm" :class="filterBtnClass('playing')" @click="filterGames('playing')">Igram</button>
-            <button class="btn btn-sm" :class="filterBtnClass('completed')" @click="filterGames('completed')">Završeno</button>
-            <button class="btn btn-sm" :class="filterBtnClass('paused')" @click="filterGames('paused')">Pauzirano</button>
-            <button class="btn btn-sm" :class="filterBtnClass('backlog')" @click="filterGames('backlog')">Backlog</button>
-            <button class="btn btn-sm" :class="filterBtnClass('dropped')" @click="filterGames('dropped')">Napušteno</button>
-            <button class="btn btn-sm" :class="filterBtnClass('wishlist')" @click="filterGames('wishlist')">Wishlist</button>
-            <button class="btn btn-sm" :class="filterBtnClass('rated-5')" @click="filterGames('rated-5')">5/5</button>
-            <button class="btn btn-sm" :class="filterBtnClass('rated-4')" @click="filterGames('rated-4')">4/5+</button>
-          </div>
+        <div class="library-status-actions flex flex-col-reverse lg:flex-row lg:items-start gap-3 min-w-0">
+          <LibraryStatusFilters class="min-w-0 lg:flex-1" :model-value="activeFilter" ratings @update:model-value="filterGames" />
+          <div class="shrink-0"><LibraryShareButton /></div>
         </div>
 
         <!-- Toolbar -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full bg-base-200 p-4 rounded-box shadow-sm">
-          
-          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <div class="relative w-full sm:w-64">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input 
-                type="text" 
-                v-model="searchQuery" 
-                placeholder="Pretraži svoju zbirku..." 
-                class="input input-bordered input-sm sm:input-md w-full pl-10"
-              />
-            </div>
-            
-            <select class="select select-bordered w-full sm:hidden" aria-label="Sortiranje igara"
-              :value="sortField + ':' + sortOrder" @change="changeSort($event.target.value)">
-              <option value="title:asc">Naziv (A-Ž)</option>
-              <option value="title:desc">Naziv (Ž-A)</option>
-              <option value="rating:desc">Ocjena (najviša)</option>
-              <option value="rating:asc">Ocjena (najniža)</option>
-              <option value="play_time:desc">Vrijeme igranja (najviše)</option>
-              <option value="created_at:desc">Nedavno dodano</option>
-            </select>
-            <div class="dropdown dropdown-bottom sm:dropdown-end hidden sm:block w-full sm:w-auto">
-              <label tabindex="0" class="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto" ref="sortDropdownLabel">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                </svg>
-                Sortiraj
-              </label>
-              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-1" @click="closeDropdown('sort')">
-                <li><a @click="sortGames('title', 'asc')">Naziv (A-Ž)</a></li>
-                <li><a @click="sortGames('title', 'desc')">Naziv (Ž-A)</a></li>
-                <li><a @click="sortGames('rating', 'desc')">Ocjena (najviša)</a></li>
-                <li><a @click="sortGames('rating', 'asc')">Ocjena (najniža)</a></li>
-                <li><a @click="sortGames('play_time', 'desc')">Vrijeme igranja (najviše)</a></li>
-                <li><a @click="sortGames('created_at', 'desc')">Nedavno dodano</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <router-link to="/add-game" class="btn btn-primary btn-sm sm:btn-md w-full md:w-auto shadow">
+        <LibraryToolbar v-model="searchQuery" :sort-value="sortField + ':' + sortOrder" @sort="changeSort">
+          <div class="library-toolbar-actions flex items-center gap-3 w-full md:w-auto">
+            <TcgShareToggle class="btn-sm sm:btn-md" :model-value="themeStore.tcgMode" @update:model-value="themeStore.setTcgMode($event)" />
+          <router-link to="/add-game" class="btn btn-primary btn-sm sm:btn-md flex-1 md:flex-none shadow">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Dodaj igru
+            Dodaj u Gamenote
           </router-link>
-        </div>
+          </div>
+        </LibraryToolbar>
       </div>
 
-      <div v-if="loading" class="flex justify-center py-12">
-        <span class="loading loading-spinner loading-lg"></span>
-      </div>
+      <LoadingCardGrid v-if="loading" :layout="cardSizeStore.getSizeConfig(cardSizeStore.cardSize)" />
 
       <div v-else-if="error" class="alert alert-error shadow-lg mb-6">
         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
@@ -192,7 +143,7 @@
           Poništi filter
         </button>
         <router-link to="/add-game" class="btn btn-primary">
-          Dodaj igru
+          Dodaj u Gamenote
         </router-link>
       </div>
     </div>
@@ -200,23 +151,30 @@
 </template>
 
 <script>
+import LibraryToolbar from '../components/LibraryToolbar.vue';
+import LibraryStatusFilters from '../components/LibraryStatusFilters.vue';
+import LibraryShareButton from '../components/LibraryShareButton.vue';
+import TcgShareToggle from '../components/TcgShareToggle.vue';
+import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
+import { useThemeStore } from '../stores/theme';
 import { useLibraryUiStore } from '../stores/libraryUi';
 import { useGamesApi } from '../services/gamesApi';
 import { supabase } from '../supabase';
 import GameCard from '../components/GameCard.vue';
 
 export default {
-  components: {
+  components: { LibraryToolbar, LibraryStatusFilters, LibraryShareButton, TcgShareToggle, LoadingCardGrid,
     GameCard
   },
   setup() {
     const userStore = useUserStore();
     const cardSizeStore = useCardSizeStore();
+    const themeStore = useThemeStore();
     const libraryUiStore = useLibraryUiStore();
     const route = useRoute();
     const router = useRouter();
@@ -229,7 +187,6 @@ export default {
     const sortField = ref(libraryUiStore.sortField);
     const sortOrder = ref(libraryUiStore.sortOrder);
     const activeFilter = ref(libraryUiStore.activeFilter);
-    const sortDropdownLabel = ref(null);
     const filterDropdownLabel = ref(null);
     const searchQuery = ref(libraryUiStore.searchQuery);
     const existingGameId = ref(null);
@@ -302,32 +259,6 @@ export default {
     const filterGames = (filter) => {
       activeFilter.value = filter;
       libraryUiStore.saveViewState({ filter });
-    };
-
-    const filterBtnClass = (filter) => {
-      const colorMap = {
-        'all': 'btn-info',
-        'playing': 'btn-primary',
-        'current': 'btn-primary',
-        'completed': 'btn-success',
-        'paused': 'btn-warning',
-        'backlog': 'btn-ghost',
-        'dropped': 'btn-error',
-        'wishlist': 'btn-accent',
-        'rated-5': 'btn-secondary',
-        'rated-4': 'btn-secondary'
-      };
-      const color = colorMap[filter] || 'btn-neutral';
-      if (activeFilter.value !== filter) return `${color} btn-outline bg-base-100 shadow-sm`;
-      return `${color} btn-active shadow`;
-    };
-
-    const closeDropdown = (type) => {
-      const ref = type === 'sort' ? sortDropdownLabel : null;
-      if (ref?.value) {
-        ref.value.blur();
-        document.activeElement?.blur();
-      }
     };
 
     const filteredGames = computed(() => {
@@ -474,14 +405,12 @@ export default {
       sortGames,
       changeSort,
       filterGames,
-      filterBtnClass,
-      closeDropdown,
       navigateToGame,
       navigateToAddGame,
       goBack,
       userStore,
       cardSizeStore,
-      sortDropdownLabel,
+      themeStore,
       filterDropdownLabel,
       searchQuery,
       existingGameId
