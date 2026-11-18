@@ -132,7 +132,6 @@ async function upload(event) {
   } catch (failure) { if (current === revision) avatarError.value = failure.message || 'Sliku nije moguće prenijeti. Pokušaj ponovno.'; }
   finally { if (current === revision) uploading.value = false; event.target.value = ''; }
 }
-// noinspection ExceptionCaughtLocallyJS
 async function saveAvatar() {
   if (busy.value || !userStore.user?.id) return;
   const current = revision;
@@ -144,7 +143,10 @@ async function saveAvatar() {
     if (url !== uploadedUrl.value) await requestAppApi({ action: 'avatar-image', url }, { token: session.access_token });
     if (current !== revision || userStore.user?.id !== ownerId) return;
     const { error } = await supabase.auth.updateUser({ data: { avatar_url: url } });
-    if (error) throw new Error('Profilnu sliku nije moguće spremiti. Pokušaj ponovno.');
+    if (error) {
+      if (current === revision) avatarError.value = 'Profilnu sliku nije moguće spremiti. Pokušaj ponovno.';
+      return;
+    }
     if (current !== revision || userStore.user?.id !== ownerId) return;
     originalAvatar.value = url;
     emit('avatar-saved', url);

@@ -54,7 +54,6 @@ async function open(game) {
     if (current === revision) groups.value = result;
   } catch { if (current === revision) error.value = 'Grupe nije moguće učitati. Igru možeš dodati bez grupe.'; }
 }
-// noinspection ExceptionCaughtLocallyJS
 async function save() {
   if (saving.value || added.value || !userStore.user?.id) return;
   const ownerId = userStore.user.id;
@@ -67,7 +66,10 @@ async function save() {
     for (const key of ['game_api_id', 'image_url', 'background_image', 'description', 'metacritic_score', 'esrb_rating', 'release_date', 'website_url', 'developers', 'genres_list', 'platforms_list', 'publishers_list', 'screenshot_urls', 'series_games']) payload[key] = source.value[key] ?? null;
     if (current !== revision || userStore.user?.id !== ownerId) return;
     const { data, error: failure } = await supabase.from('games').insert([payload]).select('id').single();
-    if (failure) throw failure;
+    if (failure) {
+      if (current === revision) error.value = failure.code ? 'Igru nije moguće spremiti. Pokušaj ponovno.' : failure.message || 'Igru nije moguće spremiti. Pokušaj ponovno.';
+      return;
+    }
     if (current !== revision || userStore.user?.id !== ownerId) return;
     added.value = true;
     emit('added', { id: data.id, source: source.value });

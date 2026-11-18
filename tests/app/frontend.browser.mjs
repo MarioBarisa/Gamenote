@@ -400,6 +400,16 @@ export async function checkFrontend(browser, origin, artifacts) {
           const strip = element.parentElement.getBoundingClientRect();
           return bounds.left >= strip.left - 1 && bounds.right <= strip.right + 1;
         })).toBe(true);
+        if (width === 1440) {
+          for (const height of [800, 1000]) {
+            await page.setViewportSize({ width, height });
+            await expect.poll(() => last.evaluate(element => {
+              const bounds = element.getBoundingClientRect();
+              const strip = element.parentElement.getBoundingClientRect();
+              return bounds.left >= strip.left - 1 && bounds.right <= strip.right + 1;
+            })).toBe(true);
+          }
+        }
         await expect(thumbnails).toHaveCSS('scrollbar-width', 'none');
         await thumbnails.evaluate(element => { element.scrollLeft = 0; });
         await thumbnails.hover();

@@ -7,10 +7,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 const props = defineProps({ images: { type: Array, required: true }, selectedIndex: { type: Number, default: 0 } });
 defineEmits(['select']);
 const strip = ref(null);
+let resizeObserver;
 
 function scrollWithWheel(event) {
   if (!strip.value || event.ctrlKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
@@ -31,8 +32,16 @@ function revealSelected() {
   else if (bounds.right > track.right) strip.value.scrollLeft += bounds.right - track.right;
 }
 
-onMounted(revealSelected);
+// Širina se mijenja nakon učitavanja slike.
+watch(strip, element => {
+  resizeObserver?.disconnect();
+  if (!element) return;
+  resizeObserver = new ResizeObserver(revealSelected);
+  resizeObserver.observe(element);
+  revealSelected();
+}, { flush: 'post' });
 watch(() => props.selectedIndex, revealSelected, { flush: 'post' });
+onBeforeUnmount(() => resizeObserver?.disconnect());
 </script>
 
 <style scoped>

@@ -45,7 +45,7 @@ async function fixturePage(provider, viewport) {
   const context = await browser.newContext({ viewport });
   const page = await context.newPage();
   const foreign = { ...existingRow(provider), id: 'other-platform', title: provider.newName, platform: provider.id === 'steam' ? 'PlayStation 4' : 'PC', website_url: 'https://store.steampowered.com/app/220/', psn_title_id: 'CUSA00001', psn_np_communication_id: 'NPWR00001' };
-  const state = { rows: [existingRow(provider), foreign], writes: [], libraryFailed: false, insertFailed: false, gameDataMissing: false, earned: 1, total: 4, errors: [] };
+  const state = { rows: [existingRow(provider), foreign], writes: [], libraryFailed: false, insertFailed: false, emptyUpdate: false, gameDataMissing: false, earned: 1, total: 4, errors: [] };
   page.on('pageerror', error => state.errors.push(error.message));
   const jwt = `fixture.${Buffer.from(JSON.stringify({ sub: '1234567890', online_id: 'FixturePSN' })).toString('base64url')}.fixture`;
   await context.route('**/*', async route => {
@@ -89,6 +89,7 @@ async function fixturePage(provider, viewport) {
       if (request.method() === 'GET') return route.fulfill({ json: url.pathname.endsWith('/groups') ? [{ id: 'group-1', name: 'Klasici' }] : state.rows });
       const payload = request.postDataJSON();
       if (request.method() === 'PATCH') {
+        if (state.emptyUpdate) return route.fulfill({ json: [] });
         assert.equal(url.searchParams.get('user_id'), `eq.${userId}`);
         const id = url.searchParams.get('id')?.replace('eq.', '');
         const row = state.rows.find(row => row.id === id);
@@ -231,6 +232,15 @@ try {
         assert.equal(state.writes.filter(write => write.table === 'game_groups').length, 1);
         await page.getByRole('button', { name: 'Poništi postojeće', exact: true }).click();
         await existingGame.getByRole('checkbox').check();
+        if (provider.id === 'steam') {
+          state.emptyUpdate = true;
+          await page.getByRole('button', { name: 'Sinkroniziraj (1)', exact: true }).click();
+          await expect(page.getByText('Igra više nije u kolekciji. Osvježi popis i pokušaj ponovno.', { exact: true })).toBeVisible();
+          await expect(page.getByTestId('importer-game-list').getByRole('button', { name: /Osvježi/ })).toBeEnabled();
+          assert.equal(state.writes.filter(write => write.method === 'PATCH').length, 0);
+          state.emptyUpdate = false;
+          await existingGame.getByRole('checkbox').check();
+        }
         await page.getByRole('button', { name: 'Sinkroniziraj (1)', exact: true }).click();
         await expect.poll(() => state.writes.filter(write => write.method === 'PATCH').length).toBe(1);
         await expect(page.getByTestId('importer-game-list').getByRole('button', { name: /Osvježi/ })).toBeEnabled();

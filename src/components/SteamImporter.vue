@@ -238,8 +238,6 @@ function disconnect() {
   warning.value = '';
 }
 
-// Greške dijele postojeći catch i finally.
-// noinspection ExceptionCaughtLocallyJS
 async function saveSelected(existing) {
   if (busy.value || !libraryReady.value) return;
   const toSave = games.value.filter(game => selected.value[game.appId] && !game._ambiguous && Boolean(game._match) === existing);
@@ -259,7 +257,10 @@ async function saveSelected(existing) {
     if (existing) {
       for (const game of toSave) {
         const match = resolveImporterGame(rows, 'steam', game, choices.value[game.appId]);
-        if (match.row && targets.has(match.row.id)) throw new Error('Odaberi samo jedan izvor napretka za istu igru.');
+        if (match.row && targets.has(match.row.id)) {
+          if (!signal.aborted) errorMessage.value = 'Odaberi samo jedan izvor napretka za istu igru.';
+          return;
+        }
         if (match.row) targets.add(match.row.id);
       }
     }
@@ -277,7 +278,10 @@ async function saveSelected(existing) {
       try {
         achievements = await fetchSteamAchievements(profile.value.steamId, game.appId, signal);
       } catch (error) {
-        if (error.name === 'AbortError' || error.status === 401 || error.status === 429) throw error;
+        if (error.name === 'AbortError' || error.status === 401 || error.status === 429) {
+          if (!signal.aborted) showError(error);
+          return;
+        }
       }
       if (!achievements) unavailable++;
       checkActive(signal);
@@ -286,8 +290,14 @@ async function saveSelected(existing) {
         patch.website_url = `https://store.steampowered.com/app/${game.appId}/`;
         const { data, error } = await supabase.from('games').update(patch)
           .eq('user_id', currentUserId).eq('id', match.row.id).eq('platform', match.row.platform).select('id').abortSignal(signal);
-        if (error) throw error;
-        if (!data?.length) throw new Error('Igra više nije u kolekciji. Osvježi popis i pokušaj ponovno.');
+        if (error) {
+          if (!signal.aborted) showError(error);
+          return;
+        }
+        if (!data?.length) {
+          if (!signal.aborted) errorMessage.value = 'Igra više nije u kolekciji. Osvježi popis i pokušaj ponovno.';
+          return;
+        }
       } else {
         const metadata = await loadImporterMetadata(gamesApi, game.name);
         if (!metadata) { missingMetadata.push(game.name); done.value++; continue; }
@@ -300,7 +310,10 @@ async function saveSelected(existing) {
         row.website_url = `https://store.steampowered.com/app/${game.appId}/`;
         game._metadata = metadata;
         const { data, error } = await supabase.from('games').insert(row).select('id').single().abortSignal(signal);
-        if (error) throw error;
+        if (error) {
+          if (!signal.aborted) showError(error);
+          return;
+        }
         checkActive(signal);
         rows.push({ ...row, id: data.id });
         if (match.separate) {
