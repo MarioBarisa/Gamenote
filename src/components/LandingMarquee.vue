@@ -1,19 +1,22 @@
 <template>
-    <div class="hero-marquee absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true" role="presentation">
-      <div class="flex flex-col justify-between gap-2 sm:gap-4 h-full py-4 sm:py-8">
+    <div class="hero-marquee absolute inset-0 z-0 overflow-hidden pointer-events-none" >
+      <div aria-hidden="true" class="flex flex-col justify-between gap-2 sm:gap-4 h-full py-4 sm:py-8">
         <div v-for="(row, rowIndex) in heroRows" :key="rowIndex" class="hero-marquee-fade w-full overflow-hidden">
-          <div class="hero-marquee-track" :style="{ '--marquee-duration': row.duration, '--marquee-direction': row.direction }">
+          <div class="hero-marquee-track" :style="{ '--marquee-duration': row.duration, '--marquee-direction': row.direction, animationPlayState: paused ? 'paused' : 'running' }">
             <template v-for="copy in 2" :key="copy">
               <div v-for="demo in row.games" :key="`${demo.id}-${copy}`" class="shrink-0 w-44 sm:w-48 md:w-56 px-2">
-                <GameCard :game="demo" lazy no-tcg :meta="false" />
+                <GameCard :game="demo" lazy no-tcg marquee :meta="false" />
               </div>
             </template>
           </div>
         </div>
       </div>
+      <button type="button" class="btn btn-ghost btn-xs pointer-events-auto absolute bottom-2 right-2" @click="paused = !paused" :aria-label="paused ? 'Pokreni animaciju kartica' : 'Pauziraj animaciju kartica'">{{ paused ? '▶' : 'Ⅱ' }}</button>
     </div>
 </template>
 <script setup>
+import { ref } from 'vue'
+const paused = ref(false)
 import GameCard from './GameCard.vue'
 const marqueeRows = [
   { duration: '42s', direction: 'normal' },
@@ -61,94 +64,25 @@ function shuffle(games) {
 
 const heroRows = marqueeRows.map(row => ({ ...row, games: shuffle(demoGames).slice(0, 10) }))
 </script>
-<style scoped>
+<style>
 /* ====== Rotirajući GameCards marquee ====== */
 .hero-marquee-fade {
   -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
   mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
 }
-
 .hero-marquee-track {
+  --marquee-duration: 42s;
+  --marquee-direction: normal;
   display: flex;
   width: max-content;
   will-change: transform;
-  animation: marquee-left var(--marquee-duration, 42s) linear infinite;
-  animation-direction: var(--marquee-direction, normal);
+  animation: marquee-left var(--marquee-duration) linear infinite;
+  animation-direction: var(--marquee-direction);
 }
 
 @keyframes marquee-left {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
-}
-
-/* Kompaktnija kartica unutar hero marquee-a (nadjačava cardSize store) */
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.game-card) {
-  height: auto;
-  border-radius: 0.5rem !important;
-  overflow: hidden;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.game-card figure) {
-  height: 4.5rem !important;
-  overflow: hidden;
-  border-radius: 0.5rem 0.5rem 0 0 !important;
-}
-
-@media (min-width: 640px) {
-  .hero-marquee :deep(.game-card figure) {
-    height: 5.5rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .hero-marquee :deep(.game-card figure) {
-    height: 6.5rem !important;
-  }
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.game-card img) {
-  object-fit: cover !important;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.game-card .card-body) {
-  padding: 0.2rem 0.45rem !important;
-  border-radius: 0 0 0.5rem 0.5rem !important;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.game-card .card-title) {
-  font-size: 0.7rem;
-  line-height: 1.1;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.game-card .badge) {
-  font-size: 0.55rem !important;
-  padding: 0.08rem 0.3rem !important;
-  height: auto !important;
-  min-height: 0 !important;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.badge-outline) {
-  padding: 0.15rem 0.25rem !important;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.badge-outline svg),
-.hero-marquee :deep(.platform-icon) {
-  width: 0.9rem !important;
-  height: 0.9rem !important;
-}
-
-/*noinspection CssUnusedSymbol*/
-.hero-marquee :deep(.text-xs),
-.hero-marquee :deep(.text-sm) {
-  font-size: 0.6rem !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

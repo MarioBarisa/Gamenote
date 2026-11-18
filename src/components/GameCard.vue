@@ -3,15 +3,16 @@
     :is="tcgActive ? 'hover-tilt' : 'div'"
     v-bind="tcgActive ? tiltAttrs : {}"
     class="game-card-host h-full"
-    :class="{ 'tcg-round': tcgActive }"
+    :class="marquee ? 'marquee-card' : ''"
   >
     <div
-      class="game-card card bg-base-200 shadow-xl h-full"
+      class="game-card relative card bg-base-200 shadow-xl h-full"
       :class="[
         tcgActive ? '' : 'transform transition-all duration-300 hover:scale-105 hover:shadow-2xl',
         { 'relative overflow-hidden': !!foilVariant }
       ]"
     >
+    <router-link v-if="to" :to="to" :aria-label="game.title" class="card-open-link absolute inset-0 z-10 rounded-box" @click="$emit('open')" />
     <figure :class="`relative w-full ${sizeCfg.poster} overflow-hidden`">
       <img
         :src="getGameImage(game)"
@@ -24,8 +25,8 @@
       <!-- TCG folija -->
       <div v-if="foilVariant" class="tcg-foil" :class="{ 'tcg-foil--gold': foilVariant === 'gold', 'tcg-foil--holo': foilVariant === 'holo', 'tcg-foil--prism': foilVariant === 'prism' }" aria-hidden="true"></div>
       <!-- 100% Badge --->
-      <div v-if="achievementPercent === 100 && !foilVariant" class="absolute top-0 left-0 m-1 sm:m-2">
-        <div class="badge bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-black font-bold text-xs sm:text-sm p-2 sm:p-3 shadow-lg border-2 border-yellow-300">
+      <div v-if="progress.complete && !foilVariant" class="absolute top-0 left-0 m-1 sm:m-2">
+        <div class="badge bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 text-black font-bold text-xs sm:text-sm p-2 sm:p-3 shadow-lg border-2 border-yellow-300">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
@@ -33,8 +34,8 @@
         </div>
       </div>
     </figure>
-    <div :class="`card-body ${sizeCfg.cardBody} flex flex-col`">
-      <h2 :class="`card-title ${sizeCfg.titleSize} font-bold mb-1 line-clamp-1`">{{ game.title }}</h2>
+    <div class="card-body flex flex-col" :class="sizeCfg.cardBody">
+      <h2 class="card-title font-bold mb-1 line-clamp-1" :class="sizeCfg.titleSize">{{ game.title }}</h2>
       <!-- Status badge -->
       <div v-if="gameStatus" class="mb-2">
         <span :class="[`badge ${sizeCfg.badge} font-semibold`, statusBadgeClass]">
@@ -45,44 +46,43 @@
         <span :class="`badge ${sizeCfg.badge} font-semibold invisible`">Playing</span>
       </div>
       
-      <div class="flex items-center text-xs sm:text-sm mb-2">
-        <span class="badge badge-outline p-2 h-auto tooltip tooltip-top" :data-tip="game.platform || 'Nepoznata platforma'">
-          <PlatformIcon :name="game.platform" class="w-6 h-6" />
-        </span>
-        <span v-if="visibleGenres.length" class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto">
+      <div class="flex flex-wrap items-center gap-y-1 text-xs sm:text-sm mb-2">
+        <component :is="to ? 'router-link' : 'span'" :to="to || undefined" :tabindex="to ? -1 : undefined" @click="to && $emit('open')" :class="{ 'relative z-20': to }" class="badge badge-outline p-2 h-auto tooltip tooltip-top" :data-tip="game.platform || 'Nepoznata platforma'" :aria-label="game.platform || 'Nepoznata platforma'">
+          <PlatformIcon :name="game.platform" class="marquee-platform w-6 h-6" />
+        </component>
+        <component :is="to ? 'router-link' : 'span'" v-if="visibleGenres.length" :to="to || undefined" :tabindex="to ? -1 : undefined" @click="to && $emit('open')" :class="{ 'relative z-20': to }" class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto" :aria-label="visibleGenres.join(', ')">
           <span v-for="g in visibleGenres" :key="g" class="tooltip tooltip-top inline-flex" :data-tip="g">
             <GenreIcon :genre="g" class="w-6 h-6" />
           </span>
-        </span>
+        </component>
         <span v-else class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto invisible" aria-hidden="true">
           <GenreIcon genre="" class="w-6 h-6" />
         </span>
-        <button v-if="game.notes" @click.stop="showNotesModal = true" class="ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0" title="Prikaži bilješke">
+        <button v-if="game.notes" @click.stop="showNotesModal = true" class="relative z-20 ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0" title="Prikaži bilješke" :aria-label="`Prikaži bilješke: ${game.title}`">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
         </button>
-        <button v-else class="ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0 invisible" aria-hidden="true">
+        <button v-else class="relative z-20 ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0 invisible" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
         </button>
       </div>
 
-      <!-- Modal za bilješke (teleportirano izvan kartice radi overflow/tilt isjecanja) -->
+      <!-- Bilješke izvan 3D kartice. -->
       <Teleport to="body">
-        <div v-if="showNotesModal" class="modal modal-open">
+        <AppModal v-if="showNotesModal" label="Bilješke" @close="showNotesModal = false">
           <div class="modal-box max-w-2xl">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" @click.stop="showNotesModal = false">✕</button>
             <h3 class="font-bold text-lg mb-4">{{ game.title }}</h3>
             <div class="bg-base-100 p-4 rounded mb-4 max-h-96 overflow-y-auto">
               <p class="text-sm whitespace-pre-wrap">{{ game.notes }}</p>
             </div>
-            <div class="modal-action">
-              <button class="btn btn-primary" @click.stop="showNotesModal = false">Zatvori</button>
-            </div>
+
           </div>
           <form method="dialog" class="modal-backdrop" @click.stop="showNotesModal = false"></form>
-        </div>
+        </AppModal>
       </Teleport>
       
       <div v-if="game.rating != null" class="flex items-center mb-2">
@@ -132,19 +132,19 @@
 <div class="space-y-1" :aria-label="hasProgress ? undefined : 'Bez podataka o napretku'">
   <div class="w-full rounded-full h-2 overflow-hidden" :class="hasProgress ? 'bg-gray-700' : 'bg-base-300/50 border border-dashed border-base-content/25'">
     <div
-      v-if="hasProgress"
-      class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all"
+      v-if="hasProgress && progress.percent !== null"
+      class="bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all"
       :style="{ width: `${achievementPercent}%` }"
     ></div>
   </div>
-  <div class="flex justify-between items-center text-xs min-h-4" :class="{ 'opacity-40': !hasProgress }">
+  <div class="flex justify-between items-center gap-1 text-xs min-h-4" :class="{ 'opacity-40': !hasProgress }">
     <template v-if="hasProgress">
-      <span class="font-semibold">{{ validatedProgressValue }}/{{ game.progress_total }} {{ achievementLabel }}</span>
-      <span class="opacity-70">{{ achievementPercent }}%</span>
+      <span class="font-semibold min-w-0">{{ progress.text }}<template v-if="game.progress_mode !== 'leaderboard_rank' && !game.progress_mode?.startsWith('completion_')"> {{ ' ' + achievementLabel }}</template></span>
+      <span v-if="progress.percent !== null" class="opacity-70 shrink-0">{{ achievementPercent }}%</span>
     </template>
     <template v-else>
-      <span class="font-semibold">0/0 {{ achievementLabel }}</span>
-      <span>0%</span>
+      <span class="font-semibold">— {{ achievementLabel }}</span>
+      <span>—</span>
     </template>
   </div>
 </div>
@@ -160,20 +160,24 @@
 </template>
 
 <script>
+import AppModal from './AppModal.vue';
 import { useCardSizeStore } from '../stores/cardSize';
 import { useThemeStore } from '../stores/theme';
 import { ref, watch } from 'vue';
+import { cardProgress } from '../services/cardProgress.js';
 import { GAME_STATUS_MAP } from '../constants/gameStatus';
 import PlatformIcon from './PlatformIcon.vue';
 import GenreIcon from './GenreIcon.vue';
 
-// hover-tilt se registrira samo jednom i tek kad je TCG način aktivan
-let hoverTiltRegistered = false;
+// Učitaj efekt tek nakon uključivanja.
+let hoverTiltLoading = null;
 
 export default {
   name: 'GameCard',
-  components: { PlatformIcon, GenreIcon },
+  emits: ['open'],
+  components: { AppModal, PlatformIcon, GenreIcon },
   props: {
+    to: { type: String, default: '' },
     game: {
       type: Object,
       required: true
@@ -197,6 +201,10 @@ export default {
     meta: {
       type: Boolean,
       default: true
+    },
+    marquee: {
+      type: Boolean,
+      default: false
     }
   },
   setup(props) {
@@ -205,10 +213,11 @@ export default {
     const showNotesModal = ref(false);
 
     const ensureHoverTilt = () => {
-      if (!hoverTiltRegistered) {
-        hoverTiltRegistered = true;
-        import('hover-tilt/web-component');
-      }
+      if (typeof customElements === 'undefined' || customElements.get('hover-tilt') || hoverTiltLoading) return;
+      hoverTiltLoading = import('hover-tilt/web-component').catch(error => {
+        hoverTiltLoading = null;
+        console.error('TCG efekt nije moguće učitati.', error);
+      });
     };
     watch(
       () => (props.tcg ?? themeStore.tcgMode) && !props.noTcg,
@@ -231,9 +240,8 @@ export default {
     datesHint() {
       return this.gameStatus === 'playing' ? 'U tijeku' : 'Nema datuma';
     },
-    hasProgress() {
-      return !!(this.game?.progress_value && this.game?.progress_total);
-    },
+    progress() { return cardProgress(this.game); },
+    hasProgress() { return this.progress.available; },
     visibleGenres() {
       return this.genreList.slice(0, this.sizeCfg.maxGenres ?? 3);
     },
@@ -245,7 +253,7 @@ export default {
     },
     foilVariant() {
       if (!this.tcgActive) return null;
-      const ach = this.achievementPercent === 100;
+      const ach = this.progress.complete;
       if (ach && this.perfectRating) return 'prism';
       if (ach) return 'gold';
       if (this.perfectRating) return 'holo';
@@ -274,7 +282,7 @@ export default {
           const parsed = JSON.parse(game.genres_list);
           if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
         } catch {
-          // ignore
+          // Neispravan popis koristi rezervni žanr.
         }
       }
       if (list.length === 0 && game.genre) {
@@ -298,17 +306,9 @@ export default {
 
       return 'Achievements';
     },
-    achievementPercent() {
-      if (!this.game?.progress_value || !this.game?.progress_total) return 0;
-      const value = Math.min(this.game.progress_value, this.game.progress_total);
-      return Math.round((value / this.game.progress_total) * 100);
-    },
-    validatedProgressValue() {
-      if (!this.game?.progress_value || !this.game?.progress_total) return 0;
-      return Math.min(this.game.progress_value, this.game.progress_total);
-    },
+    achievementPercent() { return this.progress.percent ?? 0; },
     gameStatus() {
-      // BINTO: Support both new 'status' field and legacy 'currently_playing' !!!!!!
+      // Podrži i stariji zapis statusa.
       if (this.game?.status) return this.game.status;
       if (this.game?.currently_playing) return 'playing';
       if (this.game?.end_date) return 'completed';
@@ -367,12 +367,73 @@ export default {
 </script>
 
 <style scoped>
-/* Tooltips only on precise-pointer (PC) devices */
+/* Tooltip prikazuje samo precizni pokazivač. */
 @media (hover: none), (pointer: coarse) {
   .tooltip::before,
   .tooltip::after {
     display: none !important;
   }
+}
+
+/* Kompaktan prikaz samo za marquee. */
+.marquee-card .game-card {
+  height: auto;
+  border-radius: 0.5rem !important;
+  overflow: hidden;
+}
+
+.marquee-card .game-card figure {
+  height: 4.5rem !important;
+  overflow: hidden;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+@media (min-width: 640px) {
+  .marquee-card .game-card figure {
+    height: 5.5rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .marquee-card .game-card figure {
+    height: 6.5rem !important;
+  }
+}
+
+.marquee-card .game-card img {
+  object-fit: cover !important;
+}
+
+.marquee-card .game-card .card-body {
+  padding: 0.2rem 0.45rem !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+}
+
+.marquee-card .game-card .card-title {
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+
+.marquee-card .game-card .badge {
+  font-size: 0.55rem !important;
+  padding: 0.08rem 0.3rem !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.marquee-card .badge-outline {
+  padding: 0.15rem 0.25rem !important;
+}
+
+.marquee-card .badge-outline svg,
+.marquee-card .marquee-platform {
+  width: 0.9rem !important;
+  height: 0.9rem !important;
+}
+
+.marquee-card .text-xs,
+.marquee-card .text-sm {
+  font-size: 0.6rem !important;
 }
 
 /* ===== TCG način ===== */
@@ -391,7 +452,6 @@ export default {
    Gradijenti su "trakasti" — crni razmaci ne mijenjaju sliku uz color-dodge,
    pa detalji ostaju vidljivi između sjajnih traka. */
 /* Varijable postavlja hover-tilt. */
-/*noinspection CssUnresolvedCustomProperty*/
 .tcg-foil {
   position: absolute;
   inset: 0;
@@ -436,18 +496,6 @@ export default {
   opacity: 0.55;
 }
 
-/* Glare bez tamnog ruba */
-/*noinspection CssUnusedSymbol,CssUnresolvedCustomProperty*/
-.tcg-round {
-  --hover-tilt-custom-gradient: radial-gradient(
-    farthest-corner circle at var(--gradient-x) var(--gradient-y),
-    lch(95% 2.7 var(--hover-tilt-glare-hue, 270) / calc(var(--hover-tilt-glare-intensity, 1) * 0.66)) 8%,
-    lch(88% 5.5 var(--hover-tilt-glare-hue, 270) / calc(var(--hover-tilt-glare-intensity, 1) * 0.5)) 28%,
-    lch(95% 2.7 var(--hover-tilt-glare-hue, 270) / 0) 90%
-  );
-}
-
-/*noinspection CssUnresolvedCustomProperty*/
 .tcg-exholo {
   position: absolute;
   inset: 0;
@@ -479,7 +527,6 @@ export default {
 }
 
 /* Zlatna varijanta — topla šampanj folija */
-/*noinspection CssUnresolvedCustomProperty*/
 .tcg-exholo--gold {
   background-image:
     url('../assets/newAssets/GamenoteMainLogo.png'),
@@ -500,9 +547,8 @@ export default {
 
 <!-- ::part mora biti globalno -->
 <style>
-/*noinspection CssUnusedSymbol*/
-.tcg-round::part(container),
-.tcg-round::part(tilt) {
+.game-card-host::part(container),
+.game-card-host::part(tilt) {
   height: 100%;
   border-radius: var(--radius-box, 1rem);
   isolation: isolate;

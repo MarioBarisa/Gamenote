@@ -1,6 +1,6 @@
 <!-- src/views/AddGame.vue -->
 <template>
-  <div v-if="operationError" role="alert" class="alert alert-error mb-4">{{ operationError }}</div>
+  <div v-if="operationError && !showApiGameModal" role="alert" class="alert alert-error mb-4">{{ operationError }}</div>
   <div class="add-game">
     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">Pretraži igre</h1>
 
@@ -16,7 +16,7 @@
                 placeholder="Unesite naziv igre..." 
                 class="input input-bordered input-md sm:input-lg w-full pr-10"
                 @keyup.enter="searchGames" 
-              />
+               aria-label="Unesite naziv igre..." />
               <button 
                 v-if="searchQuery"
                 @click="clearSearch"
@@ -43,9 +43,10 @@
             <div 
               v-for="game in searchResults" 
               :key="game.id" 
-              class="game-card card bg-base-100 shadow-xl h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
-              @click="navigateToGameDetails(game)"
+              class="game-card relative card bg-base-100 shadow-xl h-full transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
+
             >
+              <router-link :to="`/api-games/${game.id}`" :aria-label="game.name" class="card-open-link absolute inset-0 z-10 rounded-box" />
               <figure :class="`relative w-full ${cardConfig.poster} overflow-hidden`">
                 <img :src="game.background_image || 'https://placehold.co/600x400?text=No+Image'" :alt="game.name" class="w-full h-full object-cover" />
                 <div v-if="isGameInLibrary(game)" class="absolute top-0 left-0 m-1 sm:m-2">
@@ -97,8 +98,9 @@
     </div>
 
     <!-- API dodaj igru -->
-    <div v-if="showApiGameModal" class="modal modal-open">
+    <AppModal v-if="showApiGameModal" label="Dodaj u Gamenote" :busy="saveLoading" @close="closeApiGameModal">
       <div class="modal-box max-w-2xl">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="saveLoading" @click.stop="closeApiGameModal">✕</button>
         <h3 class="font-bold text-2xl mb-4">Dodaj u Gamenote</h3>
         
         <div v-if="apiGameDetails" class="mb-6">
@@ -108,8 +110,8 @@
               :alt="apiGameDetails.name" 
               class="w-24 h-32 object-cover rounded"
             />
-            <div>
-              <h4 class="text-xl font-bold">{{ apiGameDetails.name }}</h4>
+            <div class="min-w-0">
+              <h4 class="text-[1.375rem] font-bold [overflow-wrap:anywhere]">{{ apiGameDetails.name }}</h4>
               <p class="text-sm opacity-70">{{ formatReleaseDate(apiGameDetails.released) }}</p>
               <p class="text-sm"><strong>Žanr:</strong> {{ apiGameDetails.genres?.map(g => g.name).join(', ') || 'N/A' }}</p>
               <p class="text-sm"><strong>Izdavač:</strong> {{ apiGameDetails.publishers?.map(p => p.name).join(', ') || 'N/A' }}</p>
@@ -118,15 +120,15 @@
         </div>
 
         <form @submit.prevent="saveApiGame" class="space-y-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label font-medium">Naziv</label>
-              <input type="text" v-model="apiGameForm.title" class="input input-bordered" required />
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-control col-span-2 sm:col-span-1">
+              <label class="label font-medium" :for="fieldId + '-1'">Naziv</label>
+              <input type="text" v-model="apiGameForm.title" class="input input-bordered" required  :id="fieldId + '-1'" />
             </div>
             
-            <div class="form-control">
-              <label class="label font-medium">Platforma</label>
-              <select v-model="apiGameForm.platform" class="select select-bordered" required>
+            <div class="form-control col-span-2 sm:col-span-1">
+              <label class="label font-medium" :for="fieldId + '-2'">Platforma</label>
+              <select v-model="apiGameForm.platform" class="select select-bordered" required :id="fieldId + '-2'">
                 <option value="" disabled>Odaberi platformu</option>
                 <option v-for="platform in platforms" :key="platform" :value="platform">
                   {{ platform }}
@@ -134,176 +136,173 @@
               </select>
             </div>
             
-            <div class="form-control">
-              <label class="label font-medium">Vrijeme igranja (sati)</label>
-              <input type="number" v-model="apiGameForm.play_time" class="input input-bordered" min="0" />
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-3'">Vrijeme igranja <span class="sr-only sm:not-sr-only">(sati)</span></label>
+              <input type="number" v-model="apiGameForm.play_time" class="input input-bordered w-full min-w-0 min-h-11 sm:min-h-10" min="0"  :id="fieldId + '-3'" />
             </div>
             
-            <div class="form-control">
-              <label class="label font-medium">Ocjena (1-5)</label>
-              <div class="rating rating-sm sm:rating-md lg:rating-lg pt-3">
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="apiGameForm.rating" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="apiGameForm.rating" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="apiGameForm.rating" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="apiGameForm.rating" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="apiGameForm.rating" />
-              </div>
-            </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Status</label>
-              <select v-model="apiGameForm.status" class="select select-bordered">
-                <option value="" disabled>Odaberi status</option>
-                <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key">{{ s.label }}</option>
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-4'">Status</label>
+              <select v-model="apiGameForm.status" class="select select-bordered w-full min-w-0 font-semibold" :class="GAME_STATUS_SELECT_CLASS[apiGameForm.status]" :id="fieldId + '-4'">
+                <option value="" disabled class="bg-base-100 text-base-content font-normal">{{ statusPlaceholder }}</option>
+                <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key" class="bg-base-100 text-base-content font-normal">{{ s.label }}</option>
               </select>
             </div>
 
+            <div class="form-control col-span-2 flex items-center gap-2">
+              <span :id="fieldId + '-rating-label'" class="label font-medium shrink-0">Ocjena (1-5)</span>
+              <div class="rating rating-sm sm:rating-md shrink-0" role="radiogroup" :aria-labelledby="fieldId + '-rating-label'">
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="apiGameForm.rating"  aria-label="1 od 5" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="apiGameForm.rating"  aria-label="2 od 5" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="apiGameForm.rating"  aria-label="3 od 5" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="apiGameForm.rating"  aria-label="4 od 5" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="apiGameForm.rating"  aria-label="5 od 5" />
+              </div>
+            </div>
+          </div>
+
+          <fieldset class="min-w-0 rounded-box border border-base-300 bg-base-300/30 p-4 space-y-4">
+            <legend class="sr-only">Napredak igre</legend>
             <div class="form-control">
-              <label class="label font-medium">Game Progression</label>
-              <select v-model="apiGameForm.progress_mode" class="select select-bordered">
+              <label class="label font-medium" :for="fieldId + '-5'">Vrsta napretka</label>
+              <select v-model="apiGameForm.progress_mode" class="select select-bordered w-full" :id="fieldId + '-5'">
                 <option value="" disabled>Odaberi način praćenja</option>
                 <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
               </select>
             </div>
 
-            <div class="form-control">
-              <label class="label font-medium">Datum početka</label>
-              <input type="date" v-model="apiGameForm.start_date" class="input input-bordered" />
+            <template v-if="selectedApiProgressMode">
+              <div v-if="selectedApiProgressMode.key.includes('achievements') || selectedApiProgressMode.key.includes('trophies')">
+                <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-8'">
+                      Ukupno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="apiGameForm.progress_total"
+                      class="input input-bordered w-full min-w-0 font-bold"
+                      min="0"
+                      placeholder="npr. 50"
+                     :id="fieldId + '-8'" />
+                  </div>
+
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-9'">
+                      Ostvareno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="apiGameForm.progress_value"
+                      class="input input-bordered w-full min-w-0 font-bold text-success"
+                      min="0"
+                      :max="apiGameForm.progress_total || undefined"
+                      placeholder="npr. 25"
+                     :id="fieldId + '-9'" />
+
+                  </div>
+
+                  <div class="form-control min-w-0">
+                    <label class="label font-medium text-sm" :for="fieldId + '-10'">Jedinica</label>
+                    <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-10'">
+                      <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ apiGameForm.progress_unit || selectedApiProgressMode.defaultUnit || '—' }}</code>
+                    </output>
+                  </div>
+                  <div class="col-span-3">
+                    <span class="text-xs opacity-70">
+                      Napredak:
+                      <strong v-if="apiGameForm.progress_total > 0">
+                        {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupno</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else-if="selectedApiProgressMode.key === 'pokedex'">
+                <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-11'">
+                      Ukupno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="apiGameForm.progress_total"
+                      class="input input-bordered w-full min-w-0 font-bold"
+                      min="0"
+                      placeholder="npr. 251"
+                     :id="fieldId + '-11'" />
+                  </div>
+
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-12'">
+                      Uhvaćeno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="apiGameForm.progress_value"
+                      class="input input-bordered w-full min-w-0 font-bold text-success"
+                      min="0"
+                      :max="apiGameForm.progress_total || undefined"
+                      placeholder="npr. 150"
+                     :id="fieldId + '-12'" />
+
+                  </div>
+
+                  <div class="form-control min-w-0">
+                    <label class="label font-medium text-sm" :for="fieldId + '-13'">Jedinica</label>
+                    <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-13'">
+                      <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ apiGameForm.progress_unit || selectedApiProgressMode.defaultUnit || '—' }}</code>
+                    </output>
+                  </div>
+                  <div class="col-span-3">
+                    <span class="text-xs opacity-70">
+                      Napredak:
+                      <strong v-if="apiGameForm.progress_total > 0">
+                        {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupno</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="grid grid-cols-2 gap-2 sm:gap-4">
+                <div class="form-control" v-if="selectedApiProgressMode.kind === 'count' || selectedApiProgressMode.kind === 'rank'">
+                  <label class="label font-medium text-sm" :for="fieldId + '-14'">Vrijednost</label>
+                  <input type="number" v-model.number="apiGameForm.progress_value" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-14'" />
+                </div>
+                <div class="form-control" v-if="selectedApiProgressMode.requiresTotal">
+                  <label class="label font-medium text-sm" :for="fieldId + '-15'">Ukupno</label>
+                  <input type="number" v-model.number="apiGameForm.progress_total" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-15'" />
+                </div>
+                <div class="form-control">
+                  <label class="label font-medium text-sm" :for="fieldId + '-16'">Jedinica</label>
+                  <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-16'">
+                    <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ apiGameForm.progress_unit || selectedApiProgressMode.defaultUnit || '—' }}</code>
+                  </output>
+                </div>
+              </div>
+            </template>
+          </fieldset>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-6'">Datum početka</label>
+              <input type="date" v-model="apiGameForm.start_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-6'" />
             </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Datum završetka</label>
-              <input type="date" v-model="apiGameForm.end_date" class="input input-bordered" />
+
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-7'">Datum završetka</label>
+              <input type="date" v-model="apiGameForm.end_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-7'" />
             </div>
           </div>
 
-          <template v-if="selectedApiProgressMode">
-            <!-- SAMO ZA ACHIEVEMENTS/TROPHIES -->
-            <div v-if="selectedApiProgressMode.key.includes('achievements') || selectedApiProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4">
-              <div class="alert alert-warning text-sm mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
-                <div>
-                  <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
-                  <div class="text-xs">Provjerite ukupan broj {{ selectedApiProgressMode.defaultUnit }}.</div>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Ukupan broj {{ selectedApiProgressMode.defaultUnit }}
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="apiGameForm.progress_total" 
-                    class="input input-bordered font-bold" 
-                    min="0"
-                    placeholder="npr. 50"
-                  />
-                </div>
-
-                <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Ostvareni {{ selectedApiProgressMode.defaultUnit }}
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="apiGameForm.progress_value" 
-                    class="input input-bordered font-bold text-success" 
-                    min="0"
-                    :max="apiGameForm.progress_total || undefined"
-                    placeholder="npr. 25"
-                  />
-                  <label class="label">
-                    <span class="text-xs opacity-70">
-                      Napredak: 
-                      <strong v-if="apiGameForm.progress_total > 0">
-                        {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
-                      </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
-                    </span>
-                  </label>
-                </div>
-
-                <!-- JEDINICA -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">Jedinica</label>
-                  <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" readonly />
-                </div>
-              </div>
-            </div>
-
-            <!-- POKEDEX -->
-            <div v-else-if="selectedApiProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- KOLIKO POKEMONA IMA U IGRI -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Ukupno pokemona u igri
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="apiGameForm.progress_total" 
-                    class="input input-bordered font-bold" 
-                    min="0"
-                    placeholder="npr. 251"
-                  />
-                </div>
-                
-                <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Uhvaćenih pokemona
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="apiGameForm.progress_value" 
-                    class="input input-bordered font-bold text-success" 
-                    min="0"
-                    :max="apiGameForm.progress_total || undefined"
-                    placeholder="npr. 150"
-                  />
-                  <label class="label">
-                    <span class="text-xs opacity-70">
-                      Napredak: 
-                      <strong v-if="apiGameForm.progress_total > 0">
-                        {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
-                      </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
-                    </span>
-                  </label>
-                </div>
-
-                <!-- JEDINICA -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">Jedinica</label>
-                  <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" readonly />
-                </div>
-              </div>
-            </div>
-
-            <!-- ZA OSTALE PROGRESS MODE-OVE -->
-            <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-300/30 p-4 rounded-box border border-base-300">
-              <div class="form-control" v-if="selectedApiProgressMode.kind === 'count' || selectedApiProgressMode.kind === 'rank'">
-                <label class="label font-medium text-sm">Vrijednost</label>
-                <input type="number" v-model.number="apiGameForm.progress_value" class="input input-bordered" min="0" />
-              </div>
-              <div class="form-control" v-if="selectedApiProgressMode.requiresTotal">
-                <label class="label font-medium text-sm">Ukupno</label>
-                <input type="number" v-model.number="apiGameForm.progress_total" class="input input-bordered" min="0" />
-              </div>
-              <div class="form-control">
-                <label class="label font-medium text-sm">Jedinica</label>
-                <input type="text" v-model="apiGameForm.progress_unit" class="input input-bordered" :placeholder="selectedApiProgressMode.defaultUnit || 'unit'" readonly />
-              </div>
-            </div>
-          </template>
 
           <!-- GRUPE / KOLEKCIJE -->
           <div class="form-control bg-base-200/50 p-4 rounded-box border border-base-300" v-if="apiGameStoresList.length > 0">
-            <label class="label font-medium text-base mb-2">Dodaj u kolekcije</label>
+            <label class="label font-medium text-base mb-2" :for="fieldId + '-17'">Dodaj u kolekcije</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               <label v-for="group in apiGameStoresList" :key="group.id" class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-base-300 bg-base-100 hover:border-primary transition-colors">
                 <input 
@@ -311,17 +310,19 @@
                   :checked="apiGameForm.group_ids.includes(group.id)"
                   @change="toggleApiGroupId(group.id)"
                   class="checkbox checkbox-primary checkbox-sm"
-                />
+                 :id="fieldId + '-17'" />
                 <span class="text-sm font-medium">{{ group.name }}</span>
               </label>
             </div>
           </div>
           
           <div class="form-control">
-            <label class="label font-medium">Bilješke</label>
-            <textarea v-model="apiGameForm.notes" class="textarea textarea-bordered h-24 w-full"></textarea>
+            <label class="label font-medium" :for="fieldId + '-18'">Bilješke</label>
+            <textarea v-model="apiGameForm.notes" class="textarea textarea-bordered h-24 w-full" :id="fieldId + '-18'"></textarea>
           </div>
           
+          <div v-if="operationError" role="alert" class="alert alert-error">{{ operationError }}</div>
+
           <div class="modal-action">
             <button type="submit" class="btn btn-primary" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
@@ -333,11 +334,14 @@
           </div>
         </form>
       </div>
-    </div>
+    </AppModal>
   </div>
 </template>
 
 <script>
+import { useStatusPlaceholder } from '../composables/useStatusPlaceholder.js';
+import { useId } from 'vue';
+import AppModal from '../components/AppModal.vue';
 import { buildGameUpdate, progressFields } from '../services/gameForm';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
@@ -348,14 +352,16 @@ import { useGamesApi } from '../services/gamesApi';
 import { addGameToGroup } from '../services/groupsApi';
 import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
-import { GAME_STATUS } from '../constants/gameStatus';
+import { GAME_STATUS, GAME_STATUS_SELECT_CLASS } from '../constants/gameStatus';
 import PlatformIcon from '../components/PlatformIcon.vue';
 
 const PAGE_SIZE = 20;
 
 export default {
-  components: { PlatformIcon },
+  components: { AppModal, PlatformIcon },
   setup() {
+    const statusPlaceholder = useStatusPlaceholder();
+    const fieldId = useId();
     const operationError = ref('');
     let searchVersion = 0;
     let searchController;
@@ -689,7 +695,6 @@ export default {
       return new Date(date).toLocaleDateString('hr-HR');
     };
     
-    // noinspection ExceptionCaughtLocallyJS
     const saveGame = async () => {
       if (saveLoading.value) return;
       operationError.value = '';
@@ -780,7 +785,8 @@ export default {
           .select();
 
         if (error) {
-          throw error;
+          operationError.value = error.message || 'Spremanje igre nije uspjelo.';
+          return;
         }
 
         // resetiraj popunjavanje
@@ -805,6 +811,7 @@ export default {
     };
     
     const closeApiGameModal = () => {
+      operationError.value = '';
       detailVersion++;
       showApiGameModal.value = false;
       apiGameDetails.value = null;
@@ -824,7 +831,6 @@ export default {
       router.replace({ path: '/add-game' });
     };
 
-    // noinspection ExceptionCaughtLocallyJS
     const saveApiGame = async () => {
       if (saveLoading.value) return;
       operationError.value = '';
@@ -903,7 +909,8 @@ export default {
           .single();
 
         if (error) {
-          throw error;
+          operationError.value = error.message || 'Spremanje igre nije uspjelo.';
+          return;
         }
 
         const newGameId = insertedGame?.id;
@@ -994,9 +1001,9 @@ export default {
       }
     });
     
-    return {
+    return { fieldId,
       operationError, PROGRESS_MODES,
-      GAME_STATUS,
+      statusPlaceholder, GAME_STATUS, GAME_STATUS_SELECT_CLASS,
       selectedProgressMode,
       selectedApiProgressMode,
       searchQuery,

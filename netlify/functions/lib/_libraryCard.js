@@ -7,23 +7,39 @@ async function libraryCard(method, username, options = {}) {
   const fail = (status, message) => ({ status, headers, body: JSON.stringify({ error: message }) });
   if (method !== 'GET') return fail(405, 'Metoda nije dopuštena.');
   if (typeof username !== 'string' || !/^[a-z0-9][a-z0-9_-]{2,29}$/.test(username)) return fail(404, 'Zbirka nije dostupna.');
+  const compare = options.compare;
+  if (compare != null && (typeof compare !== 'string' || !/^[a-z0-9][a-z0-9_-]{2,29}$/.test(compare) || compare === username)) return fail(404, 'Usporedba nije dostupna.');
   if (options.ip && !allowRequest(`library-card:${options.ip}`, 30)) return fail(429, 'Pričekaj prije ponovnog dohvata kartice.');
   const env = options.env || process.env;
   const url = env.VITE_SUPABASE_URL;
   const key = env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) return fail(503, 'Kartica trenutačno nije dostupna.');
   const request = options.fetch || fetch;
-  async function loadHeader() {
+  async function loadHeader(name = username) {
     const response = await request(`${url}/rest/v1/rpc/get_public_library`, {
       method: 'POST', headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ p_username: username, p_section: 'header' }), signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ p_username: name, p_section: 'header' }), signal: AbortSignal.timeout(5000),
     });
     if (!response.ok) throw new Error('Dohvat nije uspio.');
     return response.json();
   }
   try {
-    const header = await loadHeader();
+    const [header, other] = await Promise.all(compare ? [loadHeader(), loadHeader(compare)] : [loadHeader()]);
     if (!header) return fail(404, 'Zbirka nije dostupna.');
+    if (compare) {
+      if (!other || header.username !== username || other.username !== compare || !['library', 'all'].includes(header.share_scope) || !['library', 'all'].includes(other.share_scope)) return fail(404, 'Usporedba nije dostupna.');
+      if (options.metadata) return { status: 200, headers, body: JSON.stringify({ left: username, right: compare }) };
+      const render = options.renderComparison || require('./card-renderer/_renderCard.cjs').renderComparisonCard;
+      const svg = await render(username, compare);
+      const { Resvg } = require('@resvg/resvg-js');
+      const png = new Resvg(svg, {
+        fitTo: { mode: 'width', value: 1200 },
+        font: { fontFiles: [join(process.cwd(), 'netlify/functions/lib/fonts/Lato-Regular.ttf'), join(process.cwd(), 'netlify/functions/lib/fonts/Lato-Bold.ttf')], loadSystemFonts: false, defaultFontFamily: 'Lato' },
+      }).render().asPng();
+      const refreshed = await Promise.all([loadHeader(), loadHeader(compare)]);
+      if (refreshed.some((item, index) => !item || item.username !== [username, compare][index] || !['library', 'all'].includes(item.share_scope))) return fail(404, 'Usporedba nije dostupna.');
+      return { status: 200, headers: { ...headers, 'content-type': 'image/png' }, body: Buffer.from(png).toString('base64'), binary: true };
+    }
     if (options.metadata) return { status: 200, headers, body: JSON.stringify({ name: header.name, username: header.username }) };
     let avatar = '';
     if (header.avatar_url) {

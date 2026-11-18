@@ -1,3 +1,5 @@
+import { comparisonFromPath, comparisonPath, comparisonPreviewImage } from './comparisonLink.js';
+
 export const siteUrl = 'https://gamenote.eu';
 export const previewImage = `${siteUrl}/social-preview.png`;
 
@@ -20,6 +22,13 @@ const pages = {
 
 export function pageMetadata(path, query = {}) {
   path = path.replace(/\/+$/, '') || '/';
+  const comparison = comparisonFromPath(path);
+  if (comparison) return {
+    title: `Gamenote: ${comparison.left} vs ${comparison.right}`,
+    description: `Usporedi Gamenote zbirke @${comparison.left} i @${comparison.right}.`,
+    canonical: siteUrl + comparisonPath(comparison.left, comparison.right), robots: 'noindex, follow',
+    image: comparisonPreviewImage(comparison.left, comparison.right)
+  };
   let [title, description] = pages[path] || ['Gamenote', 'Tvoja osobna biblioteka igara na Gamenoteu.'];
   if (/^\/(?:game|edit-game|api-games)\//.test(path)) title = 'Igra';
   if (/^\/groups\//.test(path)) title = 'Grupa';
@@ -31,7 +40,7 @@ export function pageMetadata(path, query = {}) {
 export const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 
 export function metadataHtml(metadata) {
-  const { title, description, canonical, robots } = metadata;
+  const { title, description, canonical, robots, image = previewImage } = metadata;
   return `<title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}">
     <meta name="robots" content="${robots}">
@@ -40,18 +49,18 @@ export function metadataHtml(metadata) {
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:url" content="${escapeHtml(canonical)}">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="${previewImage}">
+    <meta property="og:image" content="${escapeHtml(image)}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(title)}">
     <meta name="twitter:description" content="${escapeHtml(description)}">
-    <meta name="twitter:image" content="${previewImage}">`;
+    <meta name="twitter:image" content="${escapeHtml(image)}">`;
 }
 
 export function updateMetadata(route) {
   const template = document.createElement('template');
   const metadata = pageMetadata(route.path, route.query);
   if (route.publicLibrary) {
-    metadata.title = `Zbirka: ${route.publicLibrary.name} | Gamenote`;
+    metadata.title = `Gamenote · ${route.publicLibrary.name}`;
     metadata.description = `Pogledaj zbirku @${route.publicLibrary.username} na Gamenoteu.`;
   }
   template.innerHTML = metadataHtml(metadata);

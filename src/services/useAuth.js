@@ -30,9 +30,13 @@ export function useAuth() {
     errorMessage.value = ''
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
-      if (error) throw error
+      if (error) {
+        errorMessage.value = translateError(error.message) || 'Prijava nije uspjela. Pokušaj ponovno.'
+        return false
+      }
       userStore.setUser(data.user)
-      await router.push('/')
+      const redirect = router.currentRoute.value.query.redirect
+      await router.push(typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/')
       return true
     } catch (error) {
       errorMessage.value = translateError(error.message) || 'Prijava nije uspjela. Pokušaj ponovno.'
@@ -49,7 +53,10 @@ export function useAuth() {
     successMessage.value = ''
     try {
       const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() } } })
-      if (error) throw error
+      if (error) {
+        errorMessage.value = translateError(error.message) || 'Registracija nije uspjela. Pokušaj ponovno.'
+        return false
+      }
       if (data.session) {
         userStore.setUser(data.user)
         await router.push('/')
@@ -68,7 +75,7 @@ export function useAuth() {
   async function resetPassword(email) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` })
-      if (error) throw error
+      if (error) return { success: false, error: translateError(error.message) || 'Slanje poveznice nije uspjelo.' }
       return { success: true, error: '' }
     } catch (error) {
       return { success: false, error: translateError(error.message) || 'Slanje poveznice nije uspjelo.' }
@@ -78,7 +85,7 @@ export function useAuth() {
   async function updatePassword(newPassword) {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword })
-      if (error) throw error
+      if (error) return { success: false, error: translateError(error.message) || 'Promjena lozinke nije uspjela.' }
       return { success: true, error: '' }
     } catch (error) {
       return { success: false, error: translateError(error.message) || 'Promjena lozinke nije uspjela.' }

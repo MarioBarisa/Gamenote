@@ -11,8 +11,10 @@ let active = true;
 let child;
 const fixture = createServer(async (req, res) => {
   res.setHeader('content-type', 'application/json');
-  for await (const chunk of req) { /* Testni zahtjev nema tajnih podataka. */ }
-  res.end(JSON.stringify(active ? { username: 'fixture-player', name: 'Testni igrač', created_at: '2025-01-01', avatar_url: '', share_scope: 'library', card: { hours: 25, total: 3, completed: 1, playing: 1, favoriteGame: { title: 'Test igra', play_time: 25 }, favoriteGenre: { name: 'RPG' } } } : null));
+  let raw = '';
+  for await (const chunk of req) raw += chunk;
+  const username = raw ? JSON.parse(raw).p_username : 'fixture-player';
+  res.end(JSON.stringify(active ? { username, name: 'Testni igrač', created_at: '2025-01-01', avatar_url: '', share_scope: 'library', card: { hours: 25, total: 3, completed: 1, playing: 1, favoriteGame: { title: 'Test igra', play_time: 25 }, favoriteGenre: { name: 'RPG' } } } : null));
 });
 await new Promise(resolve => fixture.listen(0, '127.0.0.1', resolve));
 const fixtureUrl = `http://127.0.0.1:${fixture.address().port}`;
@@ -40,17 +42,27 @@ try {
   const page = await fetch(`${origin}/fixture-player`, { redirect: 'manual', headers: { 'user-agent': 'Twitterbot', accept: 'text/html' } });
   const html = await page.text();
   assert.equal(page.status, 200);
-  assert.match(html, /Zbirka: Testni igrač/);
+  assert.match(html, /Gamenote · Testni igrač/);
   assert.match(html, /library-card\?username=fixture-player/);
   const botPage = await fetch(`${origin}/fixture-player`);
-  assert.match(await botPage.text(), /Zbirka: Testni igrač/);
+  assert.match(await botPage.text(), /Gamenote · Testni igrač/);
+  const comparisonPage = await fetch(`${origin}/compare/fixture-player/fixture-opponent`, { headers: { 'user-agent': 'Twitterbot' } });
+  assert.equal(comparisonPage.status, 200);
+  assert.match(await comparisonPage.text(), /Gamenote: fixture-player vs fixture-opponent/);
+  const comparisonPng = await fetch(`${origin}/.netlify/functions/library-card?username=fixture-player&compare=fixture-opponent`);
+  assert.equal(comparisonPng.status, 200);
+  const comparisonBytes = Buffer.from(await comparisonPng.arrayBuffer());
+  assert.equal(comparisonBytes.readUInt32BE(20), 630);
   active = false;
   const card = await fetch(`${origin}/.netlify/functions/library-card?username=fixture-player`);
   assert.equal(card.status, 404);
   const hidden = await fetch(`${origin}/fixture-player`);
   // Netlify Dev zamjenjuje SPA 404 odgovor.
   assert.ok([200, 404].includes(hidden.status));
-  assert.doesNotMatch(await hidden.text(), /Zbirka: Testni igrač|library-card\?username/);
+  assert.doesNotMatch(await hidden.text(), /Gamenote · Testni igrač|library-card\?username/);
+  const hiddenComparison = await fetch(`${origin}/compare/fixture-player/fixture-opponent`);
+  assert.doesNotMatch(await hiddenComparison.text(), /<title>Gamenote: fixture-player vs fixture-opponent/);
+  assert.equal((await fetch(`${origin}/.netlify/functions/library-card?username=fixture-player&compare=fixture-opponent`)).status, 404);
   console.log(`✓ Netlify: pravi PNG endpoint, Edge OG i opoziv dijeljenja; log: ${artifacts}`);
 } finally {
   if (child?.pid) { try { process.kill(-child.pid, 'SIGTERM'); } catch { /* Proces je već završio. */ } }

@@ -134,10 +134,15 @@ function libraryCardDevServer(env) {
         const username = new URL(req.url, 'http://localhost').searchParams.get('username');
         const result = await libraryCard(req.method, username, {
           env, ip: req.socket.remoteAddress,
+          compare: new URL(req.url, 'http://localhost').searchParams.get('compare'),
           metadata: new URL(req.url, 'http://localhost').searchParams.get('format') === 'metadata',
           render: async (header, avatar) => {
             const renderer = await server.ssrLoadModule('/scripts/render-library-card.js');
             return renderer.renderLibraryCard(header, avatar);
+          },
+          renderComparison: async (left, right) => {
+            const renderer = await server.ssrLoadModule('/scripts/render-library-card.js');
+            return renderer.renderComparisonCard(left, right);
           },
         });
         res.writeHead(result.status, result.headers);
@@ -162,6 +167,10 @@ export default defineConfig(({ mode }) => ({
     appApiDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
     steamDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
   ],
+  // Izbjegni zastarjeli cache TCG modula.
+  optimizeDeps: {
+    exclude: ['hover-tilt/web-component'],
+  },
   server: {
     proxy: {
       '/api/rawg': {

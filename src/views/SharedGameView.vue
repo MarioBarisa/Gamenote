@@ -42,10 +42,10 @@
       </div>
 
       <!-- Main Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-stretch">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-start">
 
         <!-- Informacije -->
-        <div class="card bg-base-200 shadow-xl lg:col-span-2 h-full">
+        <div class="card bg-base-200 shadow-xl lg:col-span-2">
           <div class="card-body p-3 sm:p-4 flex flex-col">
             <h2 class="card-title text-base m-0 mb-3">Informacije</h2>
 
@@ -125,19 +125,19 @@
         </div>
 
         <!-- Tabs: Informacije / Serija igara / Slike igre -->
-        <div class="card bg-base-200 shadow-xl lg:col-span-3 h-full">
+        <div class="card bg-base-200 shadow-xl lg:col-span-3 self-stretch">
           <div class="card-body p-3 sm:p-4 flex flex-col">
             <div class="flex flex-col flex-1">
-              <div role="tablist" class="tabs tabs-lift">
-                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'">
+              <div role="tablist" class="tabs tabs-lift" @keydown="handleTabKeys">
+                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'" aria-label="Informacije" :id="fieldId + '-tab-info'" :aria-controls="fieldId + '-panel-info'" :tabindex="activeInfoTab === 'info' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
                   <span class="hidden sm:inline font-bold">Informacije</span>
                 </button>
-                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-primary [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'">
+                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-primary [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'" aria-label="Serija igara" :id="fieldId + '-tab-series'" :aria-controls="fieldId + '-panel-series'" :tabindex="activeInfoTab === 'series' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
                   <span class="hidden sm:inline font-bold">Serija igara</span>
                 </button>
-                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-primary' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'">
+                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-primary' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'" aria-label="Slike igre" :id="fieldId + '-tab-screens'" :aria-controls="fieldId + '-panel-screens'" :tabindex="activeInfoTab === 'screens' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
                   <span class="hidden sm:inline font-bold">Slike igre</span>
                 </button>
@@ -145,7 +145,7 @@
 
               <div class="p-4 flex flex-col flex-1 gap-3 bg-base-300 rounded-b-xl rounded-tr-xl" :class="activeInfoTab === 'info' ? 'rounded-tl-none' : 'rounded-tl-xl'">
                 <!-- Opis -->
-                <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1">
+                <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1" role="tabpanel" :id="fieldId + '-panel-info'" :aria-labelledby="fieldId + '-tab-info'">
                   <div>
                     <h3 class="text-lg font-bold">Opis</h3>
                     <p class="whitespace-pre-wrap">{{ apiGame.description_raw || 'Nema opisa.' }}</p>
@@ -153,7 +153,7 @@
                 </div>
 
                 <!-- Serija igara -->
-                <div v-show="activeInfoTab === 'series'" class="flex flex-col gap-3 flex-1">
+                <div v-show="activeInfoTab === 'series'" class="flex flex-col gap-3 flex-1" role="tabpanel" :id="fieldId + '-panel-series'" :aria-labelledby="fieldId + '-tab-series'">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
                     <div v-if="previousGame" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
                       <figure class="px-4 pt-4">
@@ -214,7 +214,7 @@
                 </div>
 
                 <!-- Slike igre -->
-                <div v-if="screenshots.length > 0" v-show="activeInfoTab === 'screens'" class="flex flex-col flex-1">
+                <div v-if="screenshots.length > 0" v-show="activeInfoTab === 'screens'" class="flex flex-col flex-1" role="tabpanel" :id="fieldId + '-panel-screens'" :aria-labelledby="fieldId + '-tab-screens'">
                   <div class="flex items-center justify-between mb-3 border-b border-base-300 pb-2">
                     <span class="text-xs opacity-50">{{ (selectedScreenshotIndex ?? 0) + 1 }} / {{ screenshots.length }}</span>
                   </div>
@@ -257,24 +257,18 @@
       </div>
 
       <!-- Screenshot lightbox -->
-      <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
-        <div class="modal-box max-w-5xl">
-          <div class="relative">
-            <img :src="screenshots[selectedScreenshotIndex]?.image" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
-            <button v-if="screenshots.length > 1" @click="previousScreenshot" class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75">❮</button>
-            <button v-if="screenshots.length > 1" @click="nextScreenshot" class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75">❯</button>
-            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">{{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}</div>
-          </div>
-          <div class="modal-action">
-            <button @click="closeScreenshotModal" class="btn">Zatvori</button>
-          </div>
-        </div>
-      </div>
+      <AppModal v-if="selectedScreenshotIndex !== null" label="Pregled screenshotova" @close="closeScreenshotModal">
+        <ScreenshotViewer :images="screenshots" :selected-index="selectedScreenshotIndex" @select="openScreenshotModal" @close="closeScreenshotModal" />
+      </AppModal>
     </div>
   </div>
 </template>
 
 <script>
+import ScreenshotViewer from '../components/ScreenshotViewer.vue';
+import { useId } from 'vue';
+import { handleTabKeys } from '../services/tabNavigation.js';
+import AppModal from '../components/AppModal.vue';
 import { usePageTitle } from '../composables/usePageTitle';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -286,8 +280,9 @@ import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 
 export default {
   name: 'SharedGameView',
-  components: { PlatformIcon, ShareGuestHeader, LoadingCardGrid },
+  components: { ScreenshotViewer, AppModal, PlatformIcon, ShareGuestHeader, LoadingCardGrid },
   setup() {
+    const fieldId = useId();
     const route = useRoute();
     const router = useRouter();
     const userStore = useUserStore();
@@ -511,7 +506,7 @@ export default {
       }
     };
 
-    return {
+    return { handleTabKeys, fieldId,
       userStore,
       sharedData,
       error,

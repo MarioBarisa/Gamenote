@@ -1,5 +1,9 @@
 <template>
-  <AuthStartup v-if="showStartup" :error="userStore.authError" @retry="retryAuth" />
+  <div v-if="pageFailure" class="container mx-auto p-6" role="alert">
+    <p class="mb-4">Stranicu nije moguće učitati.</p>
+    <button type="button" class="btn btn-primary" @click="reloadPage">Pokušaj ponovno</button>
+  </div>
+  <AuthStartup v-else-if="showStartup" :error="userStore.authError" @retry="retryAuth" />
   <Layout v-else>
     <router-view v-slot="{ Component }">
       <component :is="Component" :key="userStore.user?.id || 'guest'" />
@@ -8,7 +12,8 @@
 </template>
 
 <script>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onErrorCaptured } from 'vue';
+import { pageFailure } from './services/pageFailure';
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 import { useThemeStore } from './stores/theme';
@@ -30,7 +35,9 @@ export default {
 
     themeStore.initTheme();
     cardSizeStore.initCardSize();
-    router.isReady().then(() => { routeReady.value = true; });
+    router.isReady().then(() => { routeReady.value = true; }).catch(() => { pageFailure.value = true; });
+    onErrorCaptured(() => { pageFailure.value = true; return false; });
+    const reloadPage = () => window.location.reload();
 
     const showStartup = computed(() => {
       if (!routeReady.value) return true;
@@ -44,11 +51,13 @@ export default {
     };
 
     watch([() => userStore.authReady, () => userStore.isLoggedIn, () => router.currentRoute.value.meta.requiresAuth], ([ready, loggedIn, requiresAuth]) => {
-      if (ready && !loggedIn && requiresAuth) router.replace('/login');
+      if (ready && !loggedIn && requiresAuth) router.replace({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } });
     });
     
     return {
       userStore,
+      pageFailure,
+      reloadPage,
       themeStore,
       cardSizeStore,
       showStartup,

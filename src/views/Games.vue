@@ -120,8 +120,8 @@
 
       <div v-else-if="filteredGames.length > 0"
         :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
-        <div v-for="game in filteredGames" :key="game.id" @click="navigateToGame(game.id)" class="cursor-pointer">
-          <GameCard :game="game" />
+        <div v-for="(game, index) in filteredGames" :key="game.id" class="relative cursor-pointer">
+          <GameCard :game="game" :to="`/game/${game.id}`" :lazy="index >= 6" @open="rememberScroll" />
         </div>
       </div>
 
@@ -134,11 +134,12 @@
           </svg>
         </div>
         <h3 class="text-xl font-bold mb-2">
-          {{ activeFilter !== 'all' ? 'Nema igara za odabrani filter' : 'Nema igara za prikaz' }}
+          {{ searchQuery.trim() ? 'Nema rezultata pretrage' : activeFilter !== 'all' ? 'Nema igara za odabrani filter' : 'Nema igara za prikaz' }}
         </h3>
         <p class="text-gray-400 mb-6">
-          {{ activeFilter !== 'all' ? 'Pokušaj promijeniti filter' : 'Dodaj svoju prvu igru da bi se prikazala ovdje' }}
+          {{ searchQuery.trim() ? 'Pokušaj drugi naziv.' : activeFilter !== 'all' ? 'Pokušaj promijeniti filter' : 'Dodaj svoju prvu igru da bi se prikazala ovdje' }}
         </p>
+        <button v-if="searchQuery.trim()" class="btn btn-outline mr-2" @click="searchQuery = ''">Očisti pretragu</button>
         <button v-if="activeFilter !== 'all'" @click="filterGames('all')" class="btn btn-outline mr-2">
           Poništi filter
         </button>
@@ -232,7 +233,8 @@ export default {
       try {
         const userId = userStore.user.id;
 
-        const data = await fetchUserRows(supabase, 'games', userId, { order: sortField.value, ascending: sortOrder.value === 'asc' });
+        const data = await fetchUserRows(supabase, 'games', userId, { columns: 'id,title,platform,status,currently_playing,rating,notes,genre,genres_list,publisher,play_time,start_date,end_date,created_at,image_url,background_image,progress_mode,progress_value,progress_total,progress_source,achievement_percent' });
+        if (userId !== userStore.user?.id) return;
 
         games.value = data || [];
       } catch (err) {
@@ -253,7 +255,6 @@ export default {
       sortField.value = field;
       sortOrder.value = order;
       libraryUiStore.saveViewState({ field, order });
-      fetchGames();
     };
 
     const filterGames = (filter) => {
@@ -306,18 +307,22 @@ export default {
         );
       }
 
-      if (sortField.value === 'rating' && Array.isArray(filtered)) {
-        filtered = [...filtered].sort((a, b) => {
-          const aNull = a.rating == null, bNull = b.rating == null;
-          if (aNull && bNull) return 0;
-          if (aNull) return 1;
-          if (bNull) return -1;
-          return sortOrder.value === 'desc' ? b.rating - a.rating : a.rating - b.rating;
-        });
-      }
+      filtered = [...filtered].sort((a, b) => {
+        const field = sortField.value;
+        if (a[field] == null && b[field] != null) return 1;
+        if (a[field] != null && b[field] == null) return -1;
+        let result;
+        if (field === 'title') result = String(a.title).localeCompare(String(b.title), 'hr', { numeric: true });
+        else if (field === 'created_at') result = String(a[field] || '').localeCompare(String(b[field] || ''));
+        else result = (Number(a[field]) || 0) - (Number(b[field]) || 0);
+        if (result === 0) return String(a.id).localeCompare(String(b.id));
+        return sortOrder.value === 'desc' ? -result : result;
+      });
 
       return filtered;
     });
+
+    const rememberScroll = () => libraryUiStore.markForRestore(window.scrollY);
 
     const navigateToGame = (id) => {
       libraryUiStore.markForRestore(window.scrollY);
@@ -406,11 +411,13 @@ export default {
       changeSort,
       filterGames,
       navigateToGame,
+      rememberScroll,
       navigateToAddGame,
       goBack,
       userStore,
       cardSizeStore,
       themeStore,
+      libraryUiStore,
       filterDropdownLabel,
       searchQuery,
       existingGameId

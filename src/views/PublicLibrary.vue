@@ -1,6 +1,6 @@
 <template>
   <ShareGuestHeader v-if="!userStore.isLoggedIn" />
-  <div class="public-library space-y-5 min-w-0 max-w-[1600px] mx-auto px-3 sm:px-4 py-5">
+  <div v-if="!isPublicComparison" class="public-library space-y-5 min-w-0 max-w-[1600px] mx-auto px-3 sm:px-4 py-5">
     <div v-if="error" role="alert" class="alert alert-error"><span>{{ error }}</span><button class="btn btn-sm" @click="load">Pokušaj ponovno</button></div>
     <template v-if="loading && !header">
       <div class="skeleton h-8 w-64 max-w-full" aria-hidden="true"></div>
@@ -15,6 +15,13 @@
         <nav class="flex flex-wrap gap-1" aria-label="Podijeljena zbirka">
           <router-link v-for="item in tabs" :key="item.key" :to="{ path: route.path, query: item.key === 'games' ? {} : { tab: item.key } }" class="collection-nav-link" :class="{ 'bg-base-200 text-primary': tab === item.key }" :aria-current="tab === item.key ? 'page' : undefined"><CollectionNavIcon :name="item.key" class="h-5 w-5" />{{ item.label }}</router-link>
         </nav>
+        <button v-if="canCompare" type="button" class="btn btn-accent btn-sm gap-2" @click="compareOpen = true">
+          <svg viewBox="0 0 256 256" fill="currentColor" class="size-7 shrink-0" aria-hidden="true" focusable="false">
+            <path v-for="(path, index) in VERSUS_PATHS" :key="index" :d="path" />
+          </svg>
+          Usporedi Gamenote
+        </button>
+        <p v-if="comparisonCheckError" role="alert" class="text-sm">{{ comparisonCheckError }} <button type="button" class="btn btn-xs btn-ghost" @click="comparisonRetry++">Pokušaj ponovno</button></p>
       </div>
     </template>
     <template v-if="header && tab === 'games'">
@@ -50,7 +57,10 @@
       </nav>
     </template>
   </div>
+  <h1 v-else class="sr-only">Gamenote usporedba</h1>
+  <p v-if="isPublicComparison && !publicPair" class="max-w-[80rem] mx-auto px-3 py-5">Usporedba nije dostupna.</p>
 
+  <LibraryComparison v-if="compareOpen && (isPublicComparison || canCompare)" :key="isPublicComparison ? comparisonTitle : userStore.user.id + header.username" :header="header || {}" :user="userStore.user || {}" :own-share="ownShare || {}" :initial-page="isPublicComparison ? null : comparisonInitialPage" :public-pair="publicPair" @open-game="openComparisonGame" @close="compareOpen = false" />
   <dialog ref="groupDialog" class="modal" aria-labelledby="shared-group-title" @close="closeGroup">
     <div class="modal-box w-11/12 max-w-6xl p-3 sm:p-4 md:p-6">
       <div class="flex justify-between items-center gap-3 mb-4"><h2 id="shared-group-title" class="text-xl font-bold">{{ selectedGroup?.name || 'Grupa' }}</h2><button class="btn btn-sm btn-circle btn-ghost" aria-label="Zatvori grupu" @click="groupDialog.close()">✕</button></div>
@@ -117,27 +127,23 @@
     <form method="dialog" class="modal-backdrop"><button>Zatvori igru</button></form>
   </dialog>
   <dialog ref="screenshotDialog" class="modal" aria-label="Pregled screenshotova" @close="selectedScreenshotIndex = null">
-    <div class="modal-box max-w-5xl">
-      <div class="flex justify-end mb-3"><button type="button" class="btn btn-sm btn-circle btn-ghost" aria-label="Zatvori screenshot" @click="closeScreenshotModal">✕</button></div>
-      <div v-if="selectedScreenshotIndex !== null" class="relative">
-        <img :src="screenshots[selectedScreenshotIndex]" :alt="`Screenshot ${selectedScreenshotIndex + 1}`" class="w-full h-auto rounded-lg" />
-        <button v-if="screenshots.length > 1" type="button" @click="previousScreenshot" aria-label="Prethodni screenshot" class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black/50 text-white hover:bg-black/75">❮</button>
-        <button v-if="screenshots.length > 1" type="button" @click="nextScreenshot" aria-label="Sljedeći screenshot" class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black/50 text-white hover:bg-black/75">❯</button>
-        <div class="screenshot-counter absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded" aria-live="polite">{{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}</div>
-      </div>
-    </div>
+    <ScreenshotViewer v-if="selectedScreenshotIndex !== null" :images="screenshots" :selected-index="selectedScreenshotIndex" @select="openScreenshotModal" @close="closeScreenshotModal" />
     <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori pregled screenshotova">Zatvori</button></form>
   </dialog>
   <AddSharedGameModal ref="addModal" @added="onGameAdded" />
 </template>
 <script setup>
+import ScreenshotViewer from '../components/ScreenshotViewer.vue';
 import { computed, defineAsyncComponent, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '../supabase.js';
 import { useUserStore } from '../stores/user.js';
 import { useThemeStore } from '../stores/theme.js';
 import { useCardSizeStore } from '../stores/cardSize.js';
-import { loadPublicLibrary } from '../services/libraryShare.js';
+import { loadPublicLibrary, loadShareSettings } from '../services/libraryShare.js';
+import { COMPARISON_COLUMNS } from '../services/libraryComparison.js';
+import { comparisonNames } from '../services/comparisonLink.js';
+import { VERSUS_PATHS } from '../constants/versusPaths.js';
 import { updateMetadata } from '../services/seo.js';
 import GameSeriesSection from '../components/GameSeriesSection.vue';
 import { useGamesApi } from '../services/gamesApi.js';
@@ -154,18 +160,45 @@ import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 import GamerCardSkeleton from '../components/GamerCardSkeleton.vue';
 import GroupCard from '../components/GroupCard.vue';
 import { GROUP_LAYOUT } from '../constants/groupLayout.js';
+const LibraryComparison = defineAsyncComponent(() => import('../components/LibraryComparison.vue'));
 const StatsContent = defineAsyncComponent(() => import('../components/StatsContent.vue'));
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const isPublicComparison = computed(() => route.name === 'public-comparison');
+const publicPair = computed(() => isPublicComparison.value ? comparisonNames(route.params.left, route.params.right) : null);
+const comparisonTitle = computed(() => publicPair.value ? `Gamenote: ${publicPair.value.left} vs ${publicPair.value.right}` : 'Gamenote usporedba');
 const gamesApi = useGamesApi();
 const themeStore = useThemeStore();
 const cardSizeStore = useCardSizeStore();
 const header = ref(null);
+const ownShare = ref(null);
+const compareOpen = ref(false);
+const comparisonCheckError = ref('');
+const comparisonRetry = ref(0);
+const canCompare = computed(() => !!userStore.user?.id && !!header.value && ownShare.value !== null && ownShare.value.username?.toLowerCase() !== header.value.username?.toLowerCase());
+watch([() => userStore.user?.id, () => header.value?.username, comparisonRetry, isPublicComparison], async ([userId, username], previous, onCleanup) => {
+  if (isPublicComparison.value) { ownShare.value = null; return; }
+  ownShare.value = null; compareOpen.value = false; comparisonCheckError.value = '';
+  if (!userId || !username) return;
+  const request = new AbortController();
+  onCleanup(() => request.abort());
+  try {
+    const settings = await loadShareSettings(userId, request.signal);
+    if (!request.signal.aborted) ownShare.value = settings;
+  } catch {
+    if (!request.signal.aborted) comparisonCheckError.value = 'Provjeru usporedbe nije moguće učitati.';
+  }
+});
+
 const error = ref('');
 const loading = ref(true);
 const items = ref([]);
 const total = ref(0);
+const comparisonInitialPage = computed(() => {
+  if (loading.value || tab.value !== 'games' || page.value !== 1 || filters.search || filters.status || filters.platform || filters.genre || filters.sort !== 'title') return null;
+  return { items: items.value, total: total.value };
+});
 const statsGames = ref(null);
 const gameDialog = ref(null);
 const screenshotDialog = ref(null);
@@ -178,7 +211,6 @@ const ownGameId = ref(null);
 const libraryChecking = ref(false);
 const libraryCheckError = ref('');
 const libraryCheckVersion = ref(0);
-// noinspection ExceptionCaughtLocallyJS
 watch([game, () => userStore.user?.id, libraryCheckVersion], async ([source, ownerId], previous, onCleanup) => {
   ownGameId.value = null; libraryChecking.value = false; libraryCheckError.value = '';
   if (!source || !ownerId) return;
@@ -189,9 +221,13 @@ watch([game, () => userStore.user?.id, libraryCheckVersion], async ([source, own
     let query = supabase.from('games').select('id').eq('user_id', ownerId);
     if (source.game_api_id) query = query.eq('game_api_id', String(source.game_api_id));
     else query = query.eq('title', source.title);
+    if (source.platform) query = query.eq('platform', source.platform);
     const { data, error: failure } = await query.limit(1).abortSignal(request.signal);
     if (request.signal.aborted) return;
-    if (failure) throw failure;
+    if (failure) {
+      libraryCheckError.value = 'Nije moguće provjeriti tvoj Gamenote. Pokušaj ponovno.';
+      return;
+    }
     ownGameId.value = data?.[0]?.id || null;
   } catch {
     if (!request.signal.aborted) libraryCheckError.value = 'Nije moguće provjeriti tvoj Gamenote. Pokušaj ponovno.';
@@ -312,10 +348,17 @@ let groupController;
 let groupRevision = 0;
 let loadedUsername = '';
 async function load() {
+  compareOpen.value = false;
   closeScreenshotModal();
   controller?.abort(); controller = new AbortController();
   const current = ++revision;
   loading.value = true; error.value = ''; statsGames.value = null; items.value = [];
+  if (isPublicComparison.value) {
+    header.value = null; gameDialog.value?.close(); groupDialog.value?.close();
+    loading.value = false; compareOpen.value = Boolean(publicPair.value);
+    updateMetadata(route);
+    return;
+  }
   const username = String(route.params.username);
   for (const key of Object.keys(filters)) filters[key] = String(route.query[key] || (key === 'sort' ? 'title' : ''));
   const options = { ...filters, page: page.value };
@@ -336,13 +379,30 @@ async function load() {
   } catch (failure) { if (current === revision) { error.value = failure.message; header.value = null; } }
   finally { if (current === revision) loading.value = false; }
 }
-async function openGame(id) {
+function openComparisonGame(row) {
+  if (publicPair.value) openGame(row.left?.id || row.right.id, false, row.left ? publicPair.value.left : publicPair.value.right);
+  else openGame(row.left?.id || row.right.id, Boolean(row.left));
+}
+async function openGame(id, own = false, username = String(route.params.username)) {
   closeScreenshotModal();
   gameController?.abort(); gameController = new AbortController();
   const current = ++gameRevision;
   game.value = null; gameLoading.value = true; gameError.value = ''; descriptionExpanded.value = false;
   if (!gameDialog.value.open) gameDialog.value.showModal();
-  try { const data = await loadPublicLibrary(String(route.params.username), 'game', { game: id }, gameController.signal); if (current === gameRevision) game.value = data; }
+  try {
+    let data;
+    if (own) {
+      const result = await supabase.from('games').select(COMPARISON_COLUMNS + ',description,publisher,release_date,esrb_rating,series_games,progress_unit').eq('user_id', userStore.user.id).eq('id', id).maybeSingle().abortSignal(gameController.signal);
+      if (result.error || !result.data) {
+        if (current === gameRevision) gameError.value = result.error ? result.error.message : 'Igra više nije u tvom Gamenoteu.';
+        return;
+      }
+      data = result.data;
+    } else {
+      data = await loadPublicLibrary(username, 'game', { game: id }, gameController.signal);
+    }
+    if (current === gameRevision) game.value = data;
+  }
   catch (failure) { if (current === gameRevision) gameError.value = failure.message; }
   finally { if (current === gameRevision) gameLoading.value = false; }
 }
@@ -389,13 +449,9 @@ function filterStatus(value) {
 watch(() => route.fullPath, load, { immediate: true });
 watch(() => userStore.isLoggedIn, (loggedIn) => {
   gameDialog.value?.close(); groupDialog.value?.close();
+  if (isPublicComparison.value) return;
   const path = loggedIn ? `/u/${route.params.username}` : `/${route.params.username}`;
   if (route.path !== path) router.replace({ path, query: route.query });
 });
 onUnmounted(() => { descriptionObserver?.disconnect(); clearTimeout(searchTimer); guestMedia.removeEventListener('change', syncGuestTcg); revision++; controller?.abort(); closeGame(); closeGroup(); });
 </script>
-<style scoped>
-.collection-nav-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; }
-.collection-nav-link:hover { color: var(--color-primary); }
-.collection-nav-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-</style>

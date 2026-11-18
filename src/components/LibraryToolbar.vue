@@ -23,22 +23,22 @@
               <option value="play_time:desc">Vrijeme igranja (najviše)</option>
               <option value="created_at:desc">Nedavno dodano</option>
             </select>
-            <div class="dropdown dropdown-bottom sm:dropdown-end hidden sm:block w-full sm:w-auto">
-              <label tabindex="0" class="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto" ref="sortLabel">
+            <details ref="sortDropdown" class="dropdown dropdown-bottom sm:dropdown-end hidden sm:block w-full sm:w-auto">
+              <summary class="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                 </svg>
                 Sortiraj
-              </label>
-              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-1" >
-                <li><a @click="selectSort('title:asc')">Naziv (A-Ž)</a></li>
-                <li><a @click="selectSort('title:desc')">Naziv (Ž-A)</a></li>
-                <li><a @click="selectSort('rating:desc')">Ocjena (najviša)</a></li>
-                <li><a @click="selectSort('rating:asc')">Ocjena (najniža)</a></li>
-                <li><a @click="selectSort('play_time:desc')">Vrijeme igranja (najviše)</a></li>
-                <li><a @click="selectSort('created_at:desc')">Nedavno dodano</a></li>
+              </summary>
+              <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-1" >
+                <li><button type="button" @click="selectSort('title:asc')">Naziv (A-Ž)</button></li>
+                <li><button type="button" @click="selectSort('title:desc')">Naziv (Ž-A)</button></li>
+                <li><button type="button" @click="selectSort('rating:desc')">Ocjena (najviša)</button></li>
+                <li><button type="button" @click="selectSort('rating:asc')">Ocjena (najniža)</button></li>
+                <li><button type="button" @click="selectSort('play_time:desc')">Vrijeme igranja (najviše)</button></li>
+                <li><button type="button" @click="selectSort('created_at:desc')">Nedavno dodano</button></li>
               </ul>
-            </div>
+            </details>
             <slot name="controls" />
           </div>
 
@@ -46,13 +46,13 @@
         </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { useDropdown } from '../composables/useDropdown.js';
 defineProps({ modelValue: { type: String, default: '' }, sortValue: { type: String, default: 'title:asc' }, placeholder: { type: String, default: 'Pretraži svoju zbirku...' } });
 const emit = defineEmits(['update:modelValue', 'sort']);
-const sortLabel = ref(null);
+const { dropdown: sortDropdown, close: closeSort } = useDropdown();
 function selectSort(value) {
   emit('sort', value);
-  sortLabel.value?.blur();
-  document.activeElement?.blur();
+  closeSort();
+  sortDropdown.value?.querySelector('summary')?.focus();
 }
 </script>

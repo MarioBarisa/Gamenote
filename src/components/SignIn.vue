@@ -9,7 +9,7 @@
           <h2 class="text-xl font-bold mt-3">Prijavi se</h2>
         </div>
 
-        <div v-if="errorMessage" class="alert alert-error text-sm">
+        <div role="alert" v-if="errorMessage" class="alert alert-error text-sm">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span>{{ errorMessage }}</span>
         </div>
@@ -55,15 +55,8 @@
               </button>
             </div>
             <div class="flex justify-end mt-1">
-              <a class="link link-primary text-sm cursor-pointer" @click="showResetModal = true">Zaboravio si lozinku?</a>
+              <button type="button" class="link link-primary text-sm cursor-pointer" @click="showResetModal = true">Zaboravio si lozinku?</button>
             </div>
-          </div>
-
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-3">
-              <input type="checkbox" class="checkbox checkbox-primary checkbox-sm" />
-              <span class="label-text text-sm">Zapamti me</span>
-            </label>
           </div>
 
           <button
@@ -72,7 +65,7 @@
             :disabled="loading"
           >
             <span v-if="loading" class="loading loading-spinner loading-sm"></span>
-            <template v-if="!loading">Prijava</template>
+            <span>Prijava</span>
           </button>
         </form>
 
@@ -85,20 +78,20 @@
       </div>
     </div>
 
-    <dialog class="modal" :class="{ 'modal-open': showResetModal }">
+    <AppModal v-if="showResetModal" label="Resetiranje lozinke" :busy="resetLoading" @close="closeResetModal">
       <div class="modal-box">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeResetModal">
+        <button type="button" aria-label="Zatvori resetiranje lozinke" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" @click="closeResetModal">
           <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <h3 class="font-bold text-lg">Resetiranje lozinke</h3>
         <p class="text-base-content/60 text-sm mt-1">Unesite svoju e-mail adresu i poslat ćemo vam link za resetiranje.</p>
 
-        <div v-if="resetSent" class="alert alert-success mt-4 text-sm">
+        <div role="status" v-if="resetSent" class="alert alert-success mt-4 text-sm">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <span>Link za resetiranje poslan je na vašu e-mail adresu.</span>
         </div>
 
-        <div v-if="resetError" class="alert alert-error mt-4 text-sm">
+        <div role="alert" v-if="resetError" class="alert alert-error mt-4 text-sm">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span>{{ resetError }}</span>
         </div>
@@ -107,28 +100,28 @@
           <input
             type="email"
             v-model="resetEmail"
+            aria-label="E-mail adresa" autocomplete="email"
             placeholder="ime@primjer.hr"
             class="input input-bordered w-full"
             required
           />
           <button type="submit" class="btn btn-primary w-full" :disabled="resetLoading">
             <span v-if="resetLoading" class="loading loading-spinner loading-sm"></span>
-            <template v-if="!resetLoading">Pošalji link</template>
+            <span>Pošalji link</span>
           </button>
         </form>
 
-        <div class="modal-action" v-if="resetSent">
-          <button class="btn" @click="closeResetModal">Zatvori</button>
-        </div>
+
       </div>
       <form method="dialog" class="modal-backdrop" @click="closeResetModal">
         <button>zatvori</button>
       </form>
-    </dialog>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
+import AppModal from './AppModal.vue';
 import { ref } from 'vue'
 import { useAuth } from '../services/useAuth'
 import GamenoteBanner from './GamenoteBanner.vue'

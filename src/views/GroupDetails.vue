@@ -46,11 +46,11 @@
           <div class="mt-4 flex items-center gap-3 flex-wrap">
             <label class="label">Ocjena grupe</label>
             <div class="rating rating-sm">
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="groupRating" @change="saveRating" :disabled="savingRating" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="groupRating" @change="saveRating" :disabled="savingRating" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="groupRating" @change="saveRating" :disabled="savingRating" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="groupRating" @change="saveRating" :disabled="savingRating" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="groupRating" @change="saveRating" :disabled="savingRating" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="1 od 5" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="2 od 5" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="3 od 5" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="4 od 5" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="5 od 5" />
             </div>
             <span v-if="savingRating" class="loading loading-spinner loading-xs"></span>
             <span class="text-sm opacity-70">Ukupno vrijeme igranja:</span>
@@ -86,10 +86,11 @@
         </div>
       </div>
 
-      <div v-if="showAddModal" class="modal modal-open">
+      <AppModal v-if="showAddModal" label="Dodaj igre u grupu" :busy="adding" @close="closeAddModal">
         <div class="modal-box max-w-lg">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="adding" @click.stop="closeAddModal">✕</button>
           <h3 class="font-bold text-lg">Dodaj igre u grupu</h3>
-          <input v-model="addSearch" type="text" placeholder="Pretraži igre..." class="input input-bordered w-full mt-3" />
+          <input v-model="addSearch" type="text" placeholder="Pretraži igre..." class="input input-bordered w-full mt-3"  aria-label="Pretraži igre..." />
           <ul v-if="filteredAvailable.length" class="mt-3 max-h-72 overflow-y-auto space-y-1">
             <li v-for="game in filteredAvailable" :key="game.id">
               <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 cursor-pointer" :class="{ 'bg-base-200': isAddSelected(game.id) }">
@@ -113,7 +114,7 @@
         <form method="dialog" class="modal-backdrop">
           <button @click="closeAddModal">zatvori</button>
         </form>
-      </div>
+      </AppModal>
 
       <h2 class="text-xl font-semibold mb-4">Igre u grupi</h2>
       <div v-if="selectMode" class="flex items-center justify-between gap-2 mb-4 p-3 card bg-base-200 shadow">
@@ -132,9 +133,10 @@
       </div>
       <div :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
         <template v-for="gg in groupGames" :key="gg.id">
-          <div v-if="gg.games" class="relative cursor-pointer rounded-box" :class="{ 'ring-2 ring-primary': isSelected(gg.games.id) }" @click="selectMode ? toggleSelect(gg.games.id) : navigateToGame(gg.games.id)">
-            <GameCard :game="gg.games" />
-            <span v-if="selectMode" class="absolute top-2 left-2 z-10 size-7 rounded-full shadow-lg flex items-center justify-center transition-all" :class="isSelected(gg.games.id) ? 'bg-primary text-primary-content' : 'bg-black/50 border-2 border-white/70'" aria-hidden="true">
+          <div v-if="gg.games" class="relative cursor-pointer rounded-box" :class="{ 'ring-2 ring-primary': isSelected(gg.games.id) }" >
+            <button v-if="selectMode" type="button" class="card-open-link absolute inset-0 z-10 rounded-box" :aria-label="`Odaberi igru: ${gg.games.title}`" :aria-pressed="isSelected(gg.games.id)" @click="toggleSelect(gg.games.id)"></button>
+            <GameCard :game="gg.games" :to="selectMode ? '' : `/game/${gg.games.id}`" lazy />
+            <span v-if="selectMode" class="pointer-events-none absolute top-2 left-2 z-10 size-7 rounded-full shadow-lg flex items-center justify-center transition-all" :class="isSelected(gg.games.id) ? 'bg-primary text-primary-content' : 'bg-black/50 border-2 border-white/70'" aria-hidden="true">
               <svg v-if="isSelected(gg.games.id)" xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
               </svg>
@@ -144,8 +146,9 @@
       </div>
     </div>
 
-    <div v-if="showBulkDeleteModal" class="modal modal-open">
+    <AppModal v-if="showBulkDeleteModal" label="Ukloni igre iz grupe" :busy="bulkRemoving" @close="showBulkDeleteModal = false">
       <div class="modal-box">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="bulkRemoving" @click.stop="showBulkDeleteModal = false">✕</button>
         <h3 class="font-bold text-lg">Ukloni igre iz grupe?</h3>
         <p class="py-3 text-sm">
           Jeste li sigurni da želite ukloniti
@@ -166,12 +169,13 @@
       <form method="dialog" class="modal-backdrop">
         <button @click="showBulkDeleteModal = false">zatvori</button>
       </form>
-    </div>
+    </AppModal>
 
-    <div v-if="showRenameModal" class="modal modal-open">
+    <AppModal v-if="showRenameModal" label="Preimenuj grupu" @close="showRenameModal = false">
       <div class="modal-box">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" @click.stop="showRenameModal = false">✕</button>
         <h3 class="font-bold text-lg">Preimenuj grupu</h3>
-        <input v-model="renameInput" type="text" placeholder="Naziv grupe" class="input input-bordered w-full mt-3" @keyup.enter="confirmRename" />
+        <input v-model="renameInput" type="text" placeholder="Naziv grupe" class="input input-bordered w-full mt-3" @keyup.enter="confirmRename"  aria-label="Naziv grupe" />
         <div class="modal-action">
           <button class="btn" @click="showRenameModal = false">Odustani</button>
           <button class="btn btn-primary" @click="confirmRename" :disabled="!renameInput.trim()">Spremi</button>
@@ -180,10 +184,11 @@
       <form method="dialog" class="modal-backdrop">
         <button @click="showRenameModal = false">zatvori</button>
       </form>
-    </div>
+    </AppModal>
 
-    <div v-if="showDeleteModal" class="modal modal-open">
+    <AppModal v-if="showDeleteModal" label="Potvrdi brisanje" :busy="deleting" @close="showDeleteModal = false">
       <div class="modal-box">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="deleting" @click.stop="showDeleteModal = false">✕</button>
         <h3 class="font-bold text-lg">Potvrdi brisanje</h3>
         <p class="py-4">Jeste li sigurni da želite obrisati grupu "{{ group.name }}"? Sve igre će biti uklonjene iz grupe.</p>
         <div class="modal-action">
@@ -194,11 +199,12 @@
           <button @click="showDeleteModal = false" class="btn">Odustani</button>
         </div>
       </div>
-    </div>
+    </AppModal>
   </div>
 </template>
 
 <script>
+import AppModal from '../components/AppModal.vue';
 import { usePageTitle } from '../composables/usePageTitle';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
@@ -211,7 +217,7 @@ import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 import { getGroup, listGroupGames, updateGroup, removeGameFromGroup, addGameToGroup, deleteGroup } from '../services/groupsApi';
 
 export default {
-  components: { GameCard, LoadingCardGrid },
+  components: { AppModal, GameCard, LoadingCardGrid },
   setup() {
     const route = useRoute();
     const router = useRouter();

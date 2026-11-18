@@ -14,15 +14,33 @@ jobs:
     env:
       VITE_SUPABASE_URL: https://supabase.build.test
       VITE_SUPABASE_ANON_KEY: fixture-anon-key
+      NETLIFY_AUTH_TOKEN: fixture-token
+      NETLIFY_TELEMETRY_DISABLED: '1'
+      NETLIFY_SKILLS_AUTO_UPDATE: '0'
+      NETLIFY_USE_LEGACY_AUTH_STORAGE: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 24
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
           cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm test
+      - name: Instalacija iz lockfilea
+        run: npm ci --include=dev --no-audit
+      - name: Provjera stabla ovisnosti
+        run: npm ls --all > /dev/null
+      - name: Unit testovi aplikacije i importera
+        run: node --test tests/app/app.test.js tests/importers/importers.test.js
+      - name: Instalacija Chromiuma
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Browser regresije aplikacije
+        run: node tests/app/regressions.browser.mjs
+      - name: Browser regresije importera
+        run: node tests/importers/importers.browser.mjs
+      - name: Produkcijski build i javni prikaz
+        run: npm run test:public
       - name: Provjera zapakirane gamercard funkcije
         run: node tests/app/libraryShare.package.mjs
       - name: Provjera Netlify dijeljenja

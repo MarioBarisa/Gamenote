@@ -38,3 +38,7 @@
 [[edge_functions]]
   path = "/:username"
   function = "og-library"
+
+[[edge_functions]]
+  path = "/compare/*"
+  function = "og-comparison"

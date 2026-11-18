@@ -1,4 +1,7 @@
+import './comparisonShare.test.js';
 import './libraryShare.test.js';
+import './frontend.test.js';
+import './libraryComparison.test.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';

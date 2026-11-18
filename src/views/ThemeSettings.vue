@@ -32,7 +32,7 @@
         <div class="card-body flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 class="card-title text-lg">TCG Mode</h3>
+              <h3 class="card-title text-lg">TCG način</h3>
               <p class="text-sm opacity-70">
                 3D nagib i folirani efekt na karticama igara. Igre sa 100% postignuća dobivaju zlatnu Gamenote foliju,
                 igre s ocjenom 5/5 holografsku, a igre s obima specijalnu prizma foliju. Preporučeno samo na računalu.
@@ -77,9 +77,10 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <!-- Small Size -->
-        <div class="card bg-base-200 cursor-pointer transition-all duration-300 border-2"
+        <div class="card relative bg-base-200 cursor-pointer transition-all duration-300 border-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary"
           :class="cardSizeStore.cardSize === 'small' ? 'border-primary' : 'border-transparent'"
-          @click="cardSizeStore.saveCardSize('small')">
+          >
+          <input type="radio" name="card-size" class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" aria-label="Mala veličina kartica" :checked="cardSizeStore.cardSize === 'small'" @change="cardSizeStore.saveCardSize('small')" />
           <div class="card-body">
             <h3 class="card-title text-lg">Mala</h3>
             <p class="text-sm opacity-70">Više igara na ekranu. Kompaktan prikaz idealan za pregledavanje većeg broja
@@ -99,16 +100,17 @@
             <div v-if="cardSizeStore.cardSize === 'small'" class="mt-4">
               <span class="badge badge-primary">Trenutno aktivna</span>
             </div>
-            <button v-else @click="cardSizeStore.saveCardSize('small')" class="btn btn-sm btn-primary mt-4 w-full">
+            <span v-else class="btn btn-sm btn-primary mt-4 w-full">
               Koristi ovu veličinu
-            </button>
+            </span>
           </div>
         </div>
 
         <!-- Medium Size -->
-        <div class="card bg-base-200 cursor-pointer transition-all duration-300 border-2"
+        <div class="card relative bg-base-200 cursor-pointer transition-all duration-300 border-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary"
           :class="cardSizeStore.cardSize === 'medium' ? 'border-primary' : 'border-transparent'"
-          @click="cardSizeStore.saveCardSize('medium')">
+          >
+          <input type="radio" name="card-size" class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" aria-label="Srednja veličina kartica" :checked="cardSizeStore.cardSize === 'medium'" @change="cardSizeStore.saveCardSize('medium')" />
           <div class="card-body">
             <h3 class="card-title text-lg">Srednja</h3>
             <p class="text-sm opacity-70">Ravnoteža veličina i dobrih detalja. Preporučena za većinu korisnika.</p>
@@ -127,16 +129,17 @@
             <div v-if="cardSizeStore.cardSize === 'medium'" class="mt-4">
               <span class="badge badge-primary">Trenutno aktivna</span>
             </div>
-            <button v-else @click="cardSizeStore.saveCardSize('medium')" class="btn btn-sm btn-primary mt-4 w-full">
+            <span v-else class="btn btn-sm btn-primary mt-4 w-full">
               Koristi ovu veličinu
-            </button>
+            </span>
           </div>
         </div>
 
         <!-- Large Size -->
-        <div class="card bg-base-200 cursor-pointer transition-all duration-300 border-2"
+        <div class="card relative bg-base-200 cursor-pointer transition-all duration-300 border-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary"
           :class="cardSizeStore.cardSize === 'large' ? 'border-primary' : 'border-transparent'"
-          @click="cardSizeStore.saveCardSize('large')">
+          >
+          <input type="radio" name="card-size" class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" aria-label="Velika veličina kartica" :checked="cardSizeStore.cardSize === 'large'" @change="cardSizeStore.saveCardSize('large')" />
           <div class="card-body">
             <h3 class="card-title text-lg">Velika</h3>
             <p class="text-sm opacity-70">Velika kartica s puno detalja. Idealna za fokusirani prikaz.</p>
@@ -155,9 +158,9 @@
             <div v-if="cardSizeStore.cardSize === 'large'" class="mt-4">
               <span class="badge badge-primary">Trenutno aktivna</span>
             </div>
-            <button v-else @click="cardSizeStore.saveCardSize('large')" class="btn btn-sm btn-primary mt-4 w-full">
+            <span v-else class="btn btn-sm btn-primary mt-4 w-full">
               Koristi ovu veličinu
-            </button>
+            </span>
           </div>
         </div>
       </div>
@@ -168,13 +171,14 @@
       <h2 class="text-2xl font-bold mb-4">Dostupne teme</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div v-for="theme in themeStore.availableThemes" :key="theme.name" class="rounded-lg">
-          <div @click="switchTheme(theme.name)" :data-theme="theme.name"
-            class="card cursor-pointer hover:scale-105 transition-all duration-300 border-2 bg-base-100 shadow-md overflow-hidden"
+          <div :data-theme="theme.name"
+            class="card relative has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary cursor-pointer hover:scale-105 transition-all duration-300 border-2 bg-base-100 shadow-md overflow-hidden"
             :class="{
               'border-primary shadow-xl scale-105 ring-2 ring-primary': themeStore.currentTheme === theme.name,
               'border-base-300 hover:border-primary': themeStore.currentTheme !== theme.name
             }">
-            <div class="card-body p-4">
+            <input type="radio" name="ui-theme" class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" :aria-label="theme.label" :checked="themeStore.currentTheme === theme.name" @change="switchTheme(theme.name)" />
+            <div class="card-body p-4 pointer-events-none">
               <div class="font-bold text-sm mb-3 text-base-content">{{ theme.label }}</div>
 
               <div class="flex gap-1 mb-2">
@@ -198,13 +202,13 @@
 
               <div class="bg-base-200 rounded p-2 mb-2">
                 <div class="bg-base-300 rounded p-1 text-xs text-base-content text-center">
-                  Background
+                  Podloga
                 </div>
               </div>
 
               <div class="flex gap-1">
-                <button class="btn btn-primary btn-xs flex-1">Primary</button>
-                <button class="btn btn-ghost btn-xs flex-1">Ghost</button>
+                <span class="btn btn-primary btn-xs flex-1">Primarno</span>
+                <span class="btn btn-ghost btn-xs flex-1">Obično</span>
               </div>
 
               <div v-if="themeStore.currentTheme === theme.name" class="mt-2 badge badge-primary badge-sm w-full">

@@ -1,9 +1,16 @@
+import { nextTick } from 'vue';
+import { pageFailure } from '../services/pageFailure';
 import { updateMetadata } from '../services/seo';
 import { useUserStore } from '../stores/user';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, saved) {
+    if (to.path === from.path) return false;
+    if (to.name === 'library' && ['game-details', 'edit-game', 'api-game-details'].includes(from.name)) return false;
+    return saved || { top: 0 };
+  },
   routes: [
     {
       path: '/',
@@ -104,6 +111,12 @@ const router = createRouter({
       component: () => import('../views/ResetPasswordView.vue')
     },
     {
+      path: '/compare/:left([a-zA-Z0-9][a-zA-Z0-9_-]{2,29})/:right([a-zA-Z0-9][a-zA-Z0-9_-]{2,29})',
+      name: 'public-comparison',
+      meta: { skipAuthLoading: true },
+      component: () => import('../views/PublicLibrary.vue')
+    },
+    {
       path: '/u/:username([a-zA-Z0-9][a-zA-Z0-9_-]{2,29})',
       name: 'library-visitor',
       meta: { requiresAuth: true },
@@ -148,24 +161,20 @@ const router = createRouter({
 });
 
 
-router.afterEach((to, from, failure) => {
+router.afterEach(async (to, from, failure) => {
   if (failure) return;
+  pageFailure.value = false;
   updateMetadata(to);
-  setTimeout(() => {
-    const labels = document.querySelectorAll('label[tabindex]');
-    labels.forEach(label => {
-      try {
-        label.blur();
-        label.removeAttribute('tabindex');
-        setTimeout(() => {
-          label.setAttribute('tabindex', '0');
-        }, 0);
-      } catch (e) {
-        console.error('Error blurring labels:', e);
-      }
-    });
-  }, 50);
+  if (!from.name || to.path === from.path) return;
+  await nextTick();
+  const heading = document.querySelector('main h1');
+  if (heading && !document.querySelector('dialog:modal')) {
+    heading.setAttribute('tabindex', '-1');
+    heading.focus({ preventScroll: true });
+  }
 });
+
+router.onError(() => { pageFailure.value = true; });
 
 router.beforeEach(async (to) => {
   if (to.name === 'public-library') {
@@ -182,7 +191,7 @@ router.beforeEach(async (to) => {
   try {
     const userStore = useUserStore();
     await userStore.initializeAuth();
-    if (to.meta.requiresAuth && !userStore.isLoggedIn) return { name: 'login' };
+    if (to.meta.requiresAuth && !userStore.isLoggedIn) return { name: 'login', query: { redirect: to.fullPath } };
   } catch (error) {
     console.error('Provjera prijave nije uspjela:', error);
     // Pogrešku prikazuje početni ekran.

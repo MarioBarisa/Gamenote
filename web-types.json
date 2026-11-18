@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JetBrains/web-types/master/schema/web-types.json",
+  "name": "gamenote",
+  "version": "0.0.0",
+  "contributions": {
+    "css": {
+      "properties": [
+        { "name": "--hover-tilt-x", "description": "Vodoravni položaj pokazivača, od 0 do 1." },
+        { "name": "--hover-tilt-y", "description": "Okomiti položaj pokazivača, od 0 do 1." },
+        { "name": "--hover-tilt-opacity", "description": "Prozirnost sjaja koju animira biblioteka." },
+        { "name": "--hover-tilt-default-gradient", "description": "Izvorni gradijent sjaja unutar web komponente." }
+      ]
+    }
+  }
+}

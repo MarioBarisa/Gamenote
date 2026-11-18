@@ -21,7 +21,7 @@ export default async (request, context) => {
   const response = await context.next();
   if (!response.headers.get('content-type')?.includes('text/html')) return response;
   const html = await response.text();
-  const title = header ? `Zbirka: ${header.name} | Gamenote` : 'Zbirka nije dostupna | Gamenote';
+  const title = header ? `Gamenote · ${header.name}` : 'Zbirka nije dostupna | Gamenote';
   const description = header ? `Pogledaj zbirku @${username} na Gamenoteu.` : 'Ova zbirka trenutačno nije dostupna.';
   const canonical = `https://gamenote.eu/${username}`;
   const image = header ? `https://gamenote.eu/.netlify/functions/library-card?username=${username}` : 'https://gamenote.eu/social-preview.png';

@@ -10,6 +10,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import '../services/localIcons.js';
 import { Icon } from '@iconify/vue';
 import { useGamesApi } from '../services/gamesApi';
 import { loadImporterPoster } from '../services/importerPosters';

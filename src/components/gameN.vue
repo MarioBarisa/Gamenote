@@ -1,12 +1,12 @@
 <template>
-  <div class="news-carousel bg-base-200 rounded-lg px-3 sm:px-8 py-3 sm:py-6">
-    <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Gaming Vijesti</h2>
+  <div class="news-carousel bg-base-200 rounded-lg px-3 sm:px-8 py-3 sm:py-6" role="region" aria-roledescription="karusel" aria-label="Gaming vijesti">
+    <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4"><h2 class="text-xl sm:text-2xl font-bold">Gaming Vijesti</h2><button v-if="news.length > 1" type="button" class="btn btn-ghost btn-xs" @click="togglePause">{{ paused ? 'Pokreni' : 'Pauziraj' }}</button></div>
 
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
-    <div v-else-if="currentNews" class="relative">
+    <div v-else-if="currentNews" class="relative" role="group" :aria-label="`Vijest ${currentIndex + 1} od ${news.length}`">
       <button
         v-if="news.length > 1"
         @click="goToPrevious"
@@ -48,7 +48,7 @@
       <!-- Kartica: optimizirana za mobitel -->
       <div class="w-full px-6 sm:px-8">
         <div
-          @click="openNewsDetail(currentNews)"
+          role="link" tabindex="0" @keydown.enter="openNewsDetail(currentNews)" @click="openNewsDetail(currentNews)"
           class="cursor-pointer hover:bg-base-300 rounded-xl
                  transition-all duration-300
                  w-full
@@ -128,7 +128,7 @@
       <!-- Indikatori -->
       <div class="flex justify-center mt-2 sm:mt-4 gap-1.5 sm:gap-2" v-if="news.length > 1">
         <button
-          v-for="(_, index) in news"
+          v-for="index in news.keys()"
           :key="index"
           :class="[
             'w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 cursor-pointer hover:scale-125',
@@ -162,9 +162,6 @@
           <span v-if="isRetrying" class="loading loading-spinner loading-xs"></span>
           {{ isRetrying ? 'Učitavanje...' : 'Pokušaj ponovno' }}
         </button>
-        <button @click="loadMockNews" class="btn btn-sm btn-secondary">
-          Prikaži demo vijesti
-        </button>
       </div>
     </div>
 
@@ -189,9 +186,6 @@
           <button @click="retryFetch" class="btn btn-sm btn-primary">
             Osvježi
           </button>
-          <button @click="loadMockNews" class="btn btn-sm btn-secondary">
-            Demo vijesti
-          </button>
         </div>
       </div>
     </div>
@@ -213,6 +207,8 @@ export default {
     const currentIndex = ref(0);
     const currentNews = ref(null);
     const intervalId = ref(null);
+    const paused = ref(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    let disposed = false;
     const isRetrying = ref(false);
     const imageError = ref({});
 
@@ -222,6 +218,7 @@ export default {
     const fetchNews = async () => {
       try {
         const fetchedNews = await gamesApi.getGameNews();
+        if (disposed) return false;
         if (fetchedNews && fetchedNews.length > 0) {
           news.value = fetchedNews;
           currentIndex.value = 0;
@@ -230,7 +227,9 @@ export default {
           startCarousel();
           return true;
         } else {
-          loadMockNews();
+          news.value = [];
+          currentNews.value = null;
+          stopCarousel();
           return false;
         }
       } catch (err) {
@@ -244,28 +243,22 @@ export default {
       isRetrying.value = true;
       stopCarousel();
       try {
-        const success = await fetchNews();
-        if (!success) {
-          setTimeout(() => loadMockNews(), 1000);
-        }
+        await fetchNews();
+
       } finally {
         isRetrying.value = false;
       }
     };
 
-    const loadMockNews = () => {
-      stopCarousel();
-      const mockNews = gamesApi.getMockGameNews();
-      news.value = mockNews;
-      currentIndex.value = 0;
-      currentNews.value = mockNews[0];
-      imageError.value = {};
-      startCarousel();
+    const togglePause = () => {
+      paused.value = !paused.value;
+      if (paused.value) stopCarousel();
+      else startCarousel();
     };
 
     const startCarousel = () => {
       stopCarousel();
-      if (news.value.length > 1) {
+      if (!disposed && !paused.value && news.value.length > 1) {
         intervalId.value = setInterval(() => {
           currentIndex.value = (currentIndex.value + 1) % news.value.length;
           currentNews.value = news.value[currentIndex.value];
@@ -351,11 +344,14 @@ export default {
     });
 
     onUnmounted(() => {
+      disposed = true;
       stopCarousel();
     });
 
     return {
       loading,
+      paused,
+      togglePause,
       error,
       currentNews,
       currentIndex,
@@ -371,7 +367,6 @@ export default {
       goToNext,
       goToPrevious,
       retryFetch,
-      loadMockNews
     };
   }
 };
@@ -385,14 +380,6 @@ export default {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

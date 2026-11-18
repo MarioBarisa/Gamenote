@@ -220,7 +220,7 @@
       <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori uređivač">Zatvori</button></form>
     </dialog>
 
-    <div v-if="toast.show" class="toast toast-top toast-end">
+    <div v-if="toast.show" role="status" aria-atomic="true" class="toast toast-top toast-end">
       <div class="alert" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
         <span>{{ toast.message }}</span>
       </div>
@@ -311,7 +311,6 @@ import { getProfileAchievements } from '../services/profileAchievements.js';
 import { getGamerCardStats, PLAYER_TITLES, formatCardNumber } from '../services/gamerCard.js';
 import { SIGNATURE_THEMES, GENRE_THEMES, signatureForGenre, cardColorValue, cardColorHex, validCardColor, loadCardColor, saveCardColor, loadCardTheme, saveCardTheme } from '../services/cardAppearance.js';
 
-const THROW = (err) => { if (err) throw err; };
 
 export default {
   components: { ProfileInfoButton, LibraryShareButton, GamenoteBanner, GamerCard, CardThemePicker, CardThemePreview, AchievementIcon },
@@ -468,7 +467,7 @@ export default {
       toast.message = message;
       toast.type = type;
       toast.show = true;
-      setTimeout(() => toast.show = false, 3000);
+      if (type === 'success') setTimeout(() => toast.show = false, 5000);
     };
     
     const handleImageError = () => {
@@ -485,7 +484,11 @@ export default {
           }
         });
         
-        if (error) THROW(error);
+        if (error) {
+          console.error('Greška pri ažuriranju profila:', error);
+          showToast('Greška pri ažuriranju profila', 'error');
+          return;
+        }
         
         await userStore.fetchUser();
         showToast('Profil uspješno ažuriran!');
@@ -507,7 +510,11 @@ export default {
           password: passwordForm.newPassword
         });
         
-        if (error) THROW(error);
+        if (error) {
+          console.error('Greška pri mijenjanju lozinke:', error);
+          showToast('Greška pri mijenjanju lozinke', 'error');
+          return;
+        }
         
         passwordForm.newPassword = '';
         passwordForm.confirmPassword = '';
@@ -665,7 +672,10 @@ export default {
             deletingAccount.value = false;
             return;
           }
-          THROW(error);
+          console.error('Greška pri brisanju računa:', error);
+          showToast(error.message || 'Greška pri brisanju računa', 'error');
+          deletingAccount.value = false;
+          return;
         }
 
         clearImporterChoices(userStore.user?.id);
@@ -701,7 +711,12 @@ export default {
 
         const { error } = await supabase.rpc('delete_user_account');
 
-        if (error) THROW(error);
+        if (error) {
+          console.error('Greška pri brisanju računa:', error);
+          showToast(error.message || 'Greška pri brisanju računa', 'error');
+          deletingAccount.value = false;
+          return;
+        }
 
         clearImporterChoices(userStore.user?.id);
         await disconnectPsn(userStore.user?.id);

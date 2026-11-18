@@ -60,10 +60,10 @@
       </div>
 
       <!-- Main Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-stretch">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-start">
 
         <!-- Informacije -->
-        <div class="card bg-base-200 shadow-xl lg:col-span-2 h-full">
+        <div class="card bg-base-200 shadow-xl lg:col-span-2">
           <div class="card-body p-3 sm:p-4 flex flex-col">
             <h2 class="card-title text-base m-0 mb-3">Informacije</h2>
 
@@ -143,19 +143,19 @@
         </div>
 
         <!-- Tabs: Informacije / Serija igara / Slike igre -->
-        <div class="card bg-base-200 shadow-xl lg:col-span-3 h-full">
+        <div class="card bg-base-200 shadow-xl lg:col-span-3 self-stretch">
           <div class="card-body p-3 sm:p-4 flex flex-col">
             <div class="flex flex-col flex-1">
-              <div role="tablist" class="tabs tabs-lift">
-                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'">
+              <div role="tablist" class="tabs tabs-lift" @keydown="handleTabKeys">
+                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'" aria-label="Informacije" :id="fieldId + '-tab-info'" :aria-controls="fieldId + '-panel-info'" :tabindex="activeInfoTab === 'info' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
                   <span class="hidden sm:inline font-bold">Informacije</span>
                 </button>
-                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'">
+                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'" aria-label="Serija igara" :id="fieldId + '-tab-series'" :aria-controls="fieldId + '-panel-series'" :tabindex="activeInfoTab === 'series' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
                   <span class="hidden sm:inline font-bold">Serija igara</span>
                 </button>
-                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-active' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'">
+                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-active' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'" aria-label="Slike igre" :id="fieldId + '-tab-screens'" :aria-controls="fieldId + '-panel-screens'" :tabindex="activeInfoTab === 'screens' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
                   <span class="hidden sm:inline font-bold">Slike igre</span>
                 </button>
@@ -163,7 +163,7 @@
 
               <div class="p-4 flex flex-col flex-1 gap-3 bg-base-300 rounded-b-xl rounded-tr-xl" :class="activeInfoTab === 'info' ? 'rounded-tl-none' : 'rounded-tl-xl'">
                 <!-- Opis -->
-                <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1">
+                <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1" role="tabpanel" :id="fieldId + '-panel-info'" :aria-labelledby="fieldId + '-tab-info'">
                   <div>
                     <h3 class="text-lg font-bold">Opis</h3>
                     <p class="whitespace-pre-wrap">{{ game.description_raw || 'Nema opisa.' }}</p>
@@ -171,7 +171,7 @@
                 </div>
 
                 <!-- Serija igrara -->
-                <div v-show="activeInfoTab === 'series'" class="flex flex-col gap-3 flex-1">
+                <div v-show="activeInfoTab === 'series'" class="flex flex-col gap-3 flex-1" role="tabpanel" :id="fieldId + '-panel-series'" :aria-labelledby="fieldId + '-tab-series'">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
                     <div v-if="previousGame" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
                       <figure class="px-4 pt-4">
@@ -232,7 +232,7 @@
                 </div>
 
                 <!-- Slike igre -->
-                <div v-if="screenshots.length > 0" v-show="activeInfoTab === 'screens'" class="flex flex-col flex-1">
+                <div v-if="screenshots.length > 0" v-show="activeInfoTab === 'screens'" class="flex flex-col flex-1" role="tabpanel" :id="fieldId + '-panel-screens'" :aria-labelledby="fieldId + '-tab-screens'">
                   <div class="flex items-center justify-between mb-3 border-b border-base-300 pb-2">
                     <span class="text-xs opacity-50">{{ (selectedScreenshotIndex ?? 0) + 1 }} / {{ screenshots.length }}</span>
                   </div>
@@ -275,24 +275,15 @@
       </div>
 
       <!-- Screenshot lightbox -->
-      <div v-if="selectedScreenshotIndex !== null" class="modal modal-open">
-        <div class="modal-box max-w-5xl">
-          <div class="relative">
-            <img :src="screenshots[selectedScreenshotIndex].image" alt="Enlarged Screenshot" class="w-full h-auto rounded-lg" />
-            <button v-if="screenshots.length > 1" @click="previousScreenshot" class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75">❮</button>
-            <button v-if="screenshots.length > 1" @click="nextScreenshot" class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost bg-black bg-opacity-50 text-white hover:bg-opacity-75">❯</button>
-            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">{{ selectedScreenshotIndex + 1 }} / {{ screenshots.length }}</div>
-          </div>
-          <div class="modal-action">
-            <button @click="closeScreenshotModal" class="btn">Zatvori</button>
-          </div>
-        </div>
-      </div>
+      <AppModal v-if="selectedScreenshotIndex !== null" label="Pregled screenshotova" @close="closeScreenshotModal">
+        <ScreenshotViewer :images="screenshots" :selected-index="selectedScreenshotIndex" @select="openScreenshotModal" @close="closeScreenshotModal" />
+      </AppModal>
     </div>
 
     <!-- dodaj kolekciju -->
-    <div v-if="showAddModal" class="modal modal-open">
+    <AppModal v-if="showAddModal" label="Dodaj u Gamenote" :busy="saveLoading" @close="closeAddModal">
       <div class="modal-box max-w-2xl">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="saveLoading" @click.stop="closeAddModal">✕</button>
         <h3 class="font-bold text-2xl mb-4">Dodaj u Gamenote</h3>
         
         <div v-if="game" class="mb-6">
@@ -302,8 +293,8 @@
               :alt="game.name" 
               class="w-24 h-32 object-cover rounded"
             />
-            <div>
-              <h4 class="text-xl font-bold">{{ game.name }}</h4>
+            <div class="min-w-0">
+              <h4 class="text-[1.375rem] font-bold [overflow-wrap:anywhere]">{{ game.name }}</h4>
               <p class="text-sm opacity-70">{{ formatDate(game.released) }}</p>
               <p class="text-sm"><strong>Žanr:</strong> {{ getGenres() }}</p>
               <p class="text-sm"><strong>Izdavač:</strong> {{ getPublishers() }}</p>
@@ -312,15 +303,15 @@
         </div>
 
         <form @submit.prevent="saveToCollection" class="space-y-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label font-medium">Naziv</label>
-              <input type="text" v-model="collectionForm.title" class="input input-bordered" required />
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-control col-span-2 sm:col-span-1">
+              <label class="label font-medium" :for="fieldId + '-1'">Naziv</label>
+              <input type="text" v-model="collectionForm.title" class="input input-bordered" required  :id="fieldId + '-1'" />
             </div>
             
-            <div class="form-control">
-              <label class="label font-medium">Platforma</label>
-              <select v-model="collectionForm.platform" class="select select-bordered" required>
+            <div class="form-control col-span-2 sm:col-span-1">
+              <label class="label font-medium" :for="fieldId + '-2'">Platforma</label>
+              <select v-model="collectionForm.platform" class="select select-bordered" required :id="fieldId + '-2'">
                 <option value="" disabled>Odaberi platformu</option>
                 <option v-for="platform in platforms" :key="platform" :value="platform">
                   {{ platform }}
@@ -328,172 +319,169 @@
               </select>
             </div>
             
-            <div class="form-control">
-              <label class="label font-medium">Vrijeme igranja (sati)</label>
-              <input type="number" v-model="collectionForm.play_time" class="input input-bordered" min="0" />
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-3'">Vrijeme igranja <span class="sr-only sm:not-sr-only">(sati)</span></label>
+              <input type="number" v-model="collectionForm.play_time" class="input input-bordered w-full min-w-0 min-h-11 sm:min-h-10" min="0"  :id="fieldId + '-3'" />
             </div>
             
-            <div class="form-control">
-              <label class="label font-medium">Ocjena (1-5)</label>
-              <div class="rating rating-sm sm:rating-md lg:rating-lg pt-3">
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating" />
-              </div>
-            </div>
-
-            <div class="form-control">
-              <label class="label font-medium">Status</label>
-              <select v-model="collectionForm.status" class="select select-bordered">
-                <option value="" disabled>Odaberi status</option>
-                <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key">{{ s.label }}</option>
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-4'">Status</label>
+              <select v-model="collectionForm.status" class="select select-bordered w-full min-w-0 font-semibold" :class="GAME_STATUS_SELECT_CLASS[collectionForm.status]" :id="fieldId + '-4'">
+                <option value="" disabled class="bg-base-100 text-base-content font-normal">{{ statusPlaceholder }}</option>
+                <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key" class="bg-base-100 text-base-content font-normal">{{ s.label }}</option>
               </select>
             </div>
 
+            <div class="form-control col-span-2 flex items-center gap-2">
+              <span :id="fieldId + '-rating-label'" class="label font-medium shrink-0">Ocjena (1-5)</span>
+              <div class="rating rating-sm sm:rating-md shrink-0" role="radiogroup" :aria-labelledby="fieldId + '-rating-label'">
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating"  aria-label="1 od 5" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating"  aria-label="2 od 5" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating"  aria-label="3 od 5" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating"  aria-label="4 od 5" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating"  aria-label="5 od 5" />
+              </div>
+            </div>
+          </div>
+
+          <fieldset class="min-w-0 rounded-box border border-base-300 bg-base-300/30 p-4 space-y-4">
+            <legend class="sr-only">Napredak igre</legend>
             <div class="form-control">
-              <label class="label font-medium">Game Progression</label>
-              <select v-model="collectionForm.progress_mode" class="select select-bordered">
+              <label class="label font-medium" :for="fieldId + '-5'">Vrsta napretka</label>
+              <select v-model="collectionForm.progress_mode" class="select select-bordered w-full" :id="fieldId + '-5'">
                 <option value="" disabled>Odaberi način praćenja</option>
                 <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
               </select>
             </div>
 
-            <div class="form-control">
-              <label class="label font-medium">Datum početka</label>
-              <input type="date" v-model="collectionForm.start_date" class="input input-bordered" />
+            <template v-if="selectedCollectionProgressMode">
+              <div v-if="selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies')">
+                <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-8'">
+                      Ukupno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="collectionForm.progress_total"
+                      class="input input-bordered w-full min-w-0 font-bold"
+                      min="0"
+                      placeholder="npr. 50"
+                     :id="fieldId + '-8'" />
+                  </div>
+
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-9'">
+                      Ostvareno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="collectionForm.progress_value"
+                      class="input input-bordered w-full min-w-0 font-bold text-success"
+                      min="0"
+                      :max="collectionForm.progress_total || undefined"
+                      placeholder="npr. 25"
+                     :id="fieldId + '-9'" />
+
+                  </div>
+
+                  <div class="form-control min-w-0">
+                    <label class="label font-medium text-sm" :for="fieldId + '-10'">Jedinica</label>
+                    <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-10'">
+                      <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ collectionForm.progress_unit || selectedCollectionProgressMode.defaultUnit || '—' }}</code>
+                    </output>
+                  </div>
+                  <div class="col-span-3">
+                    <span class="text-xs opacity-70">
+                      Napredak:
+                      <strong v-if="collectionForm.progress_total > 0">
+                        {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupno</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else-if="selectedCollectionProgressMode.key === 'pokedex'">
+                <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-11'">
+                      Ukupno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="collectionForm.progress_total"
+                      class="input input-bordered w-full min-w-0 font-bold"
+                      min="0"
+                      placeholder="npr. 251"
+                     :id="fieldId + '-11'" />
+                  </div>
+
+                  <div class="form-control">
+                    <label class="label font-medium text-sm" :for="fieldId + '-12'">
+                      Uhvaćeno
+                    </label>
+                    <input
+                      type="number"
+                      v-model.number="collectionForm.progress_value"
+                      class="input input-bordered w-full min-w-0 font-bold text-success"
+                      min="0"
+                      :max="collectionForm.progress_total || undefined"
+                      placeholder="npr. 150"
+                     :id="fieldId + '-12'" />
+
+                  </div>
+
+                  <div class="form-control min-w-0">
+                    <label class="label font-medium text-sm" :for="fieldId + '-13'">Jedinica</label>
+                    <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-13'">
+                      <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ collectionForm.progress_unit || selectedCollectionProgressMode.defaultUnit || '—' }}</code>
+                    </output>
+                  </div>
+                  <div class="col-span-3">
+                    <span class="text-xs opacity-70">
+                      Napredak:
+                      <strong v-if="collectionForm.progress_total > 0">
+                        {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
+                      </strong>
+                      <span v-else class="text-warning">postavi ukupno</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="grid grid-cols-2 gap-2 sm:gap-4">
+                <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
+                  <label class="label font-medium text-sm" :for="fieldId + '-14'">Vrijednost</label>
+                  <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-14'" />
+                </div>
+                <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
+                  <label class="label font-medium text-sm" :for="fieldId + '-15'">Ukupno</label>
+                  <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-15'" />
+                </div>
+                <div class="form-control">
+                  <label class="label font-medium text-sm" :for="fieldId + '-16'">Jedinica</label>
+                  <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-16'">
+                    <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ collectionForm.progress_unit || selectedCollectionProgressMode.defaultUnit || '—' }}</code>
+                  </output>
+                </div>
+              </div>
+            </template>
+          </fieldset>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-6'">Datum početka</label>
+              <input type="date" v-model="collectionForm.start_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-6'" />
             </div>
-            
-            <div class="form-control">
-              <label class="label font-medium">Datum završetka</label>
-              <input type="date" v-model="collectionForm.end_date" class="input input-bordered" />
+
+            <div class="form-control min-w-0">
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-7'">Datum završetka</label>
+              <input type="date" v-model="collectionForm.end_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-7'" />
             </div>
           </div>
 
-          <template v-if="selectedCollectionProgressMode">
-            <!-- SAMO ZA ACHIEVEMENTS/TROPHIES - Posebna sekcija s jasnom uputom i alert-om -->
-            <div v-if="selectedCollectionProgressMode.key.includes('achievements') || selectedCollectionProgressMode.key.includes('trophies')" class="card bg-base-300/50 border border-warning/30 p-4 space-y-4">
-              <div class="alert alert-warning text-sm mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="shrink-0 h-6 w-6"><path fill="currentColor" d="M8.15 21.75L6.7 19.3l-2.75-.6q-.375-.075-.6-.387t-.175-.688L3.45 14.8l-1.875-2.15q-.25-.275-.25-.65t.25-.65L3.45 9.2l-.275-2.825q-.05-.375.175-.688t.6-.387l2.75-.6l1.45-2.45q.2-.325.55-.438t.7.038l2.6 1.1l2.6-1.1q.35-.15.7-.038t.55.438L17.3 4.7l2.75.6q.375.075.6.388t.175.687L20.55 9.2l1.875 2.15q.25.275.25.65t-.25.65L20.55 14.8l.275 2.825q.05.375-.175.688t-.6.387l-2.75.6l-1.45 2.45q-.2.325-.55.438t-.7-.038l-2.6-1.1l-2.6 1.1q-.35.15-.7.038t-.55-.438m1.3-1.8l2.55-1.1l2.6 1.1l1.4-2.4l2.75-.65l-.25-2.8l1.85-2.1l-1.85-2.15l.25-2.8l-2.75-.6l-1.45-2.4L12 5.15l-2.6-1.1L8 6.45l-2.75.6l.25 2.8L3.65 12l1.85 2.1l-.25 2.85l2.75.6zM12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7t-.712.288T11 8v4q0 .425.288.713T12 13"/></svg>
-                <div>
-                  <h3 class="font-bold">Brojevi iz RAWG baze mogu biti neprecizni!</h3>
-                  <div class="text-xs">Preporučeni broj: <strong>{{ rawgAchievementCount || 'nije dostupno' }}</strong> - slobodno ga promijeni.</div>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- UKUPAN BROJ TROFEJA/ACHIEVEMENTA -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Ukupan broj {{ selectedCollectionProgressMode.defaultUnit }}
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="collectionForm.progress_total" 
-                    class="input input-bordered font-bold" 
-                    min="0"
-                    placeholder="npr. 50"
-                  />
-                </div>
-
-                <!-- BROJ KOJI JE KORISNIK OSTVARIO -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Ostvareni {{ selectedCollectionProgressMode.defaultUnit }}
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="collectionForm.progress_value" 
-                    class="input input-bordered font-bold text-success" 
-                    min="0"
-                    :max="collectionForm.progress_total || undefined"
-                    placeholder="npr. 25"
-                  />
-                  <label class="label">
-                    <span class="text-xs opacity-70">
-                      Napredak: 
-                      <strong v-if="collectionForm.progress_total > 0">
-                        {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
-                      </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
-                    </span>
-                  </label>
-                </div>
-
-                <!-- JEDINICA -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">Jedinica</label>
-                  <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
-                </div>
-              </div>
-            </div>
-
-            <!-- POKEDEX - Dvije vrijednosti bez alert-a (ne dohvaća se iz RAWG) -->
-            <div v-else-if="selectedCollectionProgressMode.key === 'pokedex'" class="card bg-base-300/50 border border-info/30 p-4 space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- KOLIKO POKEMONA IMA U IGRI -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Ukupno pokemona u igri
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="collectionForm.progress_total" 
-                    class="input input-bordered font-bold" 
-                    min="0"
-                    placeholder="npr. 251"
-                  />
-                </div>
-
-                <!-- KOLIKO POKEMONA JE KORISNIK UHVATIO -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">
-                    Uhvaćenih pokemona
-                  </label>
-                  <input 
-                    type="number" 
-                    v-model.number="collectionForm.progress_value" 
-                    class="input input-bordered font-bold text-success" 
-                    min="0"
-                    :max="collectionForm.progress_total || undefined"
-                    placeholder="npr. 150"
-                  />
-                  <label class="label">
-                    <span class="text-xs opacity-70">
-                      Napredak: 
-                      <strong v-if="collectionForm.progress_total > 0">
-                        {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
-                      </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
-                    </span>
-                  </label>
-                </div>
-
-                <!-- JEDINICA -->
-                <div class="form-control">
-                  <label class="label font-medium text-sm">Jedinica</label>
-                  <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" readonly />
-                </div>
-              </div>
-            </div>
-
-            <!-- ZA OSTALE PROGRESS MODE-OVE -->
-            <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-300/30 p-4 rounded-box border border-base-300">
-              <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
-                <label class="label font-medium text-sm">Vrijednost</label>
-                <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered" min="0" />
-              </div>
-              <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
-                <label class="label font-medium text-sm">Ukupno</label>
-                <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered" min="0" />
-              </div>
-              <div class="form-control">
-                <label class="label font-medium text-sm">Jedinica</label>
-                <input type="text" v-model="collectionForm.progress_unit" class="input input-bordered" :placeholder="selectedCollectionProgressMode.defaultUnit || 'unit'" readonly />
-              </div>
-            </div>
-          </template>
 
           <!-- Grupe/Kolekcije -->
           <div class="form-control bg-base-200/50 p-4 rounded-box border border-base-300">
@@ -520,10 +508,12 @@
           </div>
           
           <div class="form-control">
-            <label class="label font-medium">Bilješke</label>
-            <textarea v-model="collectionForm.notes" class="textarea textarea-bordered h-24 w-full"></textarea>
+            <label class="label font-medium" :for="fieldId + '-17'">Bilješke</label>
+            <textarea v-model="collectionForm.notes" class="textarea textarea-bordered h-24 w-full" :id="fieldId + '-17'"></textarea>
           </div>
           
+          <div v-if="saveError" role="alert" class="alert alert-error">{{ saveError }}</div>
+
           <div class="modal-action">
             <button type="submit" class="btn btn-primary" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
@@ -535,8 +525,8 @@
           </div>
         </form>
       </div>
-    </div>
-    <div v-if="toast.show" class="toast toast-top toast-end z-50">
+    </AppModal>
+    <div v-if="toast.show" role="status" aria-atomic="true" class="toast toast-top toast-end z-50">
       <div class="alert shadow-lg" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
         <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         <span>{{ toast.message }}</span>
@@ -546,6 +536,11 @@
 </template>
 
 <script>
+import ScreenshotViewer from '../components/ScreenshotViewer.vue';
+import { useStatusPlaceholder } from '../composables/useStatusPlaceholder.js';
+import { handleTabKeys } from '../services/tabNavigation.js';
+import { useId } from 'vue';
+import AppModal from '../components/AppModal.vue';
 import { usePageTitle } from '../composables/usePageTitle';
 import { buildGameUpdate, progressFields } from '../services/gameForm';
 import { ref, onMounted, onBeforeUnmount, computed, watch, reactive } from 'vue';
@@ -554,17 +549,19 @@ import { useGamesApi } from '../services/gamesApi';
 import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
-import { GAME_STATUS } from '../constants/gameStatus';
+import { GAME_STATUS, GAME_STATUS_SELECT_CLASS } from '../constants/gameStatus';
 import { listGroups, addGameToGroup } from '../services/groupsApi';
 import PlatformIcon from '../components/PlatformIcon.vue';
 
 export default {
-  components: { PlatformIcon },
+  components: { ScreenshotViewer, AppModal, PlatformIcon },
   props: {
     previewGameId: { type: String, default: '' },
     previewPlatforms: { type: Array, default: () => [] }
   },
   setup(props) {
+    const statusPlaceholder = useStatusPlaceholder();
+    const fieldId = useId();
     const route = useRoute();
     const router = useRouter();
     const gamesApi = useGamesApi();
@@ -581,6 +578,7 @@ export default {
     const activeInfoTab = ref('info');
     const showAddModal = ref(false);
     const saveLoading = ref(false);
+    const saveError = ref('');
     const groups = ref([]);
     const groupsLoading = ref(false);
     const showGroupSelector = ref(false);
@@ -614,7 +612,6 @@ export default {
     });
 
     const collectionForm = reactive(createEmptyCollectionForm());
-    const rawgAchievementCount = ref(null); // Čuva original broj iz RAWG za prikaz u alert-u
 
     const selectedCollectionProgressMode = computed(() => PROGRESS_MODE_MAP[collectionForm.progress_mode] || null);
 
@@ -632,7 +629,6 @@ export default {
 
     let loadVersion = 0;
     let disposed = false;
-    // noinspection ExceptionCaughtLocallyJS
     const fetchGame = async () => {
       const version = ++loadVersion;
       const gameId = props.previewGameId || route.params.id;
@@ -646,7 +642,10 @@ export default {
       showAddModal.value = false;
       try {
         const details = await gamesApi.getGameDetails(gameId);
-        if (!details) throw new Error('Igra nije pronađena.');
+        if (!details) {
+          if (version === loadVersion) error.value = 'Igra nije pronađena.';
+          return;
+        }
         const [pictures, series, library] = await Promise.all([
           gamesApi.getGameScreenshots(gameId).catch(() => []),
           gamesApi.getGameSeries(gameId).catch(() => ({ results: [] })),
@@ -708,7 +707,7 @@ export default {
       toast.message = message;
       toast.type = type;
       toast.show = true;
-      setTimeout(() => toast.show = false, 3000);
+      if (type === 'success') setTimeout(() => toast.show = false, 5000);
     };
     
     const shareGame = async () => {
@@ -876,6 +875,7 @@ export default {
     };
 
     const openAddToCollectionModal = async () => {
+      saveError.value = '';
       if (props.previewGameId) return;
       if (!userStore.user) {
         return;
@@ -917,28 +917,26 @@ export default {
         
         if (achievementsData && achievementsData.count > 0) {
           collectionForm.progress_total = achievementsData.count;
-          rawgAchievementCount.value = achievementsData.count; 
           collectionForm.progress_value = 0;
           
-        } else {
-          rawgAchievementCount.value = null;
         }
-      } catch (err) {
-        rawgAchievementCount.value = null;
+      } catch {
+        // Zadrži postojeći broj postignuća.
       }
       
       showAddModal.value = true;
     };
 
     const closeAddModal = () => {
+      saveError.value = '';
       showAddModal.value = false;
-      rawgAchievementCount.value = null;
       resetCollectionForm();
     };
 
     const saveToCollection = async () => {
       if (props.previewGameId) return;
       if (saveLoading.value) return;
+      saveError.value = '';
       const ownerId = userStore.user?.id;
       if (!collectionForm.title || !collectionForm.platform) {
         return;
@@ -1008,7 +1006,7 @@ export default {
 
         if (error) {
           console.error('Error saving game:', error);
-          showToast(error.message || 'Greška pri dodavanju igre', 'error');
+          saveError.value = error.message || 'Greška pri dodavanju igre';
           return;
         }
 
@@ -1036,7 +1034,7 @@ export default {
         setTimeout(() => router.push('/library'), 1000);
       } catch (error) {
         console.error('Error saving game:', error);
-        showToast(error.message || 'Greška pri dodavanju igre', 'error');
+        saveError.value = error.message || 'Greška pri dodavanju igre';
       } finally {
         saveLoading.value = false;
       }
@@ -1044,9 +1042,9 @@ export default {
     
     onMounted(fetchGame);
     
-    return {
+    return { handleTabKeys,  fieldId,
       PROGRESS_MODES,
-      GAME_STATUS,
+      statusPlaceholder, GAME_STATUS, GAME_STATUS_SELECT_CLASS,
       selectedCollectionProgressMode,
       game,
       gameInLibraryId,
@@ -1071,13 +1069,13 @@ export default {
       formatDate,
       getMetacriticColorClass,
       showAddModal,
+      saveError,
       groups,
       groupsLoading,
       showGroupSelector,
       saveLoading,
       platforms,
       collectionForm,
-      rawgAchievementCount,
       openAddToCollectionModal,
       closeAddModal,
       saveToCollection,

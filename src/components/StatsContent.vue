@@ -41,11 +41,11 @@
 
           <div class="flex flex-row flex-wrap items-center gap-2 mb-3">
             <div class="flex gap-2 flex-1 sm:flex-none items-center min-w-0">
-              <select v-model="selectedYear" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm">
+              <select aria-label="Godina" v-model="selectedYear" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm">
                 <option :value="null">Sve godine</option>
                 <option v-for="y in availableYears" :key="y" :value="y">{{ y }}.</option>
               </select>
-              <select v-model="selectedMonth" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm" :disabled="selectedYear === null">
+              <select aria-label="Mjesec" v-model="selectedMonth" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm" :disabled="selectedYear === null">
                 <option :value="null">Svi mjeseci</option>
                 <option v-for="(m, idx) in HR_MONTHS" :key="m" :value="idx + 1">{{ m }}</option>
               </select>
@@ -60,14 +60,28 @@
             <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none px-4" :style="{ opacity: watermarkOpacity }">
               <img :src="bannerUrl" alt="" class="max-w-[85%] sm:max-w-[75%] max-h-[45%] sm:max-h-[50%] object-contain" :class="watermarkClass" />
             </div>
-            <canvas ref="timelineRef" class="relative z-10 bg-transparent"></canvas>
+            <canvas role="img" aria-label="Igre kroz vrijeme" aria-details="stats-data" ref="timelineRef" class="relative z-10 bg-transparent"></canvas>
           </div>
 
 
         </div>
       </div>
 
-      <!-- SAŽETAK STATS -->
+      <details id="stats-data" class="mb-4 text-sm">
+        <summary class="cursor-pointer link">Podaci grafova</summary>
+        <div class="overflow-x-auto mt-3" tabindex="0" role="region" aria-label="Podaci grafova">
+          <table class="table table-sm">
+            <caption class="sr-only">Igre kroz vrijeme</caption>
+            <thead><tr><th scope="col">Razdoblje</th><th scope="col">Dodano</th><th scope="col">{{ GAME_STATUS_MAP.completed.label }}</th><th scope="col">{{ GAME_STATUS_MAP.dropped.label }}</th><th scope="col">{{ GAME_STATUS_MAP.paused.label }}</th><th scope="col">{{ GAME_STATUS_MAP.wishlist.label }}</th><th scope="col">5/5</th></tr></thead>
+            <tbody><tr v-for="bucket in timelineChartSource" :key="bucket.key"><th scope="row"><button type="button" class="link" :aria-pressed="selectedBucket === bucket.key" @click="toggleBucket(bucket.key)">{{ bucket.fullLabel }}</button></th><td>{{ bucket.added }}</td><td>{{ bucket.completed }}</td><td>{{ bucket.dropped }}</td><td>{{ bucket.paused }}</td><td>{{ bucket.wishlist }}</td><td>{{ bucket.fiveStar }}</td></tr></tbody>
+          </table>
+          <table class="table table-sm"><caption class="sr-only">Žanrovi</caption><thead><tr><th scope="col">Žanr</th><th scope="col">Igre</th><th scope="col">Sati</th></tr></thead><tbody><tr v-for="(value, name) in genreAggregates" :key="name"><th scope="row">{{ name }}</th><td>{{ value.count }}</td><td>{{ formatHours(value.hours) }}</td></tr></tbody></table>
+          <table class="table table-sm"><caption class="sr-only">Platforme</caption><thead><tr><th scope="col">Platforma</th><th scope="col">Igre</th><th scope="col">Sati</th></tr></thead><tbody><tr v-for="(value, name) in platformAggregates" :key="name"><th scope="row">{{ name }}</th><td>{{ value.count }}</td><td>{{ formatHours(value.hours) }}</td></tr></tbody></table>
+          <table v-if="scatterData.length" class="table table-sm"><caption class="sr-only">Kritičari i tvoje ocjene</caption><thead><tr><th scope="col">Igra</th><th scope="col">Metacritic</th><th scope="col">Ocjena</th></tr></thead><tbody><tr v-for="game in games.filter(entry => entry.metacritic_score && entry.rating != null)" :key="game.id"><th scope="row">{{ game.title }}</th><td>{{ game.metacritic_score }}</td><td>{{ game.rating }}/5</td></tr></tbody></table>
+        </div>
+      </details>
+
+      <!-- Sažetak statistike. -->
       <div class="stats grid grid-cols-2 grid-flow-row sm:flex shadow w-full mb-4 sm:mb-6 bg-base-200 text-center">
         <div class="stat py-3">
           <div class="stat-title text-xs">Igara u razdoblju</div>
@@ -88,7 +102,7 @@
           <div class="stat-desc">{{ scopedStats.ratedCount }} ocijenjenih</div>
         </div>
         <div class="stat py-3">
-          <div class="stat-title text-xs mb-1">Završeno</div>
+          <div class="stat-title text-xs mb-1">{{ GAME_STATUS_MAP.completed.label }}</div>
           <div class="flex items-center justify-center">
             <div class="radial-progress text-success" :style="{ '--value': scopedStats.completionRate, '--size': '3.4rem', '--thickness': '0.35rem' }" role="progressbar">
               <span class="text-xs font-bold">{{ scopedStats.completionRate }}%</span>
@@ -97,7 +111,7 @@
           <div class="stat-desc">{{ scopedStats.completed }} igara</div>
         </div>
         <div class="stat py-3">
-          <div class="stat-title text-xs">Trenutno igram</div>
+          <div class="stat-title text-xs">{{ GAME_STATUS_MAP.playing.label }}</div>
           <div class="stat-value text-2xl sm:text-3xl text-info">{{ scopedStats.playing }}</div>
         </div>
         <div class="stat py-3">
@@ -113,7 +127,7 @@
           <div class="card-body p-4 sm:p-6">
             <h2 class="card-title text-lg">Rast biblioteke &amp; završene igre</h2>
             <div class="relative h-64 sm:h-72">
-              <canvas ref="evolutionRef"></canvas>
+              <canvas role="img" aria-label="Rast biblioteke" aria-details="stats-data" ref="evolutionRef"></canvas>
             </div>
           </div>
         </div>
@@ -123,7 +137,7 @@
             <h2 class="card-title text-lg">Statusi igara</h2>
             <div class="flex flex-col sm:flex-row items-center gap-4">
               <div class="relative h-52 w-52 shrink-0">
-                <canvas ref="statusRef"></canvas>
+                <canvas role="img" aria-label="Statusi igara" aria-details="stats-data" ref="statusRef"></canvas>
               </div>
               <ul class="text-sm space-y-1.5 w-full">
                 <li v-for="s in statusBreakdown" :key="s.key" class="flex items-center gap-2">
@@ -142,12 +156,12 @@
             <div class="flex items-center justify-between gap-2">
               <h2 class="card-title text-lg">Žanrovi</h2>
               <div class="tabs tabs-box tabs-sm">
-                <button role="tab" class="tab" :class="{ 'tab-active': genreMode === 'count' }" @click="genreMode = 'count'">Broj</button>
-                <button role="tab" class="tab" :class="{ 'tab-active': genreMode === 'hours' }" @click="genreMode = 'hours'">Sati</button>
+                <button type="button" class="tab" :aria-pressed="genreMode === 'count'" :class="{ 'tab-active': genreMode === 'count' }" @click="genreMode = 'count'">Broj</button>
+                <button type="button" class="tab" :aria-pressed="genreMode === 'hours'" :class="{ 'tab-active': genreMode === 'hours' }" @click="genreMode = 'hours'">Sati</button>
               </div>
             </div>
             <div class="relative h-64 sm:h-72">
-              <canvas ref="genreRef"></canvas>
+              <canvas role="img" aria-label="Žanrovi" aria-details="stats-data" ref="genreRef"></canvas>
             </div>
           </div>
         </div>
@@ -156,7 +170,7 @@
           <div class="card-body p-4 sm:p-6">
             <h2 class="card-title text-lg">Platforme</h2>
             <div class="relative h-64 sm:h-72">
-              <canvas ref="platformRef"></canvas>
+              <canvas role="img" aria-label="Platforme" aria-details="stats-data" ref="platformRef"></canvas>
             </div>
           </div>
         </div>
@@ -171,7 +185,7 @@
               <span class="badge badge-warning badge-outline"><span class="w-2 h-2 rounded-full bg-warning inline-block mr-1"></span>Kritičari ljubazniji ({{ scatterSummary.harsh }})</span>
             </div>
             <div class="relative h-64 sm:h-80">
-              <canvas ref="scatterRef"></canvas>
+              <canvas role="img" aria-label="Kritičari i tvoje ocjene" aria-details="stats-data" ref="scatterRef"></canvas>
             </div>
           </div>
         </div>
@@ -201,62 +215,62 @@
         <div>
           <h2 class="text-lg sm:text-xl font-bold mb-3">Najbolje ocijenjene</h2>
           <div class="space-y-3">
-            <div
+            <button type="button"
               v-for="(game, i) in topRatedGames"
               :key="game.id"
-              class="card bg-base-200 shadow-xl overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all"
+              class="w-full text-left card bg-base-200 shadow-xl overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all"
               @click="navigateToGame(game.id)"
             >
-              <div v-if="heroBg(game)" class="absolute inset-0 bg-cover bg-center scale-105 blur-[1px]" :style="{ backgroundImage: `url('${heroBg(game)}')` }"></div>
-              <div v-if="heroBg(game)" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></div>
-              <div class="relative z-10 card-body flex-row items-center gap-2.5 sm:gap-4 p-3 sm:p-4">
+              <span v-if="heroBg(game)" class="absolute inset-0 bg-cover bg-center scale-105 blur-[1px]" :style="{ backgroundImage: `url('${heroBg(game)}')` }"></span>
+              <span v-if="heroBg(game)" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></span>
+              <span class="relative z-10 card-body flex-row items-center gap-2.5 sm:gap-4 p-3 sm:p-4">
                 <span class="w-9 sm:w-12 text-center text-2xl sm:text-3xl font-black shrink-0" :class="rankClass(i)">{{ i + 1 }}</span>
-                <figure class="w-16 h-24 sm:w-20 sm:h-28 rounded-lg overflow-hidden shadow-2xl shrink-0 bg-base-300">
+                <span class="w-16 h-24 sm:w-20 sm:h-28 rounded-lg overflow-hidden shadow-2xl shrink-0 bg-base-300">
                   <img v-if="thumbUrl(game) && !failedThumbs.has(game.id)" :src="thumbUrl(game)" :alt="game.title" class="w-full h-full object-cover" loading="lazy" @error="failedThumbs.add(game.id)" />
-                  <div v-else class="w-full h-full flex items-center justify-center text-2xl font-bold opacity-40">{{ game.title.charAt(0).toUpperCase() }}</div>
-                </figure>
-                <div class="min-w-0 flex-grow">
-                  <div class="font-extrabold text-base sm:text-lg lg:text-xl leading-tight line-clamp-2">{{ game.title }}</div>
-                  <div class="text-xs sm:text-sm opacity-70 mt-1 truncate">{{ game.platform || '—' }}<span v-if="game.play_time"> • {{ game.play_time }}h</span></div>
-                </div>
-                <div class="flex items-center gap-0.5 shrink-0 hidden sm:flex">
+                  <span v-else class="w-full h-full flex items-center justify-center text-2xl font-bold opacity-40">{{ game.title.charAt(0).toUpperCase() }}</span>
+                </span>
+                <span class="min-w-0 flex-grow">
+                  <span class="font-extrabold text-base sm:text-lg lg:text-xl leading-tight line-clamp-2">{{ game.title }}</span>
+                  <span class="block text-xs sm:text-sm opacity-70 mt-1 truncate">{{ game.platform || '—' }}<span v-if="game.play_time"> • {{ game.play_time }}h</span></span>
+                </span>
+                <span class="flex items-center gap-0.5 shrink-0 hidden sm:flex">
                   <template v-for="star in 5" :key="'tr-' + game.id + '-' + star">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" :class="star <= (game.rating || 0) ? 'text-orange-400' : 'text-gray-400'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                   </template>
-                </div>
-                <div class="shrink-0 badge badge-warning badge-outline badge-sm font-bold sm:hidden whitespace-nowrap">★ {{ game.rating }}/5</div>
-              </div>
-            </div>
+                </span>
+                <span class="shrink-0 badge badge-warning badge-outline badge-sm font-bold sm:hidden whitespace-nowrap">★ {{ game.rating }}/5</span>
+              </span>
+            </button>
           </div>
         </div>
 
         <div>
           <h2 class="text-lg sm:text-xl font-bold mb-3">Najviše igrani naslovi</h2>
           <div class="space-y-3">
-            <div
+            <button type="button"
               v-for="(game, i) in mostPlayedGames"
               :key="game.id"
-              class="card bg-base-200 shadow-xl overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all"
+              class="w-full text-left card bg-base-200 shadow-xl overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all"
               @click="navigateToGame(game.id)"
             >
-              <div v-if="heroBg(game)" class="absolute inset-0 bg-cover bg-center scale-105 blur-[1px]" :style="{ backgroundImage: `url('${heroBg(game)}')` }"></div>
-              <div v-if="heroBg(game)" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></div>
-              <div class="relative z-10 card-body flex-row items-center gap-2.5 sm:gap-4 p-3 sm:p-4">
+              <span v-if="heroBg(game)" class="absolute inset-0 bg-cover bg-center scale-105 blur-[1px]" :style="{ backgroundImage: `url('${heroBg(game)}')` }"></span>
+              <span v-if="heroBg(game)" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></span>
+              <span class="relative z-10 card-body flex-row items-center gap-2.5 sm:gap-4 p-3 sm:p-4">
                 <span class="w-9 sm:w-12 text-center text-2xl sm:text-3xl font-black shrink-0" :class="rankClass(i)">{{ i + 1 }}</span>
-                <figure class="w-16 h-24 sm:w-20 sm:h-28 rounded-lg overflow-hidden shadow-2xl shrink-0 bg-base-300">
+                <span class="w-16 h-24 sm:w-20 sm:h-28 rounded-lg overflow-hidden shadow-2xl shrink-0 bg-base-300">
                   <img v-if="thumbUrl(game) && !failedThumbs.has(game.id)" :src="thumbUrl(game)" :alt="game.title" class="w-full h-full object-cover" loading="lazy" @error="failedThumbs.add(game.id)" />
-                  <div v-else class="w-full h-full flex items-center justify-center text-2xl font-bold opacity-40">{{ game.title.charAt(0).toUpperCase() }}</div>
-                </figure>
-                <div class="min-w-0 flex-grow">
-                  <div class="font-extrabold text-base sm:text-lg lg:text-xl leading-tight line-clamp-2">{{ game.title }}</div>
-                  <div class="text-xs sm:text-sm opacity-70 mt-1 truncate">{{ game.platform || '—' }}</div>
-                </div>
-                <div class="shrink-0 text-right">
-                  <div class="font-black text-lg sm:text-xl">{{ game.play_time }}<span class="text-sm font-bold opacity-70">h</span></div>
-                  <div v-if="game.rating" class="text-xs opacity-60">★ {{ game.rating }}/5</div>
-                </div>
-              </div>
-            </div>
+                  <span v-else class="w-full h-full flex items-center justify-center text-2xl font-bold opacity-40">{{ game.title.charAt(0).toUpperCase() }}</span>
+                </span>
+                <span class="min-w-0 flex-grow">
+                  <span class="font-extrabold text-base sm:text-lg lg:text-xl leading-tight line-clamp-2">{{ game.title }}</span>
+                  <span class="block text-xs sm:text-sm opacity-70 mt-1 truncate">{{ game.platform || '—' }}</span>
+                </span>
+                <span class="shrink-0 text-right">
+                  <span class="block font-black text-lg sm:text-xl">{{ game.play_time }}<span class="text-sm font-bold opacity-70">h</span></span>
+                  <span v-if="game.rating" class="block text-xs opacity-60">★ {{ game.rating }}/5</span>
+                </span>
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -271,8 +285,9 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useThemeStore } from '../stores/theme';
 import { supabase } from '../supabase';
+import { cardProgress } from '../services/cardProgress.js';
 import { computePercent } from '../constants/progressModes';
-import { GAME_STATUS } from '../constants/gameStatus';
+import { GAME_STATUS, GAME_STATUS_MAP } from '../constants/gameStatus';
 import Chart from 'chart.js/auto';
 import bannerLightUrl from '../assets/newAssets/GamenoteBannerLightMode.png';
 import bannerDarkUrl from '../assets/newAssets/GamenoteBannerDarkMode.png';
@@ -470,6 +485,7 @@ export default {
     const watermarkClass = computed(() => '');
 
     const toggleBucket = (key) => {
+      if (key.split('-').length > 2) return;
       selectedBucket.value = selectedBucket.value === key ? null : key;
       if (selectedBucket.value) {
         const parts = selectedBucket.value.split('-');
@@ -548,7 +564,7 @@ export default {
         ratedCount: rated.length,
         completed: list.filter(g => g.status === 'completed').length,
         playing: list.filter(g => g.status === 'playing').length,
-        perfect: percents.filter(p => p === 100).length,
+        perfect: list.filter(game => cardProgress(game).complete).length,
         completionRate: percents.length ? Math.round(percents.reduce((a, b) => a + b, 0) / percents.length) : 0
       };
     });
@@ -1010,7 +1026,7 @@ export default {
               order: 2
             },
             {
-              label: 'Završeno',
+              label: GAME_STATUS_MAP.completed.label,
               yAxisID: 'y',
               data: src.map(b => b.completed),
               borderColor: colors.success,
@@ -1028,7 +1044,7 @@ export default {
               order: 1
             },
             {
-              label: 'Odustao',
+              label: GAME_STATUS_MAP.dropped.label,
               yAxisID: 'y1',
               data: src.map(b => b.dropped || 0),
               borderColor: colors.error,
@@ -1046,7 +1062,7 @@ export default {
               order: 1
             },
             {
-              label: 'Pauzirano',
+              label: GAME_STATUS_MAP.paused.label,
               yAxisID: 'y1',
               data: src.map(b => b.paused || 0),
               borderColor: colors.warning,
@@ -1064,7 +1080,7 @@ export default {
               order: 1
             },
             {
-              label: 'Wishlist',
+              label: GAME_STATUS_MAP.wishlist.label,
               yAxisID: 'y1',
               data: src.map(b => b.wishlist || 0),
               borderColor: colors.info,
@@ -1213,6 +1229,7 @@ export default {
 
     return { loadError,
       router,
+      GAME_STATUS_MAP,
       loading,
       games,
       selectedBucket,
@@ -1246,6 +1263,8 @@ export default {
       topRatedGames,
       mostPlayedGames,
       statusBreakdown,
+      genreAggregates,
+      platformAggregates,
       scatterData,
       scatterSummary,
       formatHours,

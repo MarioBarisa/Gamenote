@@ -6,7 +6,7 @@
         <p class="text-base-content/60 mt-1 text-sm">Dodaj igre s platformi direktno u Gamenote</p>
       </div>
 
-      <div v-if="toast.show" class="toast toast-top toast-end z-[100]">
+      <div v-if="toast.show" role="status" aria-atomic="true" class="toast toast-top toast-end z-[100]">
         <div class="alert shadow-lg" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
           <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <svg v-else xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -26,8 +26,8 @@
   
         <!-- Platforme i alati -->
         <div>
-          <div role="tablist" class="tabs tabs-box gap-1 max-w-full overflow-x-auto overflow-y-clip" aria-label="Importeri i alati">
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'psn' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'psn'" @click="activeTab = 'psn'" aria-label="PlayStation" :title="isConnected ? `PlayStation · povezan profil: ${psnProfileData?.onlineId || 'PSN'}` : 'PlayStation · profil nije povezan'" :aria-describedby="isConnected ? 'psn-connection-status' : undefined">
+          <div role="tablist" class="tabs tabs-box gap-1 max-w-full overflow-x-auto overflow-y-clip" aria-label="Importeri i alati" @keydown="handleTabKeys">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'psn' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'psn'" @click="activeTab = 'psn'" aria-label="PlayStation" :title="isConnected ? `PlayStation · povezan profil: ${psnProfileData?.onlineId || 'PSN'}` : 'PlayStation · profil nije povezan'" :aria-describedby="isConnected ? 'psn-connection-status' : undefined" :id="fieldId + '-tab-psn'" :aria-controls="fieldId + '-panel-psn'" :tabindex="activeTab === 'psn' ? 0 : -1">
               <svg fill="currentColor" viewBox="0 0 32 32" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3.262 24.248c-2.374-0.681-2.767-2.084-1.69-2.899 0.776-0.51 1.668-0.954 2.612-1.288l0.087-0.027 7.017-2.516v2.89l-5.030 1.839c-0.881 0.339-1.031 0.79-0.299 1.032 0.365 0.093 0.783 0.147 1.214 0.147 0.615 0 1.204-0.109 1.749-0.308l-0.035 0.011 2.422-0.882v2.592c-0.15 0.037-0.32 0.055-0.487 0.091-0.775 0.136-1.667 0.214-2.577 0.214-1.778 0-3.486-0.298-5.078-0.846l0.11 0.033zM18.049 24.544l7.868-2.843c0.893-0.322 1.032-0.781 0.307-1.022-0.363-0.089-0.779-0.14-1.208-0.14-0.622 0-1.22 0.108-1.774 0.305l0.037-0.011-5.255 1.874v-2.983l0.3-0.106c1.050-0.349 2.284-0.62 3.557-0.761l0.083-0.008c0.468-0.050 1.010-0.078 1.559-0.078 1.877 0 3.677 0.331 5.343 0.939l-0.108-0.035c2.309 0.751 2.549 1.839 1.969 2.589-0.559 0.557-1.235 0.998-1.988 1.282l-0.039 0.013-10.677 3.883v-2.869zM12.231 4.248v21.927l4.892 1.576v-18.39c0-0.862 0.38-1.438 0.992-1.238 0.795 0.225 0.95 1.017 0.95 1.881v7.342c3.050 1.491 5.451-0.003 5.451-3.939 0-4.045-1.407-5.842-5.546-7.282-1.785-0.648-4.040-1.294-6.347-1.805l-0.389-0.072z"/>
               </svg>
@@ -35,7 +35,7 @@
               <svg v-if="isConnected" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 shrink-0 text-success" data-testid="psn-connected" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-6" /></svg>
               <span v-if="isConnected" id="psn-connection-status" class="sr-only">Povezan profil: {{ psnProfileData?.onlineId || 'PSN' }}</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'steam' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'steam'" @click="activeTab = 'steam'" aria-label="Steam" :title="steamConnection.connected ? `Steam · povezan profil: ${steamConnection.name}` : 'Steam · profil nije povezan'" :aria-describedby="steamConnection.connected ? 'steam-connection-status' : undefined">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'steam' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'steam'" @click="activeTab = 'steam'" aria-label="Steam" :title="steamConnection.connected ? `Steam · povezan profil: ${steamConnection.name}` : 'Steam · profil nije povezan'" :aria-describedby="steamConnection.connected ? 'steam-connection-status' : undefined" :id="fieldId + '-tab-steam'" :aria-controls="fieldId + '-panel-steam'" :tabindex="activeTab === 'steam' ? 0 : -1">
               <svg fill="currentColor" viewBox="0 0 32 32" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.102 12.129c0-1.564 1.268-2.831 2.831-2.831s2.831 1.268 2.831 2.831c0 1.564-1.267 2.831-2.831 2.831-1.563 0-2.83-1.267-2.83-2.83v0zM24.691 12.135c0-2.081-1.687-3.768-3.768-3.768s-3.768 1.687-3.768 3.768c0 2.081 1.687 3.768 3.768 3.768 2.080-0.003 3.765-1.688 3.768-3.767v-0zM10.427 23.76l-1.841-0.762c0.524 1.078 1.611 1.808 2.868 1.808 1.317 0 2.448-0.801 2.93-1.943l0.008-0.021c0.155-0.362 0.246-0.784 0.246-1.226 0-1.757-1.424-3.181-3.181-3.181-0.405 0-0.792 0.076-1.148 0.213l0.022-0.007 1.903 0.787c0.852 0.364 1.439 1.196 1.439 2.164 0 1.296-1.051 2.347-2.347 2.347-0.324 0-0.632-0.066-0.913-0.184l0.015 0.006zM15.974 1.004c-7.857 0.001-14.301 6.046-14.938 13.738l-0.004 0.054 8.038 3.322c0.668-0.462 1.495-0.737 2.387-0.737h-0c0.079 0 0.156 0.005 0.235 0.008l3.575-5.176v-0.074c0.003-3.12 2.533-5.648 5.653-5.648 3.122 0 5.653 2.531 5.653 5.653s-2.531 5.653-5.653 5.653h-0.131l-5.094 3.638c0 0.065 0.005 0.131 0.005 0.199 0 2.342-1.899 4.241-4.241 4.241-2.047 0-3.756-1.451-4.153-3.38l-0.005-0.027-5.755-2.383c1.841 6.345 7.601 10.905 14.425 10.905 8.281 0 14.994-6.713 14.994-14.994s-6.713-14.994-14.994-14.994z"/>
               </svg>
@@ -50,25 +50,25 @@
               <span class="font-bold hidden sm:inline">Xbox</span>
               <span class="badge badge-xs badge-ghost hidden sm:inline-flex">Uskoro</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'migrate' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'migrate'" @click="activeTab = 'migrate'" title="Migracija podataka">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'migrate' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'migrate'" @click="activeTab = 'migrate'" title="Migracija podataka" aria-label="Migracija podataka" :id="fieldId + '-tab-migrate'" :aria-controls="fieldId + '-panel-migrate'" :tabindex="activeTab === 'migrate' ? 0 : -1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
               <span class="font-bold hidden sm:inline">Migracija podataka</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'backup' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'backup'" @click="activeTab = 'backup'" title="Sigurnosna kopija">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'backup' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'backup'" @click="activeTab = 'backup'" title="Sigurnosna kopija" aria-label="Sigurnosna kopija" :id="fieldId + '-tab-backup'" :aria-controls="fieldId + '-panel-backup'" :tabindex="activeTab === 'backup' ? 0 : -1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span class="font-bold hidden sm:inline">Sigurnosna kopija</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz Gamenote API-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara">
+            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz Gamenote API-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara" aria-label="Osvježi metadata igara" :id="fieldId + '-tab-refresh'" :aria-controls="fieldId + '-panel-refresh'" :tabindex="activeTab === 'refresh' ? 0 : -1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span class="font-bold hidden sm:inline">Osvježi metadata igara</span>
             </button>
           </div>
         </div>
   
-        <SteamImporter v-show="activeTab === 'steam'" @connection-change="steamConnection = $event" />
+        <SteamImporter v-show="activeTab === 'steam'" @connection-change="steamConnection = $event" role="tabpanel" :id="fieldId + '-panel-steam'" :aria-labelledby="fieldId + '-tab-steam'" />
 
         <!-- PSN panel -->
-        <div v-if="activeTab === 'psn'" class="space-y-4">
+        <div v-if="activeTab === 'psn'" class="space-y-4" role="tabpanel" :id="fieldId + '-panel-psn'" :aria-labelledby="fieldId + '-tab-psn'">
   
           <!-- ===== PSN POVEZANI RAČUN ===== -->
           <div v-if="isConnected" class="card bg-base-200 shadow">
@@ -208,8 +208,9 @@
           </div>
 
           <!-- ===== ČAROBNJAK ZA POVEZIVANJE ===== -->
-          <div v-if="wizardOpen" class="modal modal-open" @click.self="closeWizard">
+          <AppModal v-if="wizardOpen" label="Poveži PSN račun" :busy="wizardLoading" @close="closeWizard">
             <div class="modal-box max-w-lg space-y-4">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="wizardLoading" @click.stop="closeWizard">✕</button>
               <h3 class="font-bold text-lg">Poveži PSN račun</h3>
               <ol class="space-y-4">
                 <li class="flex gap-3">
@@ -256,7 +257,7 @@
                 class="input input-bordered w-full font-mono"
                 placeholder='{"npsso":"…"} ili samo token'
                 @keyup.enter="connectPsn"
-              />
+               aria-label="{&quot;npsso&quot;:&quot;…&quot;} ili samo token" />
               <div v-if="wizardError" class="alert alert-error text-sm py-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -272,12 +273,12 @@
                 </button>
               </div>
             </div>
-          </div>
+          </AppModal>
 
         </div>
   
         <!-- MIGRACIJA RAWG/IGDB podataka -->
-        <div v-if="activeTab === 'migrate'" class="space-y-4">
+        <div v-if="activeTab === 'migrate'" class="space-y-4" role="tabpanel" :id="fieldId + '-panel-migrate'" :aria-labelledby="fieldId + '-tab-migrate'">
 
           <!-- Backup tooltip -->
           <div class="card bg-base-200 shadow">
@@ -352,7 +353,7 @@
             <!-- Controls card -->
             <div class="card bg-base-200 shadow">
               <div class="card-body p-3 space-y-3">
-                <input v-model="migrateFilter" class="input input-sm input-bordered w-full" placeholder="Pretraži igre..."/>
+                <input v-model="migrateFilter" class="input input-sm input-bordered w-full" placeholder="Pretraži igre..." aria-label="Pretraži igre..." />
                 <div class="flex flex-wrap gap-2 items-center justify-between">
                   <div class="flex flex-wrap gap-1">
                     <button class="btn btn-xs btn-ghost gap-1" @click="migrateSelectAll(true)">
@@ -499,7 +500,7 @@
         </div>
 
         <!-- BACKUP (uvoz / izvoz) -->
-        <div v-if="activeTab === 'backup'" class="space-y-4">
+        <div v-if="activeTab === 'backup'" class="space-y-4" role="tabpanel" :id="fieldId + '-panel-backup'" :aria-labelledby="fieldId + '-tab-backup'">
           <div class="card bg-base-200 shadow">
             <div class="card-body p-4 sm:p-5 space-y-4">
               <div class="flex items-center gap-2">
@@ -565,7 +566,7 @@
         </div>
 
         <!-- Osvježi metadata igara -->
-        <div v-if="activeTab === 'refresh'" class="space-y-4">
+        <div v-if="activeTab === 'refresh'" class="space-y-4" role="tabpanel" :id="fieldId + '-panel-refresh'" :aria-labelledby="fieldId + '-tab-refresh'">
           <div class="card bg-base-200 shadow">
             <div class="card-body p-4 sm:p-5 space-y-4">
               <div class="flex items-center gap-2">
@@ -617,6 +618,9 @@
   </template>
   
   <script>
+import { useId } from 'vue';
+import { handleTabKeys } from '../services/tabNavigation.js';
+import AppModal from '../components/AppModal.vue';
 import { validateBackup } from '../services/backupValidation';
 import { fetchUserRows } from '../services/libraryData';
   import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
@@ -625,6 +629,7 @@ import { fetchUserRows } from '../services/libraryData';
 import { useGamesApi } from '../services/gamesApi';
 import { GAME_STATUS } from '../constants/gameStatus';
 import { hasAllAchievements } from '../services/importerStatus';
+import '../services/localIcons.js';
 import { Icon } from '@iconify/vue';
 import PsnCredit from '../components/PsnCredit.vue';
 import SteamImporter from '../components/SteamImporter.vue';
@@ -640,11 +645,11 @@ import {
   extractNpsso
 } from '../services/psnService';
 
-  const THROW = (err) => { if (err) throw err; };
   
   export default {
-    components: { PsnCredit, Icon, SteamImporter, ImporterGameList },
+    components: { AppModal, PsnCredit, Icon, SteamImporter, ImporterGameList },
     setup() {
+    const fieldId = useId();
       const userStore = useUserStore();
       const gamesApi = useGamesApi();
       const ownerId = userStore.user?.id;
@@ -692,7 +697,7 @@ const showToast = (message, type = 'success') => {
   toast.message = message;
   toast.type = type;
   toast.show = true;
-  setTimeout(() => toast.show = false, 3000);
+  if (type === 'success') setTimeout(() => toast.show = false, 5000);
 };
 
 const migrateScanLoading = ref(false);
@@ -910,8 +915,6 @@ const refreshDoneCount = ref(0);
         }
       };
   
-      // Greške dijele postojeći catch i finally.
-      // noinspection ExceptionCaughtLocallyJS
       const importSelected = async () => {
         if (importLoading.value) return;
         importError.value = '';
@@ -943,8 +946,14 @@ const refreshDoneCount = ref(0);
             game._metadata = metadata;
             assertOwner();
             const { data, error } = await supabase.from('games').insert([row]).select('id');
-            if (error) throw error;
-            if (!data?.[0]?.id) throw new Error('Spremanje nije potvrđeno. Osvježi popis prije ponavljanja.');
+            if (error) {
+              importError.value = `Dodano: ${importDoneCount.value}. ${error.message || 'Import nije uspio.'}`;
+              return;
+            }
+            if (!data?.[0]?.id) {
+              importError.value = `Dodano: ${importDoneCount.value}. Spremanje nije potvrđeno. Osvježi popis prije ponavljanja.`;
+              return;
+            }
             importDoneCount.value++;
             importDone.value++;
             psnLibraryRows.push({ ...row, id: data[0].id });
@@ -956,7 +965,10 @@ const refreshDoneCount = ref(0);
             if (extras.groupId) {
               assertOwner();
               const { error: groupError } = await supabase.from('game_groups').insert([{ user_id: ownerId, game_id: data[0].id, group_id: extras.groupId }]);
-              if (groupError) throw new Error('Igra je dodana, ali grupa nije spremljena. Dodaj je u grupu iz detalja igre.');
+              if (groupError) {
+                importError.value = `Dodano: ${importDoneCount.value}. Igra je dodana, ali grupa nije spremljena. Dodaj je u grupu iz detalja igre.`;
+                return;
+              }
             }
           }
           showToast(`Import dovršen: ${importDoneCount.value} igara.`);
@@ -973,7 +985,6 @@ const refreshDoneCount = ref(0);
         }
       };
 
-      // noinspection ExceptionCaughtLocallyJS
       const updateSelected = async () => {
         if (importLoading.value) return;
         importError.value = '';
@@ -990,7 +1001,10 @@ const refreshDoneCount = ref(0);
           const targets = new Set();
           for (const game of toUpdate) {
             const match = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
-            if (match.row && targets.has(match.row.id)) throw new Error('Odaberi samo jedan izvor napretka za istu igru.');
+            if (match.row && targets.has(match.row.id)) {
+              importError.value = `Sinkronizirano: ${importDoneCount.value}. Odaberi samo jedan izvor napretka za istu igru.`;
+              return;
+            }
             if (match.row) targets.add(match.row.id);
           }
           for (const game of toUpdate) {
@@ -1001,8 +1015,14 @@ const refreshDoneCount = ref(0);
             importProgress.value = `Sinkroniziram: ${game.name}`;
             const { data, error } = await supabase.from('games').update(buildPsnPatch(game, match))
               .eq('user_id', ownerId).eq('id', match.id).eq('platform', match.platform).select('id');
-            if (error) throw error;
-            if (!data?.length) throw new Error('Igra je promijenjena ili uklonjena. Osvježi popis.');
+            if (error) {
+              importError.value = `Sinkronizirano: ${importDoneCount.value}. ${error.message || 'Ažuriranje nije uspjelo.'}`;
+              return;
+            }
+            if (!data?.length) {
+              importError.value = `Sinkronizirano: ${importDoneCount.value}. Igra je promijenjena ili uklonjena. Osvježi popis.`;
+              return;
+            }
             importDoneCount.value++;
             importDone.value++;
           }
@@ -1061,17 +1081,7 @@ const refreshDoneCount = ref(0);
 
       try {
         const text = await file.text();
-        const data = validateBackup(JSON.parse(text));
-
-        if (!data.version || !Array.isArray(data.games) || !Array.isArray(data.groups) || !Array.isArray(data.gameGroups)) {
-          THROW(new Error('Neispravan format backup datoteke.'));
-        }
-
-        if (data.version !== 1) {
-          THROW(new Error('Nepodržana verzija backupa.'));
-        }
-
-        importFileData.value = data;
+        importFileData.value = validateBackup(JSON.parse(text));
         showImportModal.value = true;
       } catch (error) {
         console.error('Greška pri čitanju backupa:', error);
@@ -1098,7 +1108,11 @@ const refreshDoneCount = ref(0);
         assertOwner();
 
         if (data.games.length === 0 && data.groups.length === 0 && data.gameGroups.length === 0) {
-          THROW(new Error('Backup datoteka ne sadrži podatke (svi nizovi su prazni).'));
+          const message = 'Backup datoteka ne sadrži podatke (svi nizovi su prazni).';
+          console.error('Greška pri uvozu backupa:', new Error(message));
+          showToast(message, 'error');
+          importFileData.value = null;
+          return;
         }
 
         const mappedGames = data.games.map(g => ({
@@ -1120,8 +1134,13 @@ const refreshDoneCount = ref(0);
           p_game_groups: JSON.parse(JSON.stringify(mappedGameGroups))
         });
 
-        if (error) THROW(error);
-        if (!result?.ok) THROW(new Error(result?.error || 'Nepoznata greška pri uvozu.'));
+        if (error || !result?.ok) {
+          const failure = error || new Error(result?.error || 'Nepoznata greška pri uvozu.');
+          console.error('Greška pri uvozu backupa:', failure);
+          showToast(failure.message || 'Uvoz nije uspio. Provjeri podatke i pokušaj ponovno.', 'error');
+          importFileData.value = null;
+          return;
+        }
 
         importFileData.value = null;
         await loadGroups();
@@ -1290,7 +1309,12 @@ const refreshDoneCount = ref(0);
           assertOwner();
           if (String(g.db.website_url || '').startsWith('https://store.steampowered.com/app/')) delete update.website_url;
           const { error } = await supabase.from('games').update(update).eq('user_id', userId).eq('id', g.db.id);
-          if (error) THROW(new Error(`${g.db.title}: ${error.message}`));
+          if (error) {
+            migrateError.value = `${g.db.title}: ${error.message}`;
+            migrateProgress.value = '';
+            migrateTotal.value = 0;
+            return;
+          }
 
           g.status = 'linked';
           g.newReleased = update.release_date || g.newReleased;
@@ -1343,8 +1367,8 @@ const refreshDoneCount = ref(0);
             assertOwner();
             if (String(g.website_url || '').startsWith('https://store.steampowered.com/app/')) delete update.website_url;
             const { error: updateError } = await supabase.from('games').update(update).eq('user_id', userId).eq('id', g.id);
-            if (updateError) THROW(updateError);
-            done++;
+            if (updateError) refreshError.value = `Neke igre nisu osvježene: ${updateError.message || 'greška dohvata'}`;
+            else done++;
           } catch (e) {
             refreshError.value = `Neke igre nisu osvježene: ${e.message || 'greška dohvata'}`;
           }
@@ -1384,7 +1408,7 @@ const refreshDoneCount = ref(0);
 });
 
   
-      return {
+      return { handleTabKeys, fieldId,
         userStore, activeTab, psnListGames, selectPsnGame, resolvePsnGame, setPsnPoster, isConnected, steamConnection, lastSyncedAt, formatSyncedAt,
         wizardOpen, wizardNpsso, wizardNpssoParsed, wizardLoading, wizardError, openWizard, closeWizard, connectPsn, disconnectPsn,
         syncStage, psnProfileData,

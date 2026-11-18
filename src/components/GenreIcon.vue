@@ -1,8 +1,9 @@
 <template>
-  <Icon :icon="iconName" :class="className" :title="matchedTitle || undefined" />
+  <Icon :icon="iconName" :class="className" role="img" aria-hidden="false" :aria-label="matchedTitle || 'Žanr'" :title="matchedTitle || undefined" />
 </template>
 
 <script>
+import '../services/localIcons.js';
 import { Icon } from '@iconify/vue';
 import { computed } from 'vue';
 

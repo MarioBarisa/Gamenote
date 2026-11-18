@@ -45,6 +45,7 @@ coverage
 #other
 Database.Md
 /AGENTS.md
+/.codex/config.toml
 opencode.json
 
 # Lokalne kopije

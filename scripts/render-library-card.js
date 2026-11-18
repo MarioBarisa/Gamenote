@@ -2,6 +2,15 @@ import { createSSRApp, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { parse, formatHex } from 'culori';
 import GamerCard from '../src/components/GamerCard.vue';
+import ComparisonSocialCard from '../src/components/ComparisonSocialCard.vue';
+
+export async function renderComparisonCard(left, right) {
+  const app = createSSRApp({ render: () => h(ComparisonSocialCard, { left, right }) });
+  const html = await renderToString(app);
+  const svg = html.match(/<svg\b[\s\S]*<\/svg>/)?.[0];
+  if (!svg) throw new Error('Karticu nije moguće pripremiti.');
+  return svg.replace(/viewbox=/g, 'viewBox=').replace(/ data-v-[a-z0-9-]+(?:="")?/g, '');
+}
 
 export async function renderLibraryCard(header, avatar = '') {
   const app = createSSRApp({ render: () => h(GamerCard, {

@@ -13,6 +13,7 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
   const insertedGames = [];
   let ownGames = [];
   let failLibraryCheck = false;
+  let gameSaveFailure = null;
   const libraryChecks = [];
   const avatarUploads = [];
   const avatarChecks = [];
@@ -61,6 +62,7 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
         return route.fulfill({ json: saved });
       }
       if (url.pathname.endsWith('/games') && route.request().method() === 'POST') {
+        if (gameSaveFailure) return route.fulfill({ status: 400, json: gameSaveFailure });
         insertedGames.push(payload[0]); ownGames.push({ ...payload[0], id: 'my-new-game' });
         return route.fulfill({ json: { id: 'my-new-game' } });
       }
@@ -88,6 +90,7 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
     await page.setViewportSize({ width, height: 1000 });
     await expect(page.locator('.gamer-card')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Gamenote · Javni igrač', exact: true })).toBeVisible();
+    await expect(page).toHaveTitle('Gamenote · Javni igrač');
     await expect(page.getByRole('heading', { name: 'Gamenote · Javni igrač', exact: true })).toHaveCSS('text-align', 'left');
     await expect(page.locator('.card-email')).toHaveText('– @player-a');
     await expect(page.getByRole('link', { name: 'Statistika', exact: true })).toHaveCount(0);
@@ -189,6 +192,15 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
     await screenshotDialog.getByRole('button', { name: 'Prethodni screenshot', exact: true }).click();
     await expect(screenshotDialog.getByRole('img')).toHaveAttribute('src', screenshotUrls[2]);
     await expect(screenshotDialog.locator('.screenshot-counter')).toHaveText('3 / 3');
+    const thumbnails = screenshotDialog.getByRole('group', { name: 'Odabir screenshota', exact: true });
+    await expect(thumbnails.getByRole('button')).toHaveCount(3);
+    await thumbnails.getByRole('button', { name: 'Prikaži screenshot 1', exact: true }).click();
+    await expect(screenshotDialog.getByRole('img')).toHaveAttribute('src', screenshotUrls[0]);
+    const lastThumbnail = thumbnails.getByRole('button', { name: 'Prikaži screenshot 3', exact: true });
+    await lastThumbnail.focus();
+    await page.keyboard.press('Space');
+    await expect(lastThumbnail).toHaveAttribute('aria-current', 'true');
+    await expect(screenshotDialog.getByRole('img')).toHaveAttribute('src', screenshotUrls[2]);
     await page.screenshot({ path: join(artifacts, `shared-screenshot-${width}.png`) });
     await page.mouse.click(4, 4);
     await expect(screenshotDialog).toBeHidden();
@@ -209,6 +221,7 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
   await page.getByRole('button', { name: 'Otvori screenshot 1', exact: true }).click();
   const singleScreenshot = page.getByRole('dialog', { name: 'Pregled screenshotova', exact: true });
   await expect(singleScreenshot.locator('.screenshot-counter')).toHaveText('1 / 1');
+  await expect(singleScreenshot.getByRole('group', { name: 'Odabir screenshota', exact: true })).toHaveCount(0);
   await expect(singleScreenshot.getByRole('button', { name: 'Prethodni screenshot', exact: true })).toHaveCount(0);
   await expect(singleScreenshot.getByRole('button', { name: 'Sljedeći screenshot', exact: true })).toHaveCount(0);
   await page.evaluate(() => window.auditRouter.push('/player-a?status=playing'));
@@ -334,6 +347,15 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
   await expect(addDialog.getByLabel('Ocjena', { exact: true })).toHaveValue('0');
   await expect(addDialog.getByLabel('Sati igranja', { exact: true })).toHaveValue('');
   await addDialog.getByLabel('Platforma', { exact: true }).fill('PlayStation 5');
+  for (const failure of [{ code: '42501', message: 'Tehnička poruka' }, { message: 'Testna greška dodavanja' }]) {
+    gameSaveFailure = failure;
+    await addDialog.getByRole('button', { name: 'Dodaj u Gamenote', exact: true }).click();
+    await expect(addDialog.getByRole('alert')).toHaveText(failure.code ? 'Igru nije moguće spremiti. Pokušaj ponovno.' : failure.message);
+    await expect(addDialog.getByRole('button', { name: 'Dodaj u Gamenote', exact: true })).toBeEnabled();
+    await expect(addDialog).toBeVisible();
+    assert.equal(insertedGames.length, 0);
+  }
+  gameSaveFailure = null;
   await addDialog.getByRole('button', { name: 'Dodaj u Gamenote', exact: true }).click();
   await expect(addDialog.getByRole('status')).toContainText('Igra je dodana');
   assert.equal(insertedGames.length, 1);
@@ -353,6 +375,7 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
   await page.evaluate(() => {
     window.avatarUpdates = [];
     window.auditDb.auth.updateUser = async payload => {
+      if (window.avatarSaveFailed) return { error: { message: 'Testna greška profilne slike' } };
       window.avatarUpdates.push(payload);
       window.auditSession.user.user_metadata = { ...window.auditSession.user.user_metadata, ...payload.data };
       return { data: { user: window.auditSession.user }, error: null };
@@ -374,6 +397,13 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
   await expect(avatarSection.getByRole('alert')).toContainText('HTTP ili HTTPS');
   assert.equal((await page.evaluate(() => window.avatarUpdates)).length, 0);
   await avatarLink.fill('https://avatars.fixture.test/direct.png');
+  await page.evaluate(() => { window.avatarSaveFailed = true; });
+  await avatarSection.getByRole('button', { name: 'Spremi sliku', exact: true }).click();
+  await expect(avatarSection.getByRole('alert')).toHaveText('Profilnu sliku nije moguće spremiti. Pokušaj ponovno.');
+  await expect(avatarSection.getByRole('button', { name: 'Spremi sliku', exact: true })).toBeEnabled();
+  await expect(avatarLink).toHaveValue('https://avatars.fixture.test/direct.png');
+  assert.equal((await page.evaluate(() => window.avatarUpdates)).length, 0);
+  await page.evaluate(() => { window.avatarSaveFailed = false; });
   await avatarSection.getByRole('button', { name: 'Spremi sliku', exact: true }).click();
   await expect(avatarSection.getByRole('status')).toContainText('Profilna slika je spremljena');
   await expect(infoDialog).toBeVisible();

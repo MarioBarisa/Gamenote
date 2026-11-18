@@ -9,7 +9,7 @@
           <h2 class="text-xl font-bold mt-3">Registriraj se</h2>
         </div>
 
-        <div v-if="errorMessage" class="alert alert-error text-sm">
+        <div role="alert" v-if="errorMessage" class="alert alert-error text-sm">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span>{{ errorMessage }}</span>
         </div>
@@ -18,19 +18,21 @@
         <form @submit.prevent="handleSignup" class="flex flex-col gap-4">
           <div class="form-control">
             <label class="label" for="signup-username">
-              <span class="label-text">Korisničko ime</span>
+              <span class="label-text">Prikazno ime</span>
             </label>
             <input
               id="signup-username"
+              :aria-invalid="!!fieldErrors.name" :aria-describedby="fieldErrors.name ? 'signup-username-error' : undefined"
+              @input="fieldErrors.name = ''"
               type="text"
               v-model="name"
-              placeholder="Korisničko ime"
+              placeholder="Prikazno ime"
               class="input input-bordered w-full"
               required
-              autocomplete="username"
+              autocomplete="nickname"
               @blur="validateName"
             />
-            <p v-if="fieldErrors.name" class="text-error text-sm mt-1">{{ fieldErrors.name }}</p>
+            <p id="signup-username-error" v-if="fieldErrors.name" role="alert" class="text-error text-sm mt-1">{{ fieldErrors.name }}</p>
           </div>
 
           <div class="form-control">
@@ -39,6 +41,8 @@
             </label>
             <input
               id="signup-email"
+              :aria-invalid="!!fieldErrors.email" :aria-describedby="fieldErrors.email ? 'signup-email-error' : undefined"
+              @input="fieldErrors.email = ''"
               type="email"
               v-model="email"
               placeholder="ime@primjer.hr"
@@ -47,7 +51,7 @@
               autocomplete="email"
               @blur="validateEmail"
             />
-            <p v-if="fieldErrors.email" class="text-error text-sm mt-1">{{ fieldErrors.email }}</p>
+            <p id="signup-email-error" v-if="fieldErrors.email" role="alert" class="text-error text-sm mt-1">{{ fieldErrors.email }}</p>
           </div>
 
           <div class="form-control">
@@ -57,6 +61,8 @@
             <div class="relative">
               <input
                 id="signup-password"
+              :aria-invalid="!!fieldErrors.password" :aria-describedby="fieldErrors.password ? 'signup-password-error' : undefined"
+              @input="fieldErrors.password = ''"
                 :type="showPassword ? 'text' : 'password'"
                 v-model="password"
                 placeholder="••••••••"
@@ -78,7 +84,7 @@
             <div v-if="password" class="mt-2">
               <span class="badge text-xs" :class="passwordStrength.cls">{{ passwordStrength.label }}</span>
             </div>
-            <p v-if="fieldErrors.password" class="text-error text-sm mt-1">{{ fieldErrors.password }}</p>
+            <p id="signup-password-error" v-if="fieldErrors.password" role="alert" class="text-error text-sm mt-1">{{ fieldErrors.password }}</p>
           </div>
 
           <div class="form-control">
@@ -87,6 +93,8 @@
             </label>
             <input
               id="signup-confirm-password"
+              :aria-invalid="!!fieldErrors.confirmPassword" :aria-describedby="fieldErrors.confirmPassword ? 'signup-confirm-password-error' : undefined"
+              @input="fieldErrors.confirmPassword = ''"
               :type="showPassword ? 'text' : 'password'"
               v-model="confirmPassword"
               placeholder="••••••••"
@@ -95,7 +103,7 @@
               autocomplete="new-password"
               @blur="validateConfirmPassword"
             />
-            <p v-if="fieldErrors.confirmPassword" class="text-error text-sm mt-1">{{ fieldErrors.confirmPassword }}</p>
+            <p id="signup-confirm-password-error" v-if="fieldErrors.confirmPassword" role="alert" class="text-error text-sm mt-1">{{ fieldErrors.confirmPassword }}</p>
           </div>
 
           <button
@@ -104,7 +112,7 @@
             :disabled="loading"
           >
             <span v-if="loading" class="loading loading-spinner loading-sm"></span>
-            <template v-if="!loading">Stvori račun</template>
+            <span>Stvori račun</span>
           </button>
         </form>
 
@@ -120,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, nextTick } from 'vue'
 import { useAuth } from '../services/useAuth'
 import GamenoteBanner from './GamenoteBanner.vue'
 
@@ -148,7 +156,7 @@ const passwordStrength = computed(() => {
 })
 
 function validateName() {
-  fieldErrors.name = name.value.trim() ? '' : 'Korisničko ime je obavezno.'
+  fieldErrors.name = name.value.trim() ? '' : 'Prikazno ime je obavezno.'
 }
 
 function validateEmail() {
@@ -178,7 +186,11 @@ function validateAll() {
 }
 
 async function handleSignup() {
-  if (!validateAll()) return
+  if (!validateAll()) {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
+    return
+  }
   await signUp(email.value, password.value, name.value)
 }
 </script>

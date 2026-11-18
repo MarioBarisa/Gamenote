@@ -100,10 +100,6 @@ margin: 0;
     padding: 0.5rem 0.25rem;
   }
 
-  .card {
-    border-radius: 0.75rem;
-  }
-
   .form-control {
     margin-bottom: 1rem;
   }
@@ -175,3 +171,27 @@ margin: 0;
     padding: 0.375rem 0.125rem;
   }
 }
+
+/* Fokus ostaje iznad fiksne navigacije. */
+html { scroll-padding-top: 6rem; scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px)); }
+dialog:modal { overscroll-behavior: contain; }
+dialog::backdrop { overflow: hidden; overscroll-behavior: contain; }
+.modal-box { position: relative; }
+.card-open-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.game-card button { position: relative; z-index: 20; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 200; transform: translateY(-200%); padding: .5rem 1rem; background: var(--color-base-100); color: var(--color-base-content); border-radius: .5rem; }
+.skip-link:focus { transform: translateY(0); }
+@media (forced-colors: active) {
+  .tcg-toggle:has(input:focus-visible) { outline: 2px solid Highlight; outline-offset: 2px; }
+}
+
+/* Poster prati kutove kartice i uz poveznicu. */
+.game-card > figure {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.collection-nav-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+.collection-nav-link:hover { color: var(--color-primary); }
+.collection-nav-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.collection-nav-link:disabled { opacity: .4; cursor: not-allowed; }

@@ -25,7 +25,7 @@
           <div class="stat-desc text-xs mt-1">Ukupno sati</div>
         </router-link>
         <router-link to="/library" class="stat bg-base-200 rounded-box shadow hover:bg-base-300 transition-colors cursor-pointer p-3 sm:p-4">
-          <div class="stat-title text-xs sm:text-sm">Završeno</div>
+          <div class="stat-title text-xs sm:text-sm">{{ GAME_STATUS_MAP.completed.label }}</div>
           <div class="stat-value text-success text-xl sm:text-2xl lg:text-3xl">{{ completedGames }}</div>
           <div class="stat-desc text-xs mt-1">Završene igre</div>
         </router-link>
@@ -55,8 +55,8 @@
         </div>
         <div v-else>
           <div :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
-            <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" @click="navigateToUserGame(game.id)" class="cursor-pointer">
-              <GameCard :game="game" />
+            <div v-for="game in currentlyPlaying.slice(0, 5)" :key="game.id" class="relative cursor-pointer">
+              <GameCard :game="game" :to="`/game/${game.id}`" />
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-secondary" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
           </svg>
-          Jump back in.
+          Nastavi igrati.
         </h2>
         <div class="card bg-base-200 shadow-xl overflow-hidden relative" :style="heroImage ? `background-image: url(${heroImage}); background-position: center; background-size: cover;` : ''">
           <div v-if="heroImage" class="absolute inset-0 bg-gradient-to-r from-base-100 via-base-100/95 to-base-100/40"></div>
@@ -79,7 +79,7 @@
               <img :src="todaysPick.image_url" :alt="todaysPick.title" class="w-full h-full object-cover" />
             </figure>
             <div class="flex-grow text-center sm:text-left">
-              <div class="badge badge-secondary mb-3 shadow-sm border-none font-bold uppercase tracking-wider text-xs p-3">Today's Pick</div>
+              <div class="badge badge-secondary mb-3 shadow-sm border-none font-bold uppercase tracking-wider text-xs p-3">Današnji izbor</div>
               <h3 @click="navigateToUserGame(todaysPick.id)" class="cursor-pointer hover:text-secondary transition-colors text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 text-base-content drop-shadow-md">{{ todaysPick.title }}</h3>
               <p class="opacity-80 text-sm sm:text-base max-w-xl mb-6 font-medium">{{ todaysPick.platform }} • {{ todaysPick._statusLabel }}</p>
               <div class="card-actions justify-center sm:justify-start">
@@ -99,13 +99,13 @@
 </template>
 
 <script>
+import { GAME_STATUS_MAP } from '../constants/gameStatus';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabase';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
-import { useGamesApi } from '../services/gamesApi';
 import { useThemeStore } from '../stores/theme';
 import GameCard from '../components/GameCard.vue';
 import gameN from '../components/gameN.vue';
@@ -121,10 +121,8 @@ export default {
     const userStore = useUserStore();
     const cardSizeStore = useCardSizeStore();
     const router = useRouter();
-    const gamesApi = useGamesApi();
     const themeStore = useThemeStore();
 
-    const loading = ref(true);
     const userGamesLoading = ref(true);
     const currentlyPlaying = ref([]);
     const todaysPick = ref(null);
@@ -142,8 +140,6 @@ export default {
     const totalGames = ref(0);
     const completedGames = ref(0);
     const totalHours = ref(0);
-    const popularGames = ref([]);
-    const recentGames = ref([]);
 
     const libraryError = ref('');
     const fetchUserGames = async () => {
@@ -167,7 +163,7 @@ export default {
             const picked = pickCandidates[randomIndex];
             todaysPick.value = {
               ...picked,
-              _statusLabel: picked.status === 'paused' ? 'Pauzirano' : 'U backlogu'
+              _statusLabel: GAME_STATUS_MAP[picked.status]?.label
             };
           } else {
             todaysPick.value = null;
@@ -181,20 +177,6 @@ export default {
         libraryError.value = error.message || 'Knjižnicu nije moguće učitati.';
       } finally {
         userGamesLoading.value = false;
-      }
-    };
-
-    const fetchApiGames = async () => {
-      loading.value = true;
-
-      try {
-        popularGames.value = await gamesApi.getPopularGames();
-
-        recentGames.value = await gamesApi.getRecentGames();
-      } catch (error) {
-        console.error('Error fetching API games:', error);
-      } finally {
-        loading.value = false;
       }
     };
 
@@ -216,7 +198,6 @@ export default {
       if (!userStore.isLoggedIn || loaded) return;
       loaded = true;
       await fetchUserGames();
-      await fetchApiGames();
     };
 
     onMounted(loadUserData);
@@ -232,8 +213,8 @@ export default {
 
     return { libraryError,
       userStore,
+      GAME_STATUS_MAP,
       cardSizeStore,
-      loading,
       userGamesLoading,
       currentlyPlaying,
       todaysPick,
@@ -241,8 +222,6 @@ export default {
       totalGames,
       completedGames,
       totalHours,
-      popularGames,
-      recentGames,
       navigateToUserGame,
       navigateToApiGame,
       formatDate,

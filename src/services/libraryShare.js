@@ -1,7 +1,9 @@
 import { supabase } from '../supabase.js';
 
-export async function loadShareSettings(userId) {
-  const { data, error } = await supabase.from('library_shares').select('username,share_scope').eq('user_id', userId).maybeSingle();
+export async function loadShareSettings(userId, signal) {
+  let request = supabase.from('library_shares').select('username,share_scope').eq('user_id', userId).maybeSingle();
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
   if (error) throw new Error('Postavke dijeljenja nije moguće učitati. Pokušaj ponovno.');
   return data || { username: '', share_scope: 'none' };
 }

@@ -1,5 +1,7 @@
 import { checkLibrarySharing } from './libraryShare.browser.mjs';
 import { checkLoadingSkeletons } from './loadingSkeletons.browser.mjs';
+import { checkFrontend } from './frontend.browser.mjs';
+import { checkLibraryComparison } from './libraryComparison.browser.mjs';
 import { createRequire } from 'node:module';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -24,7 +26,7 @@ supabase.auth.onAuthStateChange=cb=>{listeners.add(cb);queueMicrotask(()=>cb('IN
 window.emitAuth=(event)=>{for(const cb of listeners)cb(event,window.auditSession)};
 const smoke=new URLSearchParams(location.search).has('smoke');const app=createApp(smoke?App:{setup(){const view=ref();window.auditView=()=>view.value;return()=>h(RouterView,null,{default:({Component})=>Component?h(Component,{ref:view}):null})}});
 app.use(createPinia()); app.use(router); const store=useUserStore();store.setUser(window.auditSession.user);
-window.auditStore=store; window.auditRouter=router; window.auditDb=supabase;app.mount('#app');window.auditReady=true;
+window.auditStore=store; window.auditRouter=router; window.auditDb=supabase;window.auditApp=app;app.mount('#app');window.auditReady=true;
 </script></body></html>`;
 const server = await createServer({
   root: process.cwd(),
@@ -98,6 +100,8 @@ try {
   let writes = [];
   let insertNumber = 0;
   let failSecondInsert = false;
+  let emptyInsert = false;
+  let gameSaveResult = 'success';
   let searchUrl;
   const avatarRequests = [];
   let failAvatarProxy = false;
@@ -201,11 +205,14 @@ try {
       const data = req.postDataJSON();
       writes.push({ method: req.method(), table, data });
       if (req.method() === 'PATCH') {
+        if (table === 'games' && gameSaveResult === 'error') return route.fulfill({ status: 400, json: { message: 'Testna greška spremanja' } });
+        if (table === 'games' && gameSaveResult === 'empty') return route.fulfill({ json: [] });
         const id = url.searchParams.get('id')?.replace('eq.', '');
         Object.assign(rows.find((r) => r.id === id) || {}, data);
         return route.fulfill({ json: [{ id }] });
       }
       if (req.method() === 'POST' && table === 'games') {
+        if (emptyInsert) return route.fulfill({ json: [] });
         insertNumber++;
         if (failSecondInsert && insertNumber === 2)
           return route.fulfill({
@@ -247,6 +254,34 @@ try {
   const card = page.locator('#gaming-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Leo');
+  const profileFailures = await page.evaluate(async () => {
+    const v = window.auditView();
+    const auth = window.auditDb.auth;
+    const updateUser = auth.updateUser, signIn = auth.signInWithPassword, rpc = window.auditDb.rpc;
+    const userId = window.auditStore.user.id;
+    const states = [];
+    try {
+      auth.updateUser = async () => ({ error: { message: 'Testna greška profila' } });
+      window.auditDb.rpc = async () => ({ error: { message: 'Testna greška brisanja' } });
+      auth.signInWithPassword = async () => ({ data: { user: { id: userId } }, error: null });
+      v.passwordForm.newPassword = v.passwordForm.confirmPassword = 'FixturePassword!1';
+      v.deleteConfirmInput = 'DELETE';
+      for (const [action, busy] of [['updateProfile', 'updating'], ['updatePassword', 'updatingPassword'], ['handleDeleteAccount', 'deletingAccount'], ['handleReauthAndDelete', 'deletingAccount']]) {
+        await v[action]();
+        states.push({ action, busy: v[busy], message: v.toast.message, type: v.toast.type, userId: window.auditStore.user?.id });
+      }
+    } finally {
+      auth.updateUser = updateUser; auth.signInWithPassword = signIn; window.auditDb.rpc = rpc;
+      v.passwordForm.newPassword = v.passwordForm.confirmPassword = ''; v.deleteConfirmInput = ''; v.toast.show = false;
+    }
+    return { states, userId };
+  });
+  for (const failure of profileFailures.states) {
+    assert.equal(failure.busy, false, failure.action);
+    assert.equal(failure.type, 'error');
+    assert.equal(failure.userId, profileFailures.userId);
+    assert.equal(failure.message, failure.action === 'updateProfile' ? 'Greška pri ažuriranju profila' : failure.action === 'updatePassword' ? 'Greška pri mijenjanju lozinke' : 'Testna greška brisanja');
+  }
   await expect(page).toHaveTitle('Leo');
   await expect(card).toContainText('300');
   const achievementCards = page.locator('.profile-achievements .grid > div');
@@ -596,6 +631,24 @@ try {
     '',
   );
   findings.push({ fixed: 'cancel-restores-empty-field' });
+  await page.evaluate(() => window.auditView().enterEditMode());
+  for (const result of ['error', 'empty']) {
+    gameSaveResult = result;
+    writes = [];
+    const failedSave = await page.evaluate(async () => {
+      const v = window.auditView();
+      v.editForm.publisher = 'Nespremljena promjena';
+      await v.saveGame();
+      return { error: v.mutationError, loading: v.saveLoading, editing: v.editMode, publisher: v.game.publisher };
+    });
+    assert.deepEqual(failedSave, {
+      error: result === 'error' ? 'Testna greška spremanja' : 'Igra više nije dostupna. Osvježi stranicu.',
+      loading: false, editing: true, publisher: null,
+    });
+    assert.equal(writes.some(write => write.table === 'game_groups'), false);
+  }
+  gameSaveResult = 'success';
+  await page.evaluate(() => window.auditView().cancelEdit());
   writes = [];
   await page.evaluate(async () => {
     const v = window.auditView();
@@ -740,7 +793,17 @@ try {
   failSecondInsert = true;
   await page.evaluate(() => window.auditView().importSelected());
   assert.equal(rows.length, 1);
+  assert.deepEqual(await page.evaluate(() => ({ error: window.auditView().importError, loading: window.auditView().importLoading })), {
+    error: 'Dodano: 1. fixture second batch failure', loading: false,
+  });
   failSecondInsert = false;
+  emptyInsert = true;
+  await page.evaluate(() => window.auditView().importSelected());
+  assert.equal(rows.length, 1);
+  assert.deepEqual(await page.evaluate(() => ({ error: window.auditView().importError, loading: window.auditView().importLoading })), {
+    error: 'Dodano: 0. Spremanje nije potvrđeno. Osvježi popis prije ponavljanja.', loading: false,
+  });
+  emptyInsert = false;
   await page.evaluate(() => window.auditView().importSelected());
   assert.equal(rows.length, 30);
   findings.push({
@@ -768,6 +831,23 @@ try {
     source: rows.length,
     exported: backupCount,
   });
+  const backupFailures = await page.evaluate(async () => {
+    const v = window.auditView(), rpc = window.auditDb.rpc, states = [];
+    try {
+      for (const mode of ['empty', 'error', 'rejected']) {
+        window.auditDb.rpc = async () => mode === 'error' ? { error: { message: 'Testna greška backupa' } } : { data: { ok: false, error: 'Testna greška backupa' }, error: null };
+        v.importFileData = { version: 1, games: mode === 'empty' ? [] : [{ id: 'test-game', title: 'Testna igra' }], groups: [], gameGroups: [] };
+        v.showImportModal = true;
+        await v.confirmImport();
+        states.push({ mode, importing: v.importing, draft: v.importFileData, modal: v.showImportModal, message: v.toast.message, type: v.toast.type });
+      }
+    } finally { window.auditDb.rpc = rpc; v.toast.show = false; }
+    return states;
+  });
+  for (const failure of backupFailures) {
+    assert.deepEqual({ importing: failure.importing, draft: failure.draft, modal: failure.modal, type: failure.type }, { importing: false, draft: null, modal: false, type: 'error' });
+    assert.equal(failure.message, failure.mode === 'empty' ? 'Backup datoteka ne sadrži podatke (svi nizovi su prazni).' : 'Testna greška backupa');
+  }
   await page.evaluate(async () => {
     const recovery = await import('/src/services/recoveryState.js');
     recovery.handleRecoveryEvent('PASSWORD_RECOVERY', window.auditSession);
@@ -863,7 +943,7 @@ try {
       error: null,
     });
   });
-  await page.getByLabel('Korisničko ime', { exact: true }).fill('CatWarrior99');
+  await page.getByLabel('Prikazno ime', { exact: true }).fill('CatWarrior99');
   await page
     .getByLabel('E-mail adresa', { exact: true })
     .fill('fixture@example.test');
@@ -886,6 +966,44 @@ try {
   await expect(
     page.getByRole('button', { name: 'Stvori račun', exact: true }),
   ).toBeEnabled();
+  const authFailures = await page.evaluate(async () => {
+    const { useAuth } = await import('/src/services/useAuth.js');
+    const auth = window.auditApp.runWithContext(useAuth);
+    const cases = [
+      ['signIn', 'signInWithPassword', ['fixture@example.test', 'FixturePassword!1'], 'Invalid login credentials', 'Pogrešna e-mail adresa ili lozinka.'],
+      ['signUp', 'signUp', ['fixture@example.test', 'FixturePassword!1', 'Igrač'], 'User already registered', 'Korisnik s tom e-mail adresom već postoji.'],
+      ['resetPassword', 'resetPasswordForEmail', ['fixture@example.test'], 'Email not confirmed', 'E-mail adresa nije potvrđena. Provjerite inbox.'],
+      ['updatePassword', 'updateUser', ['FixturePassword!1'], 'Signup requires a valid password', 'Unesite valjanu lozinku.'],
+    ];
+    const results = [];
+    for (const [action, method, args, message, expected] of cases) {
+      const original = window.auditDb.auth[method];
+      try {
+        for (const rejected of [false, true]) {
+          window.auditDb.auth[method] = async () => {
+            if (rejected) throw new Error(message);
+            return { data: null, error: { message } };
+          };
+          const result = await auth[action](...args);
+          results.push({
+            action, rejected, expected, result,
+            error: action === 'signIn' || action === 'signUp' ? auth.errorMessage.value : result.error,
+            loading: auth.loading.value, loggedIn: window.auditStore.isLoggedIn,
+            path: window.auditRouter.currentRoute.value.path,
+          });
+        }
+      } finally { window.auditDb.auth[method] = original; }
+    }
+    return results;
+  });
+  for (const failure of authFailures) {
+    assert.equal(failure.error, failure.expected, `${failure.action}: ${failure.rejected ? 'exception' : 'returned error'}`);
+    assert.equal(failure.loading, false);
+    assert.equal(failure.loggedIn, false);
+    assert.equal(failure.path, '/register');
+    if (failure.action === 'signIn' || failure.action === 'signUp') assert.equal(failure.result, false);
+    else assert.deepEqual(failure.result, { success: false, error: failure.expected });
+  }
   await navigate('/shared?id=1');
   await expect(page.locator('a[href="https://gamenote.eu"] svg')).toHaveAttribute('viewBox', '0 0 896 722');
   await expect(page.locator('img[src="/apple-touch-icon.png"]')).toHaveCount(0);
@@ -916,6 +1034,8 @@ try {
   await checkAuthStartup(browser, server.resolvedUrls.local[0], cardArtifacts);
   await checkLibrarySharing(browser, server.resolvedUrls.local[0], cardArtifacts);
   await checkLoadingSkeletons(browser, server.resolvedUrls.local[0], cardArtifacts);
+  await checkFrontend(browser, server.resolvedUrls.local[0], cardArtifacts);
+  await checkLibraryComparison(browser, server.resolvedUrls.local[0], cardArtifacts);
 } finally {
   await browser?.close();
   await server.close();

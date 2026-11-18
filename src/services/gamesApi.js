@@ -55,16 +55,26 @@ export const useGamesApi = () => {
     return (await request('/games', { dates: `${today.getFullYear()}-01-01,${today.toISOString().slice(0,10)}`, ordering: '-added', page_size: 10 })).results || [];
   }
   async function getGameNews() {
+    pending.value++;
+    error.value = null;
     const news = [];
-    for (let feed = 0; feed < NEWS_SOURCES.length; feed++) {
-      try {
-        const data = await requestAppApi({ action: 'news', feed });
-        if (data.status !== 'ok') continue;
-        for (const item of data.items || []) news.push({ ...item, source: NEWS_SOURCES[feed][0], domain: NEWS_SOURCES[feed][1], sourceUrl: data.feed?.link || '#' });
-      } catch (failure) { error.value = failure.message; }
-    }
-    news.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-    return news.slice(0, 20);
+    let lastError = null;
+    try {
+      // Dva izvora istodobno, bez navale zahtjeva.
+      for (let start = 0; start < NEWS_SOURCES.length; start += 2) {
+        const batch = await Promise.allSettled(NEWS_SOURCES.slice(start, start + 2).map((source, index) => requestAppApi({ action: 'news', feed: start + index })));
+        for (let index = 0; index < batch.length; index++) {
+          const result = batch[index];
+          if (result.status === 'rejected') { lastError = result.reason; continue; }
+          const data = result.value;
+          if (data.status !== 'ok') continue;
+          for (const item of data.items || []) news.push({ ...item, source: NEWS_SOURCES[start + index][0], domain: NEWS_SOURCES[start + index][1], sourceUrl: data.feed?.link || '#' });
+        }
+      }
+      if (!news.length && lastError) error.value = lastError.message;
+      news.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      return news.slice(0, 20);
+    } finally { pending.value--; }
   }
   const getMockGameNews = () => [];
   const matchGame = (title, year) => request('/games/match', { title: title || '', ...(year ? { year } : {}) });

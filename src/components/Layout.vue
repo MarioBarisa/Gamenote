@@ -1,5 +1,6 @@
 <template>
   <div class="app-container min-h-screen flex flex-col bg-base-100">
+    <a href="#main-content" class="skip-link">Preskoči na sadržaj</a>
     <header v-if="isLoggedIn" class="bg-base-200 sticky top-0 z-50 shadow-lg">
       <div class="container mx-auto px-2 sm:px-4">
         <div class="navbar py-2 sm:py-3">
@@ -51,18 +52,15 @@
           <div class="navbar-end">
             <div class="flex items-center gap-3">
               <span class="hidden sm:block text-sm font-medium">{{ userName }}</span>
-              <div class="dropdown dropdown-end" ref="profileDropdown">
-                <label 
-                  tabindex="0" 
+              <details class="dropdown dropdown-end" ref="profileDropdown">
+                <summary aria-label="Izbornik profila"
                   class="btn btn-ghost btn-circle avatar"
-                  ref="profileDropdownLabel"
                 >
                   <span class="w-12 sm:w-10 rounded-full block aspect-square overflow-hidden">
                     <ProfileAvatar :source="profileImageUrl" :name="userName" :owner="userStore.user?.id" />
                   </span>
-                </label>
+                </summary>
                 <ul 
-                  tabindex="0"
                   class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 rounded-box w-52 z-100">
                   <li class="menu-title">
                     <span class="text-base-content/70 text-xs">{{ userStore.user?.email }}</span>
@@ -86,20 +84,20 @@
                     </router-link>
                   </li>
                   <li>
-                    <a @click="openLogoutModal" class="text-error">
+                    <button type="button" @click="openLogoutModal" class="text-error">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                       Odjava
-                    </a>
+                    </button>
                   </li>
                 </ul>
-              </div>
+              </details>
             </div>
           </div>
         </div>
       </div>
     </header>
 
-    <main :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 grow max-w-[1600px] pb-28 lg:pb-0' : 'grow'">
+    <main id="main-content" tabindex="-1" :class="isLoggedIn ? 'container mx-auto px-3 sm:px-4 py-4 sm:py-6 grow max-w-[1600px] pb-28 lg:pb-0' : 'grow'">
       <slot />
     </main>
     
@@ -109,7 +107,7 @@
       class="btm-nav lg:hidden z-50 fixed left-0 right-0 bg-base-200/90 backdrop-blur border border-base-300 grid grid-flow-col auto-cols-fr transition-all duration-300 ease-in-out overflow-visible p-2 gap-2 items-center"
       :class="isCompact ? 'mx-3 rounded-4xl shadow-2xl h-14' : 'mx-4 rounded-4xl shadow-2xl h-20'"
       :style="navStyle"
-      aria-label="Primary"
+      aria-label="Glavna"
     >
       <router-link to="/" aria-label="Početna" class="h-full w-full flex items-center justify-center">
         <div class="flex flex-col items-center justify-center w-full">
@@ -218,8 +216,9 @@
       </footer>
     </div>
 
-    <dialog class="modal" :class="{ 'modal-open': showLogoutModal }">
+    <AppModal v-if="showLogoutModal" label="Odjava" @close="closeLogoutModal">
       <div class="modal-box">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" @click.stop="closeLogoutModal">✕</button>
         <h3 class="font-bold text-lg">Odjava</h3>
         <p class="text-base-content/60 text-sm mt-1">Jeste li sigurni da se želite odjaviti?</p>
         <div class="modal-action">
@@ -230,16 +229,18 @@
       <form method="dialog" class="modal-backdrop" @click="closeLogoutModal">
         <button>zatvori</button>
       </form>
-    </dialog>
+    </AppModal>
   </div>
 </template>
 
 <script>
+import { useDropdown } from '../composables/useDropdown.js';
+import AppModal from './AppModal.vue';
 import GamenoteLogo from './GamenoteLogo.vue';
 import CollectionNavIcon from './CollectionNavIcon.vue';
 import KoFiBadge from './KoFiBadge.vue';
 import ProfileAvatar from './ProfileAvatar.vue';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '../stores/user';
 import { useThemeStore } from '../stores/theme';
 import { useRouter, useRoute } from 'vue-router';
@@ -247,16 +248,13 @@ import bannerLightUrl from '../assets/newAssets/GamenoteBannerLightMode.png';
 import bannerDarkUrl from '../assets/newAssets/GamenoteBannerDarkMode.png';
 
 export default {
-  components: { CollectionNavIcon, GamenoteLogo, ProfileAvatar, KoFiBadge },
+  components: { AppModal, CollectionNavIcon, GamenoteLogo, ProfileAvatar, KoFiBadge },
   setup() {
     const userStore = useUserStore();
     const themeStore = useThemeStore();
     const router = useRouter();
     const route = useRoute();
-    const profileDropdownLabel = ref(null);
-    const mobileMenuLabel = ref(null);
-    const mobileMenuDropdown = ref(null);
-    const profileDropdown = ref(null);
+    const { dropdown: profileDropdown, close: closeProfileDropdown } = useDropdown();
     const isCompact = ref(false);
     const showLogoutModal = ref(false);
     let lastY = 0;
@@ -281,82 +279,8 @@ export default {
       return email ? email.split('@')[0] : 'Korisnik';
     });
 
-    const resetAllDropdowns = () => {
-      try {
-        if (document.activeElement && document.activeElement.blur) {
-          document.activeElement.blur();
-        }
-        
-        if (mobileMenuLabel.value) {
-          mobileMenuLabel.value.removeAttribute('tabindex');
-          setTimeout(() => {
-            if (mobileMenuLabel.value) {
-              mobileMenuLabel.value.setAttribute('tabindex', '0');
-            }
-          }, 10);
-        }
+    watch(() => route.fullPath, closeProfileDropdown);
 
-        if (profileDropdownLabel.value) {
-          profileDropdownLabel.value.removeAttribute('tabindex');
-          setTimeout(() => {
-            if (profileDropdownLabel.value) {
-              profileDropdownLabel.value.setAttribute('tabindex', '0');
-            }
-          }, 10);
-        }
-        const dropdownUls = document.querySelectorAll('[tabindex="0"]');
-        dropdownUls.forEach(ul => {
-          if (ul !== mobileMenuLabel.value && ul !== profileDropdownLabel.value) {
-            ul.removeAttribute('tabindex');
-            setTimeout(() => {
-              if (ul) {
-                ul.setAttribute('tabindex', '0');
-              }
-            }, 10);
-          }
-        });
-      } catch (error) {
-        console.error('Error resetting dropdowns:', error);
-      }
-    };
-
-    const closeMobileMenu = () => {
-      try {
-        if (mobileMenuLabel.value) {
-          mobileMenuLabel.value.blur();
-          mobileMenuLabel.value.removeAttribute('tabindex');
-          
-          setTimeout(() => {
-            if (mobileMenuLabel.value) {
-              mobileMenuLabel.value.setAttribute('tabindex', '0');
-              mobileMenuLabel.value.blur();
-            }
-          }, 0);
-        }
-      
-      } catch (error) {
-        console.error('Error closing mobile menu:', error);
-      }
-    };
-
-    const closeProfileDropdown = () => {
-      try {
-        if (profileDropdownLabel.value) {
-          profileDropdownLabel.value.blur();
-          profileDropdownLabel.value.removeAttribute('tabindex');
-          
-          setTimeout(() => {
-            if (profileDropdownLabel.value) {
-              profileDropdownLabel.value.setAttribute('tabindex', '0');
-              profileDropdownLabel.value.blur();
-            }
-          }, 0);
-        }
-      } catch (error) {
-        console.error('Error closing profile dropdown:', error);
-      }
-    };
-    
     const logout = async () => {
       await userStore.logout();
       router.push('/login');
@@ -409,16 +333,6 @@ export default {
       lastY = y;
     };
     onMounted(() => {
-      router.beforeEach(() => {
-        resetAllDropdowns();
-      });
-
-      router.afterEach(() => {
-        setTimeout(() => {
-          resetAllDropdowns();
-        }, 100);
-      });
-
       window.addEventListener('scroll', onScroll, { passive: true });
     });
 
@@ -438,11 +352,6 @@ export default {
       confirmLogout,
       showLogoutModal,
       closeProfileDropdown,
-      closeMobileMenu,
-      resetAllDropdowns,
-      profileDropdownLabel,
-      mobileMenuLabel,
-      mobileMenuDropdown,
       profileDropdown,
       isActive,
       isCompact,

@@ -1,5 +1,5 @@
 <template>
-  <img :src="bannerUrl" alt="Gamenote" loading="lazy" />
+  <img :src="bannerUrl" alt="Gamenote" />
 </template>
 
 <script setup>

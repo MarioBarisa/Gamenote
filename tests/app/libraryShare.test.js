@@ -50,6 +50,7 @@ test('OG prikaz ne mijenja aplikacijske rute i skriva deaktiviranu zbirku', asyn
     const result = await preview(new Request('https://gamenote.eu/player-a'), { next });
     const html = await result.text();
     assert.ok(html.includes('&lt;Igrač&gt; $&amp; $$ $` $&#39;'));
+    assert.match(html, /<title>Gamenote · &lt;Igrač&gt;/);
     assert.match(html, /library-card\?username=player-a/);
     assert.equal((html.match(/property="og:image"/g) || []).length, 1);
     assert.equal(result.headers.get('cache-control'), 'no-store');

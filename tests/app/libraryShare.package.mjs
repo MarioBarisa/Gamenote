@@ -18,7 +18,7 @@ try {
   process.chdir(result.path);
   process.env.VITE_SUPABASE_URL = 'https://fixture.test';
   process.env.VITE_SUPABASE_ANON_KEY = 'fixture-public-key';
-  globalThis.fetch = async () => Response.json({ name: 'Testni igrač', username: 'fixture-player', created_at: '2025-01-01', card: { hours: 25, total: 3, completed: 1, playing: 1, favoriteGame: { title: 'Test igra', play_time: 25 }, favoriteGenre: { name: 'RPG' } } });
+  globalThis.fetch = async (url, init) => Response.json({ name: 'Testni igrač', username: JSON.parse(init.body).p_username, share_scope: 'all', created_at: '2025-01-01', card: { hours: 25, total: 3, completed: 1, playing: 1, favoriteGame: { title: 'Test igra', play_time: 25 }, favoriteGenre: { name: 'RPG' } } });
   const { handler } = require(join(result.path, 'netlify/functions/library-card.js'));
   const response = await handler({ httpMethod: 'GET', queryStringParameters: { username: 'fixture-player' }, headers: {} });
   assert.equal(response.statusCode, 200);
@@ -27,6 +27,16 @@ try {
   assert.equal(png.readUInt32BE(20), 750);
   assert.ok(png.length > 25000, 'PNG mora sadržavati tekst i karticu.');
   await writeFile(join(artifacts, 'card.png'), png);
+  const comparison = await handler({ httpMethod: 'GET', queryStringParameters: { username: 'fixture-player', compare: 'fixture-opponent' }, headers: {} });
+  assert.equal(comparison.statusCode, 200);
+  const comparisonPng = Buffer.from(comparison.body, 'base64');
+  assert.equal(comparisonPng.readUInt32BE(16), 1200);
+  assert.equal(comparisonPng.readUInt32BE(20), 630);
+  assert.ok(comparisonPng.length > 18000, 'Usporedba sadrži usernameove i logotipe.');
+  await writeFile(join(artifacts, 'comparison.png'), comparisonPng);
+  const longComparison = await handler({ httpMethod: 'GET', queryStringParameters: { username: 'a'.repeat(30), compare: 'b'.repeat(30) }, headers: {} });
+  assert.equal(longComparison.statusCode, 200);
+  await writeFile(join(artifacts, 'comparison-long.png'), Buffer.from(longComparison.body, 'base64'));
   console.log(`✓ Zapakirana funkcija: native modul, SVG, fontovi i PNG; datoteke: ${artifacts}`);
 } finally {
   process.chdir(previousCwd);

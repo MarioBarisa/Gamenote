@@ -1,0 +1,4 @@
+VS SVG, OnlineWebFonts icon 418591
+Source: https://www.onlinewebfonts.com/icon/418591
+Downloaded: 2026-11-17
+Original paths embedded in src/components/ComparisonHero.vue; colors and animation adapted.

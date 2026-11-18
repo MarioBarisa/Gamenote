@@ -114,6 +114,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import '../services/localIcons.js';
 import { Icon } from '@iconify/vue';
 import ImporterGameFields from './ImporterGameFields.vue';
 import ImporterGamePoster from './ImporterGamePoster.vue';

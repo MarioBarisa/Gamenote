@@ -1,8 +1,9 @@
 <template>
-  <Icon :icon="iconName" class="platform-icon" />
+  <Icon :icon="iconName" class="platform-icon" role="img" aria-hidden="false" :aria-label="name || 'Nepoznata platforma'" />
 </template>
 
 <script>
+import '../services/localIcons.js';
 import { Icon } from '@iconify/vue';
 import { computed } from 'vue';
 
