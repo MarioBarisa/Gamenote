@@ -7,6 +7,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { startupHtml, checkAuthStartup } from './authStartup.browser.mjs';
+import { mfaHtml, checkMfa } from './mfa.browser.mjs';
+import { checkLibraryPerformance } from './libraryPerformance.browser.mjs';
 import { checkCardContrast } from './cardContrast.browser.mjs';
 const cardArtifacts = await mkdtemp(join(tmpdir(), 'gamenote-card-preview-'));
 import assert from 'node:assert/strict';
@@ -20,12 +22,13 @@ const html = `<!doctype html><html lang="hr"><body><div id="app"></div><script t
 import {createApp,ref,h} from 'vue'; import {createPinia} from 'pinia'; import {RouterView} from 'vue-router';
 import App from '/src/App.vue'; import router from '/src/router/index.js'; import {useUserStore} from '/src/stores/user.js'; import {supabase} from '/src/supabase.js';
 import '/src/assets/main.css';
+import {i18n,initializeLocale} from '/src/i18n/index.js';initializeLocale();
 window.auditSession={user:{id:'user-a',email:'fixture@example.test'},access_token:'fixture'};
 const listeners=new Set(); supabase.auth.getSession=async()=>({data:{session:window.auditSession},error:null});
 supabase.auth.onAuthStateChange=cb=>{listeners.add(cb);queueMicrotask(()=>cb('INITIAL_SESSION',window.auditSession));return{data:{subscription:{unsubscribe:()=>listeners.delete(cb)}}}};
 window.emitAuth=(event)=>{for(const cb of listeners)cb(event,window.auditSession)};
 const smoke=new URLSearchParams(location.search).has('smoke');const app=createApp(smoke?App:{setup(){const view=ref();window.auditView=()=>view.value;return()=>h(RouterView,null,{default:({Component})=>Component?h(Component,{ref:view}):null})}});
-app.use(createPinia()); app.use(router); const store=useUserStore();store.setUser(window.auditSession.user);
+app.use(i18n); app.use(createPinia()); app.use(router); const store=useUserStore();store.setSession(window.auditSession);
 window.auditStore=store; window.auditRouter=router; window.auditDb=supabase;window.auditApp=app;app.mount('#app');window.auditReady=true;
 </script></body></html>`;
 const server = await createServer({
@@ -44,6 +47,10 @@ const server = await createServer({
     {
       name: 'audit',
       configureServer(vite) {
+        vite.middlewares.use('/__mfa', async (req, res) => {
+          res.setHeader('content-type', 'text/html');
+          res.end(await vite.transformIndexHtml('/__mfa', mfaHtml));
+        });
         vite.middlewares.use('/__startup', async (req, res) => {
           res.setHeader('content-type', 'text/html');
           res.end(await vite.transformIndexHtml('/__startup', startupHtml));
@@ -61,7 +68,7 @@ const findings = [];
 try {
   await server.listen();
   browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
+  const context = await browser.newContext({ locale: 'hr-HR' });
   const page = await context.newPage();
   const pageErrors = [];
   page.on('pageerror', (failure) => pageErrors.push(failure.message));
@@ -285,11 +292,12 @@ try {
   await expect(page).toHaveTitle('Leo');
   await expect(card).toContainText('300');
   const achievementCards = page.locator('.profile-achievements .grid > div');
-  await expect(achievementCards).toHaveCount(8);
+  await expect(achievementCards).toHaveCount(9);
   await expect(achievementCards.locator('svg[fill="currentColor"]')).toHaveCount(8);
   await expect(achievementCards.locator('svg[stroke]')).toHaveCount(0);
   await expect(achievementCards.filter({ hasText: 'Gamenote Platinum' })).toContainText('100% Gamenote Completion');
   await expect(achievementCards.filter({ hasText: 'GOTY enjoyer' })).toContainText('10+ igara s ocjenom 5/5');
+  await expect(achievementCards.filter({ hasText: 'Zaštićen račun' }).locator('svg')).toHaveAttribute('viewBox', '0 0 24 24');
   await expect(card).toContainText('Iskusni igrač');
   await expect(card.getByText('Gamenote', { exact: true })).toHaveCount(0);
   await expect(card.getByText('gamenote.eu', { exact: true }).locator('..').locator('svg')).toHaveAttribute('viewBox', '0 0 896 722');
@@ -721,7 +729,7 @@ try {
       'gamenote.psn.snapshot',
       JSON.stringify({ profile: { onlineId: 'OldUserPSN' }, games: [] }),
     );
-    window.auditStore.setUser({ id: 'user-b' });
+    window.auditStore.setSession({ user: { id: 'user-b' } });
   });
   const leak = await page.evaluate(async () => {
     const psn = await import('/src/services/psnService.js');
@@ -736,7 +744,7 @@ try {
   await page.evaluate(async () => {
     const psn = await import('/src/services/psnService.js');
     const { seal } = await import('/src/services/tokenVault.js');
-    window.auditStore.setUser({ id: 'user-a' });
+    window.auditStore.setSession({ user: { id: 'user-a' } });
     const envelope = await seal(
       { accessToken: 'fixture-secret-token' },
       'psn.user-a',
@@ -747,10 +755,10 @@ try {
     );
     psn.saveSnapshot({ profile: { onlineId: 'FixtureA' }, games: [] });
     if (!psn.hasPsnConnection()) throw new Error('Nedostaje veza korisnika A');
-    window.auditStore.setUser({ id: 'user-b' });
+    window.auditStore.setSession({ user: { id: 'user-b' } });
     if (psn.hasPsnConnection() || psn.loadSnapshot())
       throw new Error('PSN veza je prešla na drugog korisnika');
-    window.auditStore.setUser({ id: 'user-a' });
+    window.auditStore.setSession({ user: { id: 'user-a' } });
     if (psn.loadSnapshot()?.profile.onlineId !== 'FixtureA')
       throw new Error('Vlastiti snapshot nije dostupan');
     await psn.disconnectPsn();
@@ -766,7 +774,7 @@ try {
   });
   await page.evaluate(() => {
     window.auditSession = { user: { id: 'user-a' }, access_token: 'fixture' };
-    window.auditStore.setUser(window.auditSession.user);
+    window.auditStore.setSession(window.auditSession);
   });
   await navigate('/login');
   await navigate('/importers');
@@ -1032,6 +1040,8 @@ try {
   );
   await context.close();
   await checkAuthStartup(browser, server.resolvedUrls.local[0], cardArtifacts);
+  await checkMfa(browser, server.resolvedUrls.local[0]);
+  await checkLibraryPerformance(browser, server.resolvedUrls.local[0]);
   await checkLibrarySharing(browser, server.resolvedUrls.local[0], cardArtifacts);
   await checkLoadingSkeletons(browser, server.resolvedUrls.local[0], cardArtifacts);
   await checkFrontend(browser, server.resolvedUrls.local[0], cardArtifacts);

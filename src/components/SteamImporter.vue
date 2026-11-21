@@ -4,23 +4,23 @@
       <div class="card-body p-4 space-y-3">
         <div v-if="profile" class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div class="flex items-center gap-4 flex-1 min-w-0">
-            <img v-if="profile.avatarUrl" :src="profile.avatarUrl" alt="Steam avatar" class="w-14 h-14 rounded-full ring-2 ring-primary shrink-0" />
+            <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="$t('steamImporter.steamAvatar')" class="w-14 h-14 rounded-full ring-2 ring-primary shrink-0" />
             <div class="min-w-0">
               <a :href="`https://steamcommunity.com/profiles/${profile.steamId}/`" target="_blank" rel="noopener noreferrer" class="font-bold text-lg link link-hover">{{ profile.name }}</a>
-              <p class="text-xs opacity-50">Steam · {{ games.length }} igara</p>
-              <p v-if="syncedAt" class="text-xs opacity-50 mt-0.5">Zadnje osvježavanje: {{ new Date(syncedAt).toLocaleString('hr-HR') }}</p>
+              <p class="text-xs opacity-50">Steam · {{ games.length }} {{ $t('common.gameCountUnit') }}</p>
+              <p v-if="syncedAt" class="text-xs opacity-50 mt-0.5">{{ $t('steamImporter.lastRefreshed') }} {{ new Date(syncedAt).toLocaleString(formatLocale) }}</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-2 shrink-0">
-            <button v-if="!games.length" class="btn btn-sm" :disabled="!!busy" @click="refreshLibrary">Osvježi sa Steama</button>
-            <button class="btn btn-sm btn-error btn-outline" :disabled="!!busy" @click="disconnect">Odspoji</button>
+            <button v-if="!games.length" class="btn btn-sm" :disabled="!!busy" @click="refreshLibrary">{{ $t('steamImporter.refreshFromSteam') }}</button>
+            <button class="btn btn-sm btn-error btn-outline" :disabled="!!busy" @click="disconnect">{{ $t('common.disconnect') }}</button>
           </div>
         </div>
         <template v-else>
-          <h2 class="font-semibold">Poveži svoj Steam račun</h2>
-          <p class="text-sm text-base-content/60">Uvezi igre, vrijeme igranja i postignuća sa svojeg javnog Steam profila.</p>
-          <button class="btn btn-primary w-fit gap-1.5" @click="openWizard">Poveži Steam račun</button>
-          <p class="text-xs opacity-50">Unesi ime iz Steam linka ili cijeli link profila. Upute su unutar čarobnjaka.</p>
+          <h2 class="font-semibold">{{ $t('steamImporter.connectYourSteamAccount') }}</h2>
+          <p class="text-sm text-base-content/60">{{ $t('steamImporter.importGamesPlaytimeAndAchievements') }}</p>
+          <button class="btn btn-primary w-fit gap-1.5" @click="openWizard">{{ $t('steamImporter.connectSteamAccount') }}</button>
+          <p class="text-xs opacity-50">{{ $t('steamImporter.enterTheNameFromYour') }}</p>
         </template>
       </div>
     </div>
@@ -33,29 +33,30 @@
     <ImporterGameList v-if="profile && games.length"
       source="steam" :games="listGames" :selected-new="selected" :selected-existing="selected"
       :extras="extras" :groups="groups" :status-options="statusOptions" :ready="libraryReady"
-      :busy="!!busy" refresh-label="Osvježi sa Steama" metadata-required
+      :busy="!!busy" :refresh-label="$t('steamImporter.refreshFromSteam')" metadata-required
       :progress="progress" :done="done" :total="total"
       @resolve="resolveGame" @poster="setPoster" @select="selectGame" @refresh="refreshLibrary" @import="saveSelected(false)" @sync="saveSelected(true)"
     />
-    <p v-else-if="profile && !busy" class="alert">Steam biblioteka je prazna.</p>
+    <p v-else-if="profile && !busy" class="alert">{{ $t('steamImporter.yourSteamLibraryIsEmpty') }}</p>
 
     <dialog ref="wizardDialog" class="modal" aria-labelledby="steam-wizard-title" @close="wizardOpen = false" @cancel="cancelWizard">
       <form class="modal-box max-w-lg space-y-4" @submit.prevent="connect">
-        <h3 id="steam-wizard-title" class="font-bold text-xl">Poveži Steam račun</h3>
+        <h3 id="steam-wizard-title" class="font-bold text-xl">{{ $t('steamImporter.connectSteamAccount') }}</h3>
         <ol class="space-y-4">
-          <li class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">1</span><div class="text-sm pt-1">Otvori <a href="https://steamcommunity.com/my/" target="_blank" rel="noopener noreferrer" class="link link-primary">svoj Steam profil</a>. Ako Steam zatraži, prijavi se tamo.</div></li>
-          <li class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">2</span><div class="text-sm pt-1 space-y-1"><p>Kopiraj link profila ili samo ime iza <code>/id/</code>.</p><p class="opacity-60">Primjer: za <code class="break-all">steamcommunity.com/id/CatWarrior99/</code> unesi <strong>CatWarrior99</strong>. Radi i broj iz linka <code>/profiles/</code>.</p><p class="opacity-60">Ime za prijavu i prikazni nadimak mogu biti drukčiji. Koristi ime iz linka.</p></div></li>
-          <li class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">3</span><div class="text-sm pt-1">U <a href="https://steamcommunity.com/my/edit/settings" target="_blank" rel="noopener noreferrer" class="link link-primary">postavkama privatnosti</a> postavi profil i detalje igara na <strong>Javno</strong>. Za vrijeme igranja isključi „Uvijek sakrij moje ukupno vrijeme igranja”.</div></li>
+          <li class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">1</span><div class="text-sm pt-1">{{ $t('common.open') }} <a href="https://steamcommunity.com/my/" target="_blank" rel="noopener noreferrer" class="link link-primary">{{ $t('steamImporter.yourSteamProfile') }}</a>{{ $t('steamImporter.ifSteamAsksSignIn') }}</div></li>
+          <li class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">2</span><div class="text-sm pt-1 space-y-1"><p>{{ $t('steamImporter.copyTheProfileLinkOr') }} <code>/id/</code>.</p><p class="opacity-60">{{ $t('steamImporter.forExampleFor') }} <code class="break-all">steamcommunity.com/id/CatWarrior99/</code> {{ $t('steamImporter.enter') }} <strong>CatWarrior99</strong>{{ $t('steamImporter.theNumberFromThisLink') }} <code>/profiles/</code>.</p><p class="opacity-60">{{ $t('steamImporter.yourSignInNameAnd') }}</p></div></li>
+          <li class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">3</span><div class="text-sm pt-1">{{ $t('steamImporter.in') }} <a href="https://steamcommunity.com/my/edit/settings" target="_blank" rel="noopener noreferrer" class="link link-primary">{{ $t('steamImporter.privacySettings') }}</a> {{ $t('steamImporter.setYourProfileAndGame') }} <strong>{{ $t('steamImporter.public') }}</strong>{{ $t('steamImporter.toShareYourPlaytimeTurn') }}</div></li>
         </ol>
-        <label class="block space-y-1"><span class="text-sm font-medium">Steam ime iz linka ili link profila</span><input v-model="profileInput" class="input input-bordered w-full" placeholder="CatWarrior99 ili https://steamcommunity.com/id/CatWarrior99/" :disabled="!!busy" required maxlength="256" autocomplete="off" /></label>
+        <label class="block space-y-1"><span class="text-sm font-medium">{{ $t('steamImporter.steamNameFromLinkOr') }}</span><input v-model="profileInput" class="input input-bordered w-full" :placeholder="$t('steamImporter.profileExample')" :disabled="!!busy" required maxlength="256" autocomplete="off" /></label>
         <div v-if="errorMessage && wizardOpen" role="alert" class="alert alert-error text-sm"><span>{{ errorMessage }}</span></div>
-        <div class="modal-action"><button type="button" class="btn btn-ghost" :disabled="!!busy" @click="closeWizard">Odustani</button><button type="submit" class="btn btn-primary gap-1" :disabled="!!busy || !profileInput.trim()"><span v-if="busy" class="loading loading-spinner loading-sm"></span>Učitaj Steam igre</button></div>
+        <div class="modal-action"><button type="button" class="btn btn-ghost" :disabled="!!busy" @click="closeWizard">{{ $t('common.cancel') }}</button><button type="submit" class="btn btn-primary gap-1" :disabled="!!busy || !profileInput.trim()"><span v-if="busy" class="loading loading-spinner loading-sm"></span>{{ $t('steamImporter.loadSteamGames') }}</button></div>
       </form>
     </dialog>
   </div>
 </template>
 
 <script setup>
+import { formatLocale, t } from '../i18n/index.js';
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import ImporterGameList from './ImporterGameList.vue';
 import { useUserStore } from '../stores/user';
@@ -65,6 +66,7 @@ import { GAME_STATUS } from '../constants/gameStatus';
 import { fetchSteamLibrary, fetchSteamAchievements, loadSteamSnapshot, saveSteamSnapshot, clearSteamSnapshot } from '../services/steamService';
 import { loadSteamLibraryRows, buildSteamPatch, buildSteamRow } from '../services/steamImport';
 import { fetchUserRows } from '../services/libraryData';
+import { invalidateGames } from '../services/libraryCache.js';
 import { loadImporterMetadata } from '../services/importerMetadata';
 import { resolveImporterGame, loadImporterChoices, saveImporterChoices } from '../services/importerResolution';
 import { httpUrl } from '../services/safeContent';
@@ -106,7 +108,7 @@ const listGames = computed(() => games.value.map(game => ({
   fallbackImageUrl: `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${game.appId}/header.jpg`, platform: 'PC · Steam',
   url: `https://store.steampowered.com/app/${game.appId}/`, playtime: formatPlaytime(game.minutesPlayed),
   progress: game.achievements?.total ? Math.round(game.achievements.earned / game.achievements.total * 100) : null,
-  progressLabel: 'postignuća', progressValue: game.achievements?.earned,
+  progressLabel: t('steamImporter.achievements'), progressValue: game.achievements?.earned,
   progressTotal: game.achievements?.total, lastPlayed: game.lastPlayed,
 })));
 function selectGame({ key, value }) { selected.value[key] = value; }
@@ -134,14 +136,14 @@ function cancelWizard(event) {
 }
 
 function formatPlaytime(minutes) {
-  if (minutes == null) return 'Vrijeme skriveno';
+  if (minutes == null) return t('steamImporter.playtimeHidden');
   if (minutes < 60) return `${minutes} min`;
   return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 }
 
 function showError(error) {
   if (error.name === 'AbortError') return;
-  errorMessage.value = error.message || 'Steam uvoz nije uspio. Pokušaj ponovno.';
+  errorMessage.value = error.message || t('steamImporter.steamImportFailedTryAgain');
 }
 
 function startOperation(type) {
@@ -158,7 +160,7 @@ function startOperation(type) {
 
 function checkActive(signal) {
   signal.throwIfAborted();
-  if (userStore.user?.id !== currentUserId) throw new DOMException('Prekinuto', 'AbortError');
+  if (userStore.user?.id !== currentUserId) throw new DOMException(t('steamImporter.canceled'), 'AbortError');
 }
 
 async function markExisting(signal) {
@@ -205,7 +207,7 @@ async function connect() {
 async function refreshLibrary(input) {
   if (busy.value) return;
   const signal = startOperation(profile.value ? 'refresh' : 'connect');
-  progress.value = 'Dohvaćam Steam biblioteku…';
+  progress.value = t('steamImporter.fetchingSteamLibrary');
   try {
     const snapshot = await fetchSteamLibrary(typeof input === 'string' ? input : profile.value.steamId, signal);
     checkActive(signal);
@@ -216,7 +218,7 @@ async function refreshLibrary(input) {
     await markExisting(signal);
     saveSnapshot();
     wizardDialog.value?.close();
-    notice.value = `Učitano ${games.value.length} igara. Odaberi igre za uvoz ili sinkronizaciju.`;
+    notice.value = t('steamImporter.loadedGamesChooseGamesTo', [games.value.length]);
   } catch (error) {
     if (!signal.aborted) showError(error);
   } finally {
@@ -233,7 +235,7 @@ function disconnect() {
   selected.value = {};
   extras.value = {};
   syncedAt.value = null;
-  notice.value = 'Steam profil je odspojen.';
+  notice.value = t('steamImporter.steamProfileDisconnected');
   errorMessage.value = '';
   warning.value = '';
 }
@@ -258,7 +260,7 @@ async function saveSelected(existing) {
       for (const game of toSave) {
         const match = resolveImporterGame(rows, 'steam', game, choices.value[game.appId]);
         if (match.row && targets.has(match.row.id)) {
-          if (!signal.aborted) errorMessage.value = 'Odaberi samo jedan izvor napretka za istu igru.';
+          if (!signal.aborted) errorMessage.value = t('steamImporter.chooseOnlyOneSourceOf');
           return;
         }
         if (match.row) targets.add(match.row.id);
@@ -266,7 +268,7 @@ async function saveSelected(existing) {
     }
     for (const game of toSave) {
       checkActive(signal);
-      progress.value = `${existing ? 'Sinkroniziram' : 'Uvozim'}: ${game.name} (${done.value + 1}/${total.value})`;
+      progress.value = `${existing ? t('steamImporter.syncing') : t('steamImporter.importing')}: ${game.name} (${done.value + 1}/${total.value})`;
       const match = resolveImporterGame(rows, 'steam', game, choices.value[game.appId]);
       if (match.blocked || Boolean(match.row) !== existing) {
         if (match.blocked) unresolved.push(game.name);
@@ -294,8 +296,9 @@ async function saveSelected(existing) {
           if (!signal.aborted) showError(error);
           return;
         }
+        invalidateGames(currentUserId);
         if (!data?.length) {
-          if (!signal.aborted) errorMessage.value = 'Igra više nije u kolekciji. Osvježi popis i pokušaj ponovno.';
+          if (!signal.aborted) errorMessage.value = t('steamImporter.theGameIsNoLonger');
           return;
         }
       } else {
@@ -314,6 +317,7 @@ async function saveSelected(existing) {
           if (!signal.aborted) showError(error);
           return;
         }
+        invalidateGames(currentUserId);
         checkActive(signal);
         rows.push({ ...row, id: data.id });
         if (match.separate) {
@@ -338,12 +342,12 @@ async function saveSelected(existing) {
     }
   } finally {
     if (!signal.aborted) {
-      notice.value = `${existing ? 'Sinkronizirano' : 'Uvezeno'} ${saved} od ${toSave.length} odabranih igara.`;
+      notice.value = t('steamImporter.selectedGamesProgress', [existing ? t('steamImporter.synced') : t('steamImporter.imported'), saved, toSave.length]);
       const warnings = [];
-      if (unresolved.length) warnings.push(`Odaberi postojeću igru ili zaseban unos za: ${unresolved.join(', ')}.`);
-      if (missingMetadata.length) warnings.push(`Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj u Gamenote.`);
-      if (unavailable) warnings.push(`Za ${unavailable} igara postignuća nisu dostupna. Postojeći napredak je sačuvan.`);
-      if (groupFailures) warnings.push(`${groupFailures} igara je uvezeno bez grupe. Grupu dodaj u kolekciji.`);
+      if (unresolved.length) warnings.push(t('steamImporter.chooseAnExistingGameOr', [unresolved.join(', ')]));
+      if (missingMetadata.length) warnings.push(t('common.gamesWithoutAConfirmedMatch', [missingMetadata.join(', ')]));
+      if (unavailable) warnings.push(t('steamImporter.achievementsArentAvailableForGames', [unavailable]));
+      if (groupFailures) warnings.push(t('steamImporter.gamesWereImportedWithoutA', [groupFailures]));
       warning.value = warnings.join(' ');
       try {
         await markExisting(signal);
@@ -377,7 +381,7 @@ watch(() => userStore.user?.id, async (userId) => {
   const snapshot = loadSteamSnapshot(userId);
   if (!snapshot) return;
   const signal = startOperation('restore');
-  progress.value = 'Provjeravam igre u kolekciji…';
+  progress.value = t('steamImporter.checkingGamesInYourCollection');
   profile.value = snapshot.profile;
   games.value = snapshot.games;
   syncedAt.value = snapshot.syncedAt;

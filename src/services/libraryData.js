@@ -1,5 +1,6 @@
+import { t } from '../i18n/index.js';
 export async function fetchUserRows(database, table, userId, options = {}) {
-  if (!userId) throw new Error('Prijavi se za dohvat podataka.');
+  if (!userId) throw new Error(t('libraryData.signInToFetchYour'));
   const rows = [];
   let expectedCount = null;
   let offset = 0;
@@ -14,7 +15,7 @@ export async function fetchUserRows(database, table, userId, options = {}) {
     const { data, error, count } = await query;
     if (error) throw error;
     if (count != null) {
-      if (expectedCount != null && count !== expectedCount) throw new Error('Podaci su promijenjeni tijekom dohvaćanja. Pokušaj ponovno.');
+      if (expectedCount != null && count !== expectedCount) throw new Error(t('libraryData.dataChangedWhileItWas'));
       expectedCount = count;
     }
     const page = data || [];
@@ -22,7 +23,7 @@ export async function fetchUserRows(database, table, userId, options = {}) {
     offset += page.length;
     if (expectedCount != null && rows.length >= expectedCount) break;
     if (!page.length) {
-      if (expectedCount != null && rows.length !== expectedCount) throw new Error('Nisu dohvaćeni svi podaci. Pokušaj ponovno.');
+      if (expectedCount != null && rows.length !== expectedCount) throw new Error(t('libraryData.someDataWasntLoadedTry'));
       break;
     }
     if (expectedCount == null && page.length < 1000) break;

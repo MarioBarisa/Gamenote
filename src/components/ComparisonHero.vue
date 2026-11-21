@@ -7,7 +7,7 @@
             <svg class="identity-wave" viewBox="0 0 1800 200" preserveAspectRatio="none"><path :d="wave.path" vector-effect="non-scaling-stroke" /></svg>
           </div>
         </div>
-        <component :is="publicView ? RouterLink : 'div'" :to="publicView ? '/' + profile.username : undefined" :aria-label="publicView ? 'Pogledaj Gamenote @' + profile.username : undefined" class="avatar placeholder shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+        <component :is="publicView ? RouterLink : 'div'" :to="publicView ? '/' + profile.username : undefined" :aria-label="publicView ? $t('comparisonHero.viewProfile', { username: profile.username }) : undefined" class="avatar placeholder shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
           <div class="identity-avatar rounded-full bg-base-300 ring-2 ring-base-100">
             <img v-if="profile.avatar && !failed[index]" :src="profile.avatar" :alt="profile.name" decoding="async" @error="failed[index] = true" />
             <span v-else class="text-lg font-bold">{{ profile.name.trim().slice(0, 1).toUpperCase() }}</span>

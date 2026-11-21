@@ -4,7 +4,7 @@
       <div class="card-body gap-4 text-left">
         <div class="flex flex-col items-center mb-2">
           <GamenoteBanner class="h-12 w-auto max-w-full object-contain" />
-          <h2 class="text-xl font-bold mt-3">Resetiranje lozinke</h2>
+          <h2 class="text-xl font-bold mt-3">{{ $t('common.resetPassword') }}</h2>
         </div>
 
         <div v-if="successMessage" class="alert alert-success text-sm">
@@ -17,10 +17,11 @@
           <span>{{ errorMsg }}</span>
         </div>
 
-        <form v-if="isRecovery && !successMessage" @submit.prevent="handleUpdate" class="flex flex-col gap-4">
+        <MfaSignIn v-if="isRecovery && userStore.pendingMfa" stay-on-page />
+        <form v-if="!checking && isRecovery && !userStore.pendingMfa && !successMessage" method="post" @submit.prevent="handleUpdate" class="flex flex-col gap-4">
           <div class="form-control">
             <label class="label" for="new-password">
-              <span class="label-text">Nova lozinka</span>
+              <span class="label-text">{{ $t('common.newPassword') }}</span>
             </label>
             <input
               id="new-password"
@@ -36,7 +37,7 @@
 
           <div class="form-control">
             <label class="label" for="confirm-new-password">
-              <span class="label-text">Potvrdi lozinku</span>
+              <span class="label-text">{{ $t('common.confirmPassword') }}</span>
             </label>
             <input
               id="confirm-new-password"
@@ -52,17 +53,17 @@
 
           <button type="submit" class="btn btn-primary w-full btn-lg" :disabled="updating">
             <span v-if="updating" class="loading loading-spinner loading-sm"></span>
-            <template v-if="!updating">Spremi novu lozinku</template>
+            <template v-if="!updating">{{ $t('resetPasswordView.saveNewPassword') }}</template>
           </button>
         </form>
 
         <div v-if="checking && !successMessage" class="text-center py-4">
-          <p class="text-base-content/60 text-sm">Čekanje na potvrdu sesije...</p>
+          <p class="text-base-content/60 text-sm">{{ $t('resetPasswordView.waitingForSessionConfirmation') }}</p>
           <span class="loading loading-spinner loading-md mt-2"></span>
         </div>
 
         <div v-if="successMessage || (!checking && !isRecovery)" class="text-center mt-2">
-          <RouterLink to="/login" class="btn btn-primary">Natrag na prijavu</RouterLink>
+          <RouterLink to="/login" class="btn btn-primary">{{ $t('resetPasswordView.backToSignIn') }}</RouterLink>
         </div>
       </div>
     </div>
@@ -70,14 +71,18 @@
 </template>
 
 <script setup>
+import { t } from '../i18n/index.js';
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
 import { recoveryState, clearRecovery } from '../services/recoveryState'
 import { useAuth } from '../services/useAuth'
 import GamenoteBanner from '../components/GamenoteBanner.vue'
+import MfaSignIn from '../components/MfaSignIn.vue'
+import { useUserStore } from '../stores/user.js'
 
 const router = useRouter()
+const userStore = useUserStore()
 const { updatePassword } = useAuth()
 
 const isRecovery = computed(() => recoveryState.active)
@@ -94,9 +99,10 @@ onMounted(async () => {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) throw error;
-    if (!session || !recoveryState.active) errorMsg.value = recoveryState.error || 'Poveznica je neispravna ili je istekla. Zatraži novu poveznicu na stranici za prijavu.';
+    if (!session || !recoveryState.active) errorMsg.value = recoveryState.error || t('resetPasswordView.theLinkIsInvalidOr');
+    else userStore.setSession(session);
   } catch {
-    errorMsg.value = 'Sesija za resetiranje nije dostupna. Zatraži novu poveznicu.';
+    errorMsg.value = t('resetPasswordView.aPasswordResetSessionIs');
   } finally {
     checking.value = false;
   }
@@ -105,13 +111,13 @@ onMounted(async () => {
 watch(isRecovery, active => { if (active) errorMsg.value = ''; })
 
 async function handleUpdate() {
-  if (updating.value || !isRecovery.value) return
+  if (checking.value || updating.value || !isRecovery.value || userStore.pendingMfa) return
   fieldError.value = ''
   confirmError.value = ''
   errorMsg.value = ''
 
   if (newPassword.value.length < 6) {
-    fieldError.value = 'Lozinka mora imati najmanje 6 znakova.'
+    fieldError.value = t('common.yourPasswordMustHaveAt')
     return
   }
 
@@ -125,7 +131,7 @@ async function handleUpdate() {
 
   if (result.success) {
     clearRecovery()
-    successMessage.value = 'Lozinka je uspješno promijenjena.'
+    successMessage.value = t('resetPasswordView.passwordChangedSuccessfully')
     setTimeout(() => router.push('/login'), 2000)
   } else {
     errorMsg.value = result.error

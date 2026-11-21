@@ -2,9 +2,9 @@
   <div v-if="error" role="alert" class="alert alert-error mb-4">{{ error }}</div>
   <div class="groups-page">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold">Grupe</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold">{{ $t('common.groups') }}</h1>
       <button class="btn btn-primary w-full sm:w-auto" @click="showCreateModal = true">
-        Dodaj grupu
+        {{ $t('groups.addGroup') }}
       </button>
     </div>
 
@@ -13,15 +13,15 @@
       <div class="card bg-base-200 shadow-2xl w-full max-w-md">
         <div class="card-body space-y-4">
           <div class="flex justify-between items-start">
-            <h2 class="text-lg font-bold">Nova grupa</h2>
+            <h2 class="text-lg font-bold">{{ $t('groups.newGroup') }}</h2>
             <button class="btn btn-ghost btn-sm" @click="closeCreateModal">✕</button>
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">Naziv grupe</span></label>
-            <input v-model="newGroupName" class="input input-bordered w-full" placeholder="npr. Soulslike kolekcija" />
+            <label class="label"><span class="label-text">{{ $t('common.groupName') }}</span></label>
+            <input v-model="newGroupName" class="input input-bordered w-full" :placeholder="$t('groups.eGSoulslikeCollection')" />
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">Vrsta grupe</span></label>
+            <label class="label"><span class="label-text">{{ $t('groups.groupType') }}</span></label>
             <select v-model="newGroupType" class="select select-bordered w-full">
               <option value="collection">Collection</option>
               <option value="franchise">Franchise</option>
@@ -29,10 +29,10 @@
             </select>
           </div>
           <div class="flex justify-end gap-2 pt-2">
-            <button class="btn btn-ghost" @click="closeCreateModal">Odustani</button>
+            <button class="btn btn-ghost" @click="closeCreateModal">{{ $t('common.cancel') }}</button>
             <button class="btn btn-primary" @click="createNewGroup" :disabled="creating || !newGroupName.trim()">
               <span v-if="creating" class="loading loading-spinner"></span>
-              <span v-else>Kreiraj</span>
+              <span v-else>{{ $t('groups.create') }}</span>
             </button>
           </div>
         </div>
@@ -40,11 +40,11 @@
     </div>
 
     <!-- Groups List -->
-    <LoadingCardGrid v-if="loading" :layout="groupLayout" variant="groups" banner label="Učitavam grupe…" />
+    <LoadingCardGrid v-if="loading" :layout="groupLayout" variant="groups" banner :label="$t('common.loadingGroupsLabel')" />
     <div v-else>
       <div v-if="groups.length === 0" class="card bg-base-200 shadow-xl">
         <div class="card-body text-center">
-          <p class="text-sm opacity-70">Nema grupa. Kreiraj prvu!</p>
+          <p class="text-sm opacity-70">{{ $t('groups.noGroupsYetCreateYour') }}</p>
         </div>
       </div>
       <div class="grid" :class="[groupLayout.container, groupLayout.gap]">
@@ -55,6 +55,7 @@
 </template>
 
 <script>
+import { t } from '../i18n/index.js';
 import LoadingCardGrid from '../components/LoadingCardGrid.vue';
 import GroupCard from '../components/GroupCard.vue';
 import { GROUP_LAYOUT } from '../constants/groupLayout.js';
@@ -95,7 +96,7 @@ export default {
         }
         groupGamesMap.value = map;
       } catch (failure) {
-        error.value = failure.message || 'Grupe nije moguće učitati.';
+        error.value = failure.message || t('groups.groupsCouldntBeLoaded');
       } finally {
         loading.value = false;
       }
@@ -126,7 +127,7 @@ export default {
         showCreateModal.value = false;
         await fetchGroups();
       } catch (failure) {
-        error.value = failure.message || 'Grupa nije spremljena.';
+        error.value = failure.message || t('common.theGroupWasntSaved');
       } finally {
         creating.value = false;
       }

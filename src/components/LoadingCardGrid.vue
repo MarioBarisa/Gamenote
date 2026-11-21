@@ -1,6 +1,6 @@
 <template>
-  <div ref="grid" class="loading-card-grid grid min-w-0" :class="[layout.container, layout.gap]" role="status" :aria-label="label" aria-busy="true">
-    <span class="sr-only">{{ label }}</span>
+  <div ref="grid" class="loading-card-grid grid min-w-0" :class="[layout.container, layout.gap]" role="status" :aria-label="label || $t('loadingCardGrid.loadingGames')" aria-busy="true">
+    <span class="sr-only">{{ label || $t('loadingCardGrid.loadingGames') }}</span>
     <div v-for="index in count" :key="index" class="loading-card card bg-base-200 shadow-sm min-w-0 overflow-hidden" aria-hidden="true">
       <div v-if="variant === 'games'" class="skeleton w-full rounded-none" :class="layout.poster"></div>
       <div v-else-if="banner" class="skeleton h-32 w-full rounded-none"></div>
@@ -31,7 +31,7 @@ defineProps({
   layout: { type: Object, required: true },
   variant: { type: String, default: 'games' },
   banner: Boolean,
-  label: { type: String, default: 'Učitavam igre…' },
+  label: { type: String, default: '' },
 });
 const grid = ref(null);
 const count = ref(2);

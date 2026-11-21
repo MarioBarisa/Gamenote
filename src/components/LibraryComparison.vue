@@ -1,42 +1,42 @@
 <template>
-  <component :is="publicPair ? 'section' : AppModal" v-bind="publicPair ? { 'aria-label': 'Gamenote usporedba' } : { label: 'Gamenote usporedba' }" @close="$emit('close')">
+  <component :is="publicPair ? 'section' : AppModal" v-bind="publicPair ? { 'aria-label': $t('common.gamenoteComparison') } : { label: $t('common.gamenoteComparison') }" @close="$emit('close')">
     <div ref="comparisonBody" class="library-comparison" :class="publicPair ? 'public-comparison-content' : 'modal-box'" :aria-busy="loading">
       <header v-if="!publicPair" class="comparison-heading flex items-center justify-between gap-3 bg-base-100 py-2">
-        <h2 class="text-xl sm:text-2xl font-bold">Gamenote usporedba</h2>
-        <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" aria-label="Zatvori usporedbu" @click="$emit('close')">✕</button>
+        <h2 class="text-xl sm:text-2xl font-bold">{{ $t('common.gamenoteComparison') }}</h2>
+        <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" :aria-label="$t('libraryComparison.closeComparison')" @click="$emit('close')">✕</button>
       </header>
       <div v-if="loading" class="comparison-loader flex justify-center items-center min-h-64 sm:min-h-80">
-        <progress class="sr-only" aria-label="Učitavam usporedbu"></progress>
+        <progress class="sr-only" :aria-label="$t('libraryComparison.loadingComparison')"></progress>
         <ComparisonVersus class="comparison-loader-mark" :left-color="left.color" :right-color="right.color" loading />
       </div>
-      <div v-else-if="error" class="alert alert-error" role="alert"><span>{{ error }}</span><button type="button" class="btn btn-sm" @click="load">Pokušaj ponovno</button></div>
+      <div v-else-if="error" class="alert alert-error" role="alert"><span>{{ error }}</span><button type="button" class="btn btn-sm" @click="load">{{ $t('common.tryAgain') }}</button></div>
       <template v-else>
         <ComparisonHero :key="publicPair ? publicPair.left + publicPair.right : user.id + header.username" :left="left" :right="right" :public-view="Boolean(publicPair)" />
         <div class="flex items-center justify-between gap-2 my-4">
-        <div role="tablist" aria-label="Vrsta usporedbe" class="flex flex-wrap gap-1" @keydown="handleTabKeys">
-          <button type="button" role="tab" class="collection-nav-link" :class="{ 'bg-base-200 text-primary': tab === 'games' }" :id="id + '-games'" :aria-controls="id + '-game-panel'" :aria-selected="tab === 'games'" :tabindex="tab === 'games' ? 0 : -1" @click="tab = 'games'"><CollectionNavIcon name="games" class="h-5 w-5" />Igre</button>
-          <button type="button" role="tab" class="collection-nav-link" :class="{ 'bg-base-200 text-primary': tab === 'stats' }" :id="id + '-stats'" :aria-controls="id + '-stats-panel'" :aria-selected="tab === 'stats'" :tabindex="tab === 'stats' ? 0 : -1" :disabled="!canSeeStats" @click="tab = 'stats'"><CollectionNavIcon name="stats" class="h-5 w-5" />Statistika</button>
+        <div role="tablist" :aria-label="$t('libraryComparison.comparisonCategory')" class="flex flex-wrap gap-1" @keydown="handleTabKeys">
+          <button type="button" role="tab" class="collection-nav-link" :class="{ 'bg-base-200 text-primary': tab === 'games' }" :id="id + '-games'" :aria-controls="id + '-game-panel'" :aria-selected="tab === 'games'" :tabindex="tab === 'games' ? 0 : -1" @click="tab = 'games'"><CollectionNavIcon name="games" class="h-5 w-5" />{{ $t('common.games') }}</button>
+          <button type="button" role="tab" class="collection-nav-link" :class="{ 'bg-base-200 text-primary': tab === 'stats' }" :id="id + '-stats'" :aria-controls="id + '-stats-panel'" :aria-selected="tab === 'stats'" :tabindex="tab === 'stats' ? 0 : -1" :disabled="!canSeeStats" @click="tab = 'stats'"><CollectionNavIcon name="stats" class="h-5 w-5" />{{ $t('common.stats') }}</button>
         </div>
         <ComparisonShareButton :left="left.username" :right="right.username" :allowed="shareAllowed" />
         </div>
-        <p v-if="!canSeeStats" class="text-xs opacity-60 mb-4">Statistika nije podijeljena.</p>
+        <p v-if="!canSeeStats" class="text-xs opacity-60 mb-4">{{ $t('libraryComparison.statsArentShared') }}</p>
         <section v-if="tab === 'games'" role="tabpanel" :id="id + '-game-panel'" :aria-labelledby="id + '-games'" class="space-y-4">
           <div class="comparison-toolbar grid gap-2">
-            <input v-model="filters.search" type="search" class="input w-full min-w-0" placeholder="Pretraži igre…" aria-label="Pretraži usporedbu" />
-            <select v-model="filters.sort" class="select w-full min-w-0" aria-label="Poredak usporedbe"><option value="title">Naziv A–Z</option><option value="hours">Najviše sati</option><option value="hours-gap">Razlika sati</option><option value="progress-gap">Razlika napretka</option><option value="status">Status</option><option value="platform">Platforma</option></select>
-            <button type="button" class="btn btn-outline gap-2" :aria-expanded="filtersExpanded" :aria-controls="id + '-filters'" @click="filtersExpanded = !filtersExpanded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="size-5" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M7 12h10M10 18h4" /></svg>Filtri<span v-if="activeFilterCount">({{ activeFilterCount }})</span></button>
+            <input v-model="filters.search" type="search" class="input w-full min-w-0" :placeholder="$t('libraryComparison.searchGames')" :aria-label="$t('libraryComparison.searchComparison')" />
+            <select v-model="filters.sort" class="select w-full min-w-0" :aria-label="$t('libraryComparison.sortComparison')"><option value="title">{{ $t('libraryComparison.nameAZ') }}</option><option value="hours">{{ $t('libraryComparison.mostHours') }}</option><option value="hours-gap">{{ $t('libraryComparison.differenceInHours') }}</option><option value="progress-gap">{{ $t('libraryComparison.differenceInProgress') }}</option><option value="status">{{ $t('common.status') }}</option><option value="platform">{{ $t('common.platform') }}</option></select>
+            <button type="button" class="btn btn-outline gap-2" :aria-expanded="filtersExpanded" :aria-controls="id + '-filters'" @click="filtersExpanded = !filtersExpanded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="size-5" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M7 12h10M10 18h4" /></svg>{{ $t('libraryComparison.filters') }}<span v-if="activeFilterCount">({{ activeFilterCount }})</span></button>
           </div>
           <div v-show="filtersExpanded" :id="id + '-filters'" class="space-y-4 bg-base-200 rounded-box p-3 sm:p-4">
-            <div role="group" aria-label="Pripadnost igre"><p class="text-xs font-semibold mb-2">Prikaz</p><div class="flex flex-wrap gap-2"><button v-for="choice in membershipOptions" :key="choice.value" type="button" class="btn btn-sm" :class="filters.membership === choice.value ? 'btn-primary' : 'btn-ghost'" :aria-pressed="filters.membership === choice.value" @click="filters.membership = choice.value">{{ choice.label }}</button></div></div>
-            <div role="group" aria-label="Prednost igrača"><p class="text-xs font-semibold mb-2">Prednost</p><div class="flex flex-wrap gap-2"><button v-for="choice in leaderOptions" :key="choice.value" type="button" class="btn btn-sm" :class="filters.leader === choice.value ? 'btn-primary' : 'btn-ghost'" :aria-pressed="filters.leader === choice.value" @click="filters.leader = choice.value">{{ choice.label }}</button></div></div>
+            <div role="group" :aria-label="$t('libraryComparison.libraryMembership')"><p class="text-xs font-semibold mb-2">{{ $t('libraryComparison.view') }}</p><div class="flex flex-wrap gap-2"><button v-for="choice in membershipOptions" :key="choice.value" type="button" class="btn btn-sm" :class="filters.membership === choice.value ? 'btn-primary' : 'btn-ghost'" :aria-pressed="filters.membership === choice.value" @click="filters.membership = choice.value">{{ choice.label }}</button></div></div>
+            <div role="group" :aria-label="$t('libraryComparison.playerLead')"><p class="text-xs font-semibold mb-2">{{ $t('libraryComparison.lead') }}</p><div class="flex flex-wrap gap-2"><button v-for="choice in leaderOptions" :key="choice.value" type="button" class="btn btn-sm" :class="filters.leader === choice.value ? 'btn-primary' : 'btn-ghost'" :aria-pressed="filters.leader === choice.value" @click="filters.leader = choice.value">{{ choice.label }}</button></div></div>
             <LibraryStatusFilters :model-value="filters.status || 'all'" @update:model-value="filters.status = $event === 'all' ? '' : $event" />
-            <div role="group" aria-label="Platforma u usporedbi"><p class="text-xs font-semibold mb-2">Platforma</p><div class="flex flex-wrap gap-2"><button type="button" class="btn btn-sm" :class="!filters.platform ? 'btn-primary' : 'btn-ghost'" :aria-pressed="!filters.platform" @click="filters.platform = ''">Sve</button><button v-for="platform in platforms" :key="platform" type="button" class="btn btn-sm btn-square tooltip" :class="filters.platform === platform ? 'btn-primary' : 'btn-ghost'" :data-tip="platform" :title="platform" :aria-label="'Platforma: ' + platform" :aria-pressed="filters.platform === platform" @click="filters.platform = platform"><PlatformIcon :name="platform" class="size-6" /></button></div></div>
+            <div role="group" :aria-label="$t('libraryComparison.platformInComparison')"><p class="text-xs font-semibold mb-2">{{ $t('common.platform') }}</p><div class="flex flex-wrap gap-2"><button type="button" class="btn btn-sm" :class="!filters.platform ? 'btn-primary' : 'btn-ghost'" :aria-pressed="!filters.platform" @click="filters.platform = ''">{{ $t('common.all') }}</button><button v-for="platform in platforms" :key="platform" type="button" class="btn btn-sm btn-square tooltip" :class="filters.platform === platform ? 'btn-primary' : 'btn-ghost'" :data-tip="platform" :title="platform" :aria-label="$t('libraryComparison.platformLabel', { platform })" :aria-pressed="filters.platform === platform" @click="filters.platform = platform"><PlatformIcon :name="platform" class="size-6" /></button></div></div>
           </div>
-          <div class="flex items-center justify-between gap-2 text-xs"><p role="status">{{ filtered.length }} igara za usporedbu</p><button v-if="hasFilters" type="button" class="btn btn-xs btn-ghost" @click="resetFilters">Očisti filtre</button></div>
-          <p v-if="!filtered.length" class="text-center py-8 opacity-70">Nema igara za odabrane filtre.</p>
+          <div class="flex items-center justify-between gap-2 text-xs"><p role="status">{{ filtered.length }} {{ $t('libraryComparison.gamesToCompare') }}</p><button v-if="hasFilters" type="button" class="btn btn-xs btn-ghost" @click="resetFilters">{{ $t('libraryComparison.clearFilters') }}</button></div>
+          <p v-if="!filtered.length" class="text-center py-8 opacity-70">{{ $t('libraryComparison.noGamesMatchTheSelected') }}</p>
           <ComparisonGameRow v-for="row in visibleRows" :key="row.key" :row="row" :left="left" :right="right" @open-game="$emit('open-game', $event)" />
-          <div v-if="visibleCount < filtered.length" ref="loadMoreTrigger" class="flex justify-center py-2"><button type="button" class="btn btn-sm btn-ghost" @click="showMore">Prikaži još</button></div>
-          <p class="text-xs opacity-60">Ista igra i ista platforma čine par. — znači da usporediv podatak nije dostupan.</p>
+          <div v-if="visibleCount < filtered.length" ref="loadMoreTrigger" class="flex justify-center py-2"><button type="button" class="btn btn-sm btn-ghost" @click="showMore">{{ $t('libraryComparison.showMore') }}</button></div>
+          <p class="text-xs opacity-60">{{ $t('libraryComparison.aPairIsTheSame') }}</p>
         </section>
         <section v-else-if="canSeeStats" role="tabpanel" :id="id + '-stats-panel'" :aria-labelledby="id + '-stats'"><ComparisonStats :left="left" :right="right" :left-games="ownGames" :right-games="sharedGames" :rows="rows" /></section>
       </template>
@@ -44,6 +44,7 @@
   </component>
 </template>
 <script setup>
+import { t } from '../i18n/index.js';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, useId, watch } from 'vue';
 import AppModal from './AppModal.vue';
 import ComparisonHero from './ComparisonHero.vue';
@@ -77,13 +78,13 @@ const platforms = computed(() => [...new Set(rows.value.map(row => row.platform)
 const hasFilters = computed(() => filters.search || filters.platform || filters.status || filters.membership !== 'all' || filters.leader !== 'all');
 const activeFilterCount = computed(() => Number(Boolean(filters.status)) + Number(Boolean(filters.platform)) + Number(filters.membership !== 'all') + Number(filters.leader !== 'all'));
 const membershipOptions = computed(() => [
-  { value: 'all', label: 'Sve igre' }, { value: 'shared', label: 'Zajedničke' },
-  { value: 'left', label: props.publicPair ? 'Samo ' + left.value.label : 'Samo ti' }, { value: 'right', label: 'Samo ' + right.value.label }
+  { value: 'all', label: t('libraryComparison.allGames') }, { value: 'shared', label: t('libraryComparison.shared') },
+  { value: 'left', label: props.publicPair ? t('libraryComparison.onlyPlayer', { player: left.value.label }) : t('libraryComparison.onlyYou') }, { value: 'right', label: t('libraryComparison.onlyPlayer', { player: right.value.label }) }
 ]);
 const leaderOptions = computed(() => [
-  { value: 'all', label: 'Sve' }, { value: 'hours-left', label: 'Više sati · ' + (props.publicPair ? left.value.label : 'Ti') },
-  { value: 'hours-right', label: 'Više sati · ' + right.value.label },
-  { value: 'progress-left', label: 'Veći napredak · ' + (props.publicPair ? left.value.label : 'Ti') }, { value: 'progress-right', label: 'Veći napredak · ' + right.value.label }
+  { value: 'all', label: t('common.all') }, { value: 'hours-left', label: t('libraryComparison.playerHasMoreHours', { player: props.publicPair ? left.value.label : t('libraryComparison.you') }) },
+  { value: 'hours-right', label: t('libraryComparison.playerHasMoreHours', { player: right.value.label }) },
+  { value: 'progress-left', label: t('libraryComparison.playerHasMoreProgress', { player: props.publicPair ? left.value.label : t('libraryComparison.you') }) }, { value: 'progress-right', label: t('libraryComparison.playerHasMoreProgress', { player: right.value.label }) }
 ]);
 function resetFilters() { Object.assign(filters, { search: '', membership: 'all', leader: 'all', status: '', platform: '' }); }
 watch(filters, () => { visibleCount.value = 24; });
@@ -100,10 +101,10 @@ watch(loadMoreTrigger, element => {
 function profile(games, name, username, avatar, genre) {
   const stats = getGamerCardStats(games);
   const signature = signatureForGenre(genre || stats.favoriteGenre?.name);
-  name = String(name || 'Igrač');
+  name = String(name || t('common.player'));
   return { name, username, label: username ? '@' + username : name, avatar: typeof avatar === 'string' ? avatar : '', color: signature.primary, stats };
 }
-const left = computed(() => props.publicPair ? profile(ownGames.value, leftPublicHeader.value?.name, leftPublicHeader.value?.username, leftPublicHeader.value?.avatar_url, leftPublicHeader.value?.card?.favoriteGenre?.name) : profile(ownGames.value, props.user.user_metadata?.name || props.ownShare.username || 'Igrač', props.ownShare.username, props.user.user_metadata?.avatar_url));
+const left = computed(() => props.publicPair ? profile(ownGames.value, leftPublicHeader.value?.name, leftPublicHeader.value?.username, leftPublicHeader.value?.avatar_url, leftPublicHeader.value?.card?.favoriteGenre?.name) : profile(ownGames.value, props.user.user_metadata?.name || props.ownShare.username || t('common.player'), props.ownShare.username, props.user.user_metadata?.avatar_url));
 const right = computed(() => { const header = rightPublicHeader.value || props.header; return profile(sharedGames.value, header.name, header.username, header.avatar_url, header.card?.favoriteGenre?.name); });
 let request, revision = 0;
 async function load() {
@@ -119,7 +120,7 @@ async function load() {
     leftPublicHeader.value = result.leftHeader || null; rightPublicHeader.value = result.rightHeader || null;
   } catch (failure) {
     if (current === revision && !request.signal.aborted) {
-      error.value = props.publicPair ? 'Usporedba nije dostupna. Oba Gamenotea moraju biti javna.' : 'Usporedbu nije moguće učitati. Pokušaj ponovno.';
+      error.value = props.publicPair ? t('libraryComparison.comparisonUnavailableBothGamenotesMust') : t('libraryComparison.theComparisonCouldntBeLoaded');
       request.abort();
     }
   } finally { if (current === revision) loading.value = false; }

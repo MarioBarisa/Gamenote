@@ -5,8 +5,11 @@ import App from './App.vue'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import router from './router'
+import { i18n, initializeLocale } from './i18n/index.js'
 import { useUserStore } from './stores/user'
 import { pageFailure } from './services/pageFailure'
+
+initializeLocale()
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -17,6 +20,7 @@ window.addEventListener('vite:preloadError', event => {
   pageFailure.value = true
 })
 
+app.use(i18n)
 app.use(pinia)
 useUserStore(pinia).initializeAuth().catch(() => { /* Pogrešku prikazuje početni ekran. */ })
 app.use(router)

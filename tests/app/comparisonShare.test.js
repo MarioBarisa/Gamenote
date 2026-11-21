@@ -67,6 +67,7 @@ test('Edge daje ispravan naslov i jednu OG sliku, a privatnu usporedbu skriva', 
     const html = await result.text();
     assert.equal(result.status, 200); assert.equal(result.headers.get('cache-control'), 'no-store');
     assert.match(html, /<title>Gamenote: player-a vs player-b<\/title>/);
+    assert.match(html, /Usporedi Gamenote zbirke @player-a i @player-b\./);
     assert.equal((html.match(/property="og:image"/g) || []).length, 1);
     assert.match(html, /library-card\?username=player-a&amp;compare=player-b/);
     globalThis.fetch = async () => new Response(null, { status: 404 });

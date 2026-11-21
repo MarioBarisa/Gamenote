@@ -4,7 +4,7 @@ import { GAME_STATUS } from '../../src/constants/gameStatus.js';
 import { PROGRESS_MODES } from '../../src/constants/progressModes.js';
 
 export async function checkFrontend(browser, origin, artifacts) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const context = await browser.newContext({ locale: 'hr-HR', viewport: { width: 1440, height: 1000 } });
   const rows = Array.from({ length: 8 }, (_, index) => ({
     id: `frontend-${index}`, user_id: 'user-a', title: `Igra ${index}`, platform: 'PC',
     status: 'playing', rating: 4, genre: 'RPG', notes: index === 0 ? 'Bilješka' : '',
@@ -487,6 +487,13 @@ export async function checkFrontend(browser, origin, artifacts) {
       await expect(selection).toHaveAttribute('aria-pressed', selected);
     }
     await navigate('/theme-settings');
+    const settingsLanguage = page.locator('main').getByLabel('Jezik', { exact: true });
+    await settingsLanguage.selectOption('en');
+    await expect(page.getByRole('heading', { name: 'UI settings', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Available themes', exact: true })).toBeVisible();
+    await expect(page.locator('footer').getByLabel('Language', { exact: true })).toHaveValue('en');
+    await page.locator('footer').getByLabel('Language', { exact: true }).selectOption('hr');
+    await expect(settingsLanguage).toHaveValue('hr');
     const light = page.getByRole('radio', { name: '☀️ Light', exact: true });
     await light.focus();
     await page.keyboard.press('Space');
@@ -525,7 +532,7 @@ export async function checkFrontend(browser, origin, artifacts) {
       await expect(profileTrigger).toHaveCount(0);
       await page.evaluate(() => {
         window.auditSession = { user: { id: 'user-a', email: 'fixture@example.test' }, access_token: 'fixture' };
-        window.auditStore.setUser(window.auditSession.user);
+        window.auditStore.setSession(window.auditSession);
       });
       await profileTrigger.focus();
       await page.keyboard.press('Enter');
@@ -537,7 +544,7 @@ export async function checkFrontend(browser, origin, artifacts) {
       await expect(profileTrigger).toBeFocused();
       await profileTrigger.click();
       await expect(profileDropdown).toHaveJSProperty('open', true);
-      await page.getByRole('heading', { level: 1 }).click();
+      await page.getByRole('heading', { level: 2 }).first().click();
       await expect(profileDropdown).toHaveJSProperty('open', false);
     }
     await page.evaluate(() => { window.auditSession = null; window.auditStore.clearUser(); });

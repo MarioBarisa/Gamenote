@@ -1,6 +1,6 @@
 <template>
-  <div v-if="images.length > 1" ref="strip" @wheel="scrollWithWheel" role="group" aria-label="Odabir screenshota" class="screenshot-thumbnails flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain p-1 w-max max-w-full mx-auto touch-manipulation">
-    <button v-for="(image, index) in images" :key="index" type="button" class="shrink-0 rounded p-1 cursor-pointer focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2" :class="selectedIndex === index ? 'ring-2 ring-primary opacity-100' : 'opacity-50 hover:opacity-80'" :aria-label="`Prikaži screenshot ${index + 1}`" :aria-current="selectedIndex === index ? 'true' : undefined" @click="$emit('select', index)">
+  <div v-if="images.length > 1" ref="strip" @wheel="scrollWithWheel" role="group" :aria-label="$t('screenshotThumbnails.chooseAScreenshot')" class="screenshot-thumbnails flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain p-1 w-max max-w-full mx-auto touch-manipulation">
+    <button v-for="(image, index) in images" :key="index" type="button" class="shrink-0 rounded p-1 cursor-pointer focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2" :class="selectedIndex === index ? 'ring-2 ring-primary opacity-100' : 'opacity-50 hover:opacity-80'" :aria-label="$t('screenshotThumbnails.showScreenshot', [index + 1])" :aria-current="selectedIndex === index ? 'true' : undefined" @click="$emit('select', index)">
       <img :src="typeof image === 'string' ? image : image.image" alt="" class="w-15 h-11 sm:w-[4.375rem] sm:h-13 object-cover rounded" loading="lazy" decoding="async" />
     </button>
   </div>

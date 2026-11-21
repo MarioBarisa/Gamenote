@@ -36,14 +36,16 @@ test('postignuća koriste pragove mobilne aplikacije', () => {
   assert.equal(achievement([...topRated, { rating: '5', status: 'backlog' }], 'goty').unlocked, true);
 });
 
-test('Platinum zahtijeva sva ostala postignuća, uključujući GOTY', () => {
+test('Platinum zahtijeva sva postignuća i aktivni TOTP', () => {
   const games = Array.from({ length: 50 }, (_, index) => ({
     status: index < 25 ? 'completed' : 'backlog',
     rating: index < 10 ? 5 : null,
     play_time: 60,
   }));
-  const platinum = games => getProfileAchievements(games).find(achievement => achievement.id === 'platinum').unlocked;
-  assert.equal(getProfileAchievements(games).length, 8);
+  const platinum = (games, totp = true) => getProfileAchievements(games, totp).find(achievement => achievement.id === 'platinum').unlocked;
+  assert.equal(getProfileAchievements(games).length, 9);
+  assert.equal(getProfileAchievements(games, true).find(achievement => achievement.id === 'totp').unlocked, true);
+  assert.equal(platinum(games, false), false);
   assert.equal(platinum(games), true);
   assert.equal(platinum(games.slice(0, 49)), false);
   assert.equal(platinum(games.map((game, index) => index === 24 ? { ...game, status: 'playing' } : game)), false);

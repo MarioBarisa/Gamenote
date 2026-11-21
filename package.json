@@ -13,32 +13,33 @@
     "build": "node scripts/build.mjs",
     "preview": "vite preview",
     "test:importers": "node --test tests/importers/importers.test.js && node tests/importers/importers.browser.mjs",
-    "test:app": "node --test tests/app/app.test.js && node tests/app/regressions.browser.mjs",
+    "test:app": "node --test tests/app/app.test.js tests/app/libraryCache.test.js tests/app/mfaRecovery.test.js && node tests/app/regressions.browser.mjs",
+    "test:i18n": "node --test tests/app/i18n.test.js",
     "test:public": "npm run build && node tests/app/public.browser.mjs",
-    "test": "npm run test:app && npm run test:importers && npm run test:public"
+    "test": "npm run test:i18n && npm run test:app && npm run test:importers && npm run test:public"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.5",
     "@resvg/resvg-js": "^2.6.2",
-    "@supabase/supabase-js": "^2.119.0",
+    "@supabase/supabase-js": "^2.119.2",
     "@tailwindcss/vite": "^4.3.5",
     "@vue/devtools-api": "^8.2.1",
     "chart.js": "^4.6.1",
     "culori": "^4.0.2",
     "hover-tilt": "^1.0.0",
-    "html2canvas": "^1.4.1",
     "pinia": "^4.1.0",
     "pinia-plugin-persistedstate": "^4.7.1",
     "psn-api": "^2.18.1",
     "tailwindcss": "^4.3.5",
-    "vue": "^3.5.45",
+    "vue": "^3.5.46",
+    "vue-i18n": "^11.4.23",
     "vue-router": "^5.5.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
     "@vitejs/plugin-vue": "^6.0.11",
-    "daisyui": "^5.8.1",
-    "netlify-cli": "^27.20.0",
+    "daisyui": "^5.8.2",
+    "netlify-cli": "^27.20.1",
     "vite": "^8.3.8",
     "vite-plugin-vue-devtools": "^8.2.1"
   }

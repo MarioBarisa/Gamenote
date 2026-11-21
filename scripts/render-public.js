@@ -1,5 +1,6 @@
 import { createSSRApp, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
+import { createAppI18n } from '../src/i18n/index.js';
 import { createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import Landing from '../src/views/LandingView.vue';
@@ -10,6 +11,7 @@ export async function renderPublic(path) {
   const component = { '/': Landing, '/privacy': Privacy, '/tos': Terms }[path];
   const app = createSSRApp({ render: () => h('main', [h(component)]) });
   const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/:pathMatch(.*)*', component }] });
+  app.use(createAppI18n());
   app.use(createPinia());
   app.use(router);
   await router.push(path);

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { computePercent, PROGRESS_MODE_MAP } from '../constants/progressModes.js';
 import { statusFromLegacy } from '../constants/gameStatus.js';
 
@@ -28,9 +29,9 @@ export function progressFields(form) {
   const value = form.progress_value === '' || form.progress_value == null ? null : Number(form.progress_value);
   const total = form.progress_total === '' || form.progress_total == null ? null : Number(form.progress_total);
   for (const number of [value, total]) {
-    if (number != null && (!Number.isFinite(number) || number < 0)) throw new Error('Napredak mora biti pozitivan broj ili nula.');
+    if (number != null && (!Number.isFinite(number) || number < 0)) throw new Error(t('gameForm.progressMustBeZeroOr'));
   }
-  if (total > 0 && value > total && PROGRESS_MODE_MAP[form.progress_mode]?.kind !== 'rank') throw new Error('Napredak ne može biti veći od ukupnog broja.');
+  if (total > 0 && value > total && PROGRESS_MODE_MAP[form.progress_mode]?.kind !== 'rank') throw new Error(t('gameForm.progressCantBeHigherThan'));
   const fields = {
     progress_mode: form.progress_mode || null, progress_value: value, progress_total: total,
     progress_unit: form.progress_unit || null, progress_source: form.progress_source || null,
@@ -40,11 +41,11 @@ export function progressFields(form) {
 }
 
 export function buildGameUpdate(form) {
-  if (!form.title?.trim() || !form.platform) throw new Error('Unesi naziv i platformu igre.');
-  if (form.start_date && form.end_date && form.start_date > form.end_date) throw new Error('Datum završetka ne može biti prije početka.');
+  if (!form.title?.trim() || !form.platform) throw new Error(t('gameForm.enterAGameTitleAnd'));
+  if (form.start_date && form.end_date && form.start_date > form.end_date) throw new Error(t('gameForm.theEndDateCantBe'));
   const hours = form.play_time === '' || form.play_time == null ? null : Number(form.play_time);
-  if (hours != null && (!Number.isFinite(hours) || hours < 0)) throw new Error('Vrijeme igranja mora biti pozitivan broj ili nula.');
-  if (form.rating && (!Number.isInteger(Number(form.rating)) || form.rating < 1 || form.rating > 5)) throw new Error('Ocjena mora biti između 1 i 5.');
+  if (hours != null && (!Number.isFinite(hours) || hours < 0)) throw new Error(t('gameForm.playtimeMustBeZeroOr'));
+  if (form.rating && (!Number.isInteger(Number(form.rating)) || form.rating < 1 || form.rating > 5)) throw new Error(t('gameForm.ratingMustBeBetween1'));
   return {
     title: form.title.trim(), platform: form.platform, play_time: hours,
     genre: form.genre || null, publisher: form.publisher || null, rating: Number(form.rating) || null,

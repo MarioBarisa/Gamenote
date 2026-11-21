@@ -47,7 +47,7 @@
       </div>
       
       <div class="flex flex-wrap items-center gap-y-1 text-xs sm:text-sm mb-2">
-        <component :is="to ? 'router-link' : 'span'" :to="to || undefined" :tabindex="to ? -1 : undefined" @click="to && $emit('open')" :class="{ 'relative z-20': to }" class="badge badge-outline p-2 h-auto tooltip tooltip-top" :data-tip="game.platform || 'Nepoznata platforma'" :aria-label="game.platform || 'Nepoznata platforma'">
+        <component :is="to ? 'router-link' : 'span'" :to="to || undefined" :tabindex="to ? -1 : undefined" @click="to && $emit('open')" :class="{ 'relative z-20': to }" class="badge badge-outline p-2 h-auto tooltip tooltip-top" :data-tip="game.platform || $t('common.unknownPlatform')" :aria-label="game.platform || $t('common.unknownPlatform')">
           <PlatformIcon :name="game.platform" class="marquee-platform w-6 h-6" />
         </component>
         <component :is="to ? 'router-link' : 'span'" v-if="visibleGenres.length" :to="to || undefined" :tabindex="to ? -1 : undefined" @click="to && $emit('open')" :class="{ 'relative z-20': to }" class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto" :aria-label="visibleGenres.join(', ')">
@@ -58,7 +58,7 @@
         <span v-else class="badge badge-outline ml-1 sm:ml-2 p-2 h-auto invisible" aria-hidden="true">
           <GenreIcon genre="" class="w-6 h-6" />
         </span>
-        <button v-if="game.notes" @click.stop="showNotesModal = true" class="relative z-20 ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0" title="Prikaži bilješke" :aria-label="`Prikaži bilješke: ${game.title}`">
+        <button v-if="game.notes" @click.stop="showNotesModal = true" class="relative z-20 ml-1 sm:ml-2 btn btn-ghost btn-xs sm:btn-sm p-1 sm:p-2 h-auto shrink-0" :title="$t('gameCard.showNotes')" :aria-label="$t('gameCard.showNotesLabel', [game.title])">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
@@ -72,9 +72,9 @@
 
       <!-- Bilješke izvan 3D kartice. -->
       <Teleport to="body">
-        <AppModal v-if="showNotesModal" label="Bilješke" @close="showNotesModal = false">
+        <AppModal v-if="showNotesModal" :label="$t('common.notes')" @close="showNotesModal = false">
           <div class="modal-box max-w-2xl">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" @click.stop="showNotesModal = false">✕</button>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" @click.stop="showNotesModal = false">✕</button>
             <h3 class="font-bold text-lg mb-4">{{ game.title }}</h3>
             <div class="bg-base-100 p-4 rounded mb-4 max-h-96 overflow-y-auto">
               <p class="text-sm whitespace-pre-wrap">{{ game.notes }}</p>
@@ -117,7 +117,7 @@
       <span>{{ formatDate(game.end_date) }}</span>
     </template>
     <template v-else-if="!game.start_date && game.end_date">
-      <span>do {{ formatDate(game.end_date) }}</span>
+      <span>{{ $t('common.to') }} {{ formatDate(game.end_date) }}</span>
     </template>
   </template>
   <span v-else :title="datesHint">–</span>
@@ -125,11 +125,11 @@
 
 <!-- Play time -->
 <div class="text-xs sm:text-sm min-h-5 flex items-center opacity-70">
-  {{ game.play_time || 0 }}h igranja
+  {{ game.play_time || 0 }}{{ $t('gameCard.hPlayed') }}
 </div>
 
 <!-- Progress -->
-<div class="space-y-1" :aria-label="hasProgress ? undefined : 'Bez podataka o napretku'">
+<div class="space-y-1" :aria-label="hasProgress ? undefined : $t('gameCard.noProgressData')">
   <div class="w-full rounded-full h-2 overflow-hidden" :class="hasProgress ? 'bg-gray-700' : 'bg-base-300/50 border border-dashed border-base-content/25'">
     <div
       v-if="hasProgress && progress.percent !== null"
@@ -160,6 +160,7 @@
 </template>
 
 <script>
+import { formatLocale, t } from '../i18n/index.js';
 import AppModal from './AppModal.vue';
 import { useCardSizeStore } from '../stores/cardSize';
 import { useThemeStore } from '../stores/theme';
@@ -238,7 +239,7 @@ export default {
       return this.hasDates && this.gameStatus !== 'playing';
     },
     datesHint() {
-      return this.gameStatus === 'playing' ? 'U tijeku' : 'Nema datuma';
+      return this.gameStatus === 'playing' ? 'U tijeku' : t('gameCard.noDate');
     },
     progress() { return cardProgress(this.game); },
     hasProgress() { return this.progress.available; },
@@ -359,7 +360,7 @@ export default {
   if (!dateStr) return null;
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString(formatLocale.value, { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
   }

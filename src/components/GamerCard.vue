@@ -3,7 +3,7 @@
     <svg ref="cardSvg" :id="cardId || undefined" xmlns="http://www.w3.org/2000/svg"
       :viewBox="`0 0 ${width} ${height}`" role="img" :aria-labelledby="`${uid}-title ${uid}-description`"
       font-family="Arial, sans-serif" font-weight="500" :fill="palette.foreground">
-      <title :id="`${uid}-title`">Gamenote kartica: {{ name }}</title>
+      <title :id="`${uid}-title`">{{ $t('gamerCard.gamenoteCard') }} {{ name }}</title>
       <desc :id="`${uid}-description`">{{ description }}</desc>
       <defs>
         <clipPath :id="`${uid}-bounds`"><rect :width="width" :height="height" rx="32" /></clipPath>
@@ -27,7 +27,7 @@
 
         <g class="card-playtime">
           <text :x="margin - 3" :y="compact ? 277 : 281" :font-size="hoursText.length > 8 ? 54 : 84" font-weight="800" letter-spacing="-2" :fill="palette.accent">{{ hoursText }}</text>
-          <text :x="margin" :y="compact ? 312 : 316" font-size="23" font-weight="600">Sati igranja</text>
+          <text :x="margin" :y="compact ? 312 : 316" font-size="23" font-weight="600">{{ $t('common.hoursPlayed') }}</text>
         </g>
         <g class="card-summary" :transform="`translate(${compact ? margin : 382} ${compact ? 348 : 220})`">
           <g v-for="(metric, index) in metrics" :key="metric.label" class="card-metric" :transform="`translate(${18 + index * summaryWidth / 3} 0)`">
@@ -37,14 +37,14 @@
         </g>
 
         <g :transform="`translate(${margin} ${compact ? 513 : 403})`">
-          <text font-size="21" :fill="palette.foreground">Omiljena igra</text>
+          <text font-size="21" :fill="palette.foreground">{{ $t('gamerCard.favoriteGame') }}</text>
           <text v-for="(line, index) in favoriteLines" :key="index" x="0" :y="40 + index * 36" font-size="31" font-weight="700">{{ line }}</text>
-          <text x="0" y="109" font-size="21" :fill="palette.foreground">{{ stats.favoriteGame ? `${formatCardNumber(stats.favoriteGame.play_time)} h · najviše igrana` : 'Još nema zabilježenog vremena' }}</text>
+          <text x="0" y="109" font-size="21" :fill="palette.foreground">{{ favoriteSubtitle }}</text>
         </g>
         <g :transform="`translate(${compact ? margin : 544} ${compact ? 679 : 403})`">
-          <text font-size="21" :fill="palette.foreground">Omiljeni žanr</text>
+          <text font-size="21" :fill="palette.foreground">{{ $t('common.favoriteGenre') }}</text>
           <text v-for="(line, index) in genreLines" :key="index" x="0" :y="40 + index * 36" font-size="31" font-weight="700">{{ line }}</text>
-          <text v-if="!stats.favoriteGenre" x="0" y="109" font-size="21" :fill="palette.foreground">Dodaj žanrove igrama</text>
+          <text v-if="!stats.favoriteGenre" x="0" y="109" font-size="21" :fill="palette.foreground">{{ $t('gamerCard.addGenresToYourGames') }}</text>
         </g>
 
         <g :transform="`translate(${margin} ${height - 58})`" :fill="palette.foreground">
@@ -57,14 +57,15 @@
     </svg>
     <figcaption class="mt-3 text-xs text-base-content/60">
       <span v-if="avatarFailed" class="block mt-1">
-        {{ avatarPreviewLoaded ? 'Fotografija se prikazuje, ali nije spremna za izvoz.' : 'Profilna slika nije dostupna za karticu; prikazuju se inicijali.' }}
-        <button type="button" class="link ml-1" @click="avatarAttempt++">Ponovno učitaj sliku</button>
+        {{ avatarPreviewLoaded ? $t('gamerCard.thePhotoIsVisibleBut') : $t('gamerCard.theProfilePictureIsUnavailable') }}
+        <button type="button" class="link ml-1" @click="avatarAttempt++">{{ $t('gamerCard.reloadImage') }}</button>
       </span>
     </figcaption>
   </figure>
 </template>
 
 <script setup>
+import { formatLocale, t } from '../i18n/index.js';
 import { computed, ref, onMounted, onUnmounted, watch, useId, nextTick } from 'vue';
 import GamenoteLogo from './GamenoteLogo.vue';
 import { cardDisplayPalette } from '../services/cardAppearance.js';
@@ -77,7 +78,7 @@ const props = defineProps({
   cardStats: { type: Object, default: null },
   preparedAvatar: { type: String, default: '' },
   games: { type: Array, default: () => [] },
-  name: { type: String, default: 'Igrač' },
+  name: { type: String, default: () => t('common.player') },
   email: { type: String, default: '' },
   avatarUrl: { type: String, default: '' },
   createdAt: { type: String, default: '' },
@@ -101,7 +102,7 @@ let resizeFrame;
 let avatarReady = Promise.resolve();
 const stats = computed(() => {
   const value = props.cardStats || getGamerCardStats(props.games);
-  let level = 'Početnik';
+  let level = t('common.beginner');
   for (const title of PLAYER_TITLES) { if (value.hours >= title.hours) level = title.label; }
   return { ...value, level };
 });
@@ -125,17 +126,31 @@ const identity = computed(() => {
 });
 const initials = computed(() => props.name.trim().split(/\s+/).slice(0, 2).map(word => word[0] || '').join('').toUpperCase());
 const metrics = computed(() => [
-  { label: 'Igara u biblioteci', color: 'primary', value: formatCardNumber(stats.value.total) },
+  { label: t('gamerCard.gamesInLibrary'), color: 'primary', value: formatCardNumber(stats.value.total) },
   { label: GAME_STATUS_MAP.completed.label, color: 'success', value: formatCardNumber(stats.value.completed) },
   { label: GAME_STATUS_MAP.playing.label, color: 'info', value: formatCardNumber(stats.value.playing) },
 ]);
 const memberSince = computed(() => {
   const date = new Date(props.createdAt);
-  return Number.isNaN(date.getTime()) ? 'Tvoja osobna gaming priča' : `Član od ${date.toLocaleDateString('hr-HR', { month: '2-digit', year: 'numeric' })}`;
+  return Number.isNaN(date.getTime()) ? t('gamerCard.yourPersonalGamingStory') : t('gamerCard.memberSince', [date.toLocaleDateString(formatLocale.value, { month: '2-digit', year: 'numeric' })]);
 });
-const description = computed(() => `${props.name}. ${props.username ? '@' + props.username + '. ' : props.email ? props.email + '. ' : ''}${stats.value.hours} sati igranja, ${stats.value.total} igara, ${stats.value.completed} ${GAME_STATUS_MAP.completed.label}, ${stats.value.playing} ${GAME_STATUS_MAP.playing.label}. Omiljena igra: ${stats.value.favoriteGame?.title || 'nema podataka'}. Omiljeni žanr: ${stats.value.favoriteGenre?.name || 'nema podataka'}. gamenote.eu.`);
-const favoriteLines = computed(() => fitText(stats.value.favoriteGame?.title || 'Još nema podataka', compact.value ? 512 : 436, 31, 2));
-const genreLines = computed(() => fitText(stats.value.favoriteGenre?.name || 'Još nema podataka', compact.value ? 400 : 364, 31, 2));
+const favoriteSubtitle = computed(() => stats.value.favoriteGame
+  ? t('gamerCard.mostPlayedHours', [formatCardNumber(stats.value.favoriteGame.play_time)])
+  : t('gamerCard.noPlaytimeLoggedYet'));
+const description = computed(() => t('gamerCard.accessibleSummary', {
+  name: props.name,
+  identity: props.username ? '@' + props.username + '. ' : props.email ? props.email + '. ' : '',
+  hours: stats.value.hours,
+  games: stats.value.total,
+  completed: stats.value.completed,
+  completedLabel: GAME_STATUS_MAP.completed.label,
+  playing: stats.value.playing,
+  playingLabel: GAME_STATUS_MAP.playing.label,
+  favoriteGame: stats.value.favoriteGame?.title || t('gamerCard.noData'),
+  favoriteGenre: stats.value.favoriteGenre?.name || t('gamerCard.noData'),
+}));
+const favoriteLines = computed(() => fitText(stats.value.favoriteGame?.title || t('common.noDataYet'), compact.value ? 512 : 436, 31, 2));
+const genreLines = computed(() => fitText(stats.value.favoriteGenre?.name || t('common.noDataYet'), compact.value ? 400 : 364, 31, 2));
 
 function textContext() {
   if (typeof document !== 'undefined') return document.createElement('canvas').getContext('2d');
@@ -222,7 +237,7 @@ async function exportImage() {
   } while (pending !== avatarReady);
   await nextTick();
   if (avatarPreviewLoaded.value && !avatarData.value) {
-    throw new Error('Profilna slika nije spremna za izvoz. Pokušaj ponovno učitati sliku.');
+    throw new Error(t('gamerCard.yourProfilePictureIsntReady'));
   }
   return exportGamerCard(cardSvg.value);
 }

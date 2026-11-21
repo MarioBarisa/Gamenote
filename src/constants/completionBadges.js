@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 // helperi sa specificne platforme 100%
 
 const PLATFORM_MATCHERS = [
@@ -71,7 +72,7 @@ export function getCompletionBadge(game) {
   }
 
   return {
-    label: '100% dovršeno',
+    label: t('completionBadges.value100Complete'),
     className: 'badge-success',
     icon: '✔'
   };

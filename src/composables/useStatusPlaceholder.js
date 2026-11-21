@@ -1,11 +1,12 @@
-import { onMounted, onUnmounted, ref } from 'vue';
+import { t } from '../i18n/index.js';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 export function useStatusPlaceholder() {
-  const placeholder = ref('Odaberi status');
+  const compact = ref(false);
   let media;
 
   function update() {
-    placeholder.value = media.matches ? 'Odaberi' : 'Odaberi status';
+    compact.value = media.matches;
   }
 
   onMounted(() => {
@@ -15,5 +16,5 @@ export function useStatusPlaceholder() {
   });
   onUnmounted(() => media?.removeEventListener('change', update));
 
-  return placeholder;
+  return computed(() => compact.value ? t('common.choose') : t('useStatusPlaceholder.chooseAStatus'));
 }

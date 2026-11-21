@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { expect } from '@playwright/test';
 
 export async function checkLibraryComparison(browser, origin, artifacts) {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ locale: 'hr-HR' });
   const page = await context.newPage();
   const errors = [], requests = [], external = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -71,7 +71,7 @@ export async function checkLibraryComparison(browser, origin, artifacts) {
     await page.waitForFunction(() => window.auditReady);
     await page.evaluate(async () => {
       const user = { id: 'viewer', user_metadata: { name: 'Lokalni igrač', avatar_url: 'https://comparison-avatars.test/avatar.svg' } };
-      window.auditSession = { user, access_token: 'fixture' }; window.auditStore.setUser(user);
+      window.auditSession = { user, access_token: 'fixture' }; window.auditStore.setSession(window.auditSession);
       await window.auditRouter.push('/u/remote-player');
     });
     const trigger = page.getByRole('button', { name: 'Usporedi Gamenote', exact: true });
@@ -282,7 +282,7 @@ export async function checkLibraryComparison(browser, origin, artifacts) {
     await page.evaluate(() => {
       window.auditSession = { ...window.auditSession, user: { ...window.auditSession.user } };
       window.emitAuth('TOKEN_REFRESHED');
-      window.auditStore.setUser(window.auditSession.user);
+      window.auditStore.setSession(window.auditSession);
       window.dispatchEvent(new Event('focus'));
       document.dispatchEvent(new Event('visibilitychange'));
     });
@@ -290,7 +290,7 @@ export async function checkLibraryComparison(browser, origin, artifacts) {
     assert.equal(await dialog.locator('.comparison-hero').evaluate(element => element === window.comparisonHero), true, 'Isti korisnik čuva hero i animaciju');
     await dialog.getByRole('tab', { name: 'Igre', exact: true }).click();
     await dialog.getByRole('searchbox', { name: 'Pretraži usporedbu', exact: true }).fill('Astra');
-    await page.evaluate(() => window.auditStore.setUser({ ...window.auditSession.user }));
+    await page.evaluate(() => window.auditStore.setSession({ ...window.auditSession, user: { ...window.auditSession.user } }));
     await expect(dialog.getByRole('searchbox', { name: 'Pretraži usporedbu', exact: true })).toHaveValue('Astra');
     await expect(dialog.locator('.comparison-game')).toHaveCount(1);
     await expect(dialog.locator('.comparison-game-background')).toHaveAttribute('src', 'https://comparison-avatars.test/screenshot.svg');
@@ -403,11 +403,11 @@ export async function checkLibraryComparison(browser, origin, artifacts) {
     const publicContent = page.locator('.public-comparison-content');
     await expect(publicContent.locator('.comparison-hero')).toBeVisible();
     const thirdReads = requests.length;
-    await page.evaluate(() => { const user = { id: 'third-viewer', user_metadata: { name: 'Treći igrač' } }; window.auditSession = { user, access_token: 'fixture' }; window.auditStore.setUser(user); });
+    await page.evaluate(() => { const user = { id: 'third-viewer', user_metadata: { name: 'Treći igrač' } }; window.auditSession = { user, access_token: 'fixture' }; window.auditStore.setSession(window.auditSession); });
     await expect(publicContent.locator('.identity-left .identity-name')).toContainText('Lokalni igrač');
     await expect(publicContent.locator('.identity-right .identity-name')).toContainText('Udaljeni igrač');
     assert.equal(requests.slice(thirdReads).some(request => request.path.endsWith('/games') || request.path.endsWith('/library_shares')), false, 'Treći korisnik čita samo javne izvore');
-    const guestContext = await browser.newContext();
+    const guestContext = await browser.newContext({ locale: 'hr-HR' });
     await guestContext.route('**/*', fixtureRoute);
     const guest = await guestContext.newPage();
     guest.on('pageerror', error => errors.push(error.message));

@@ -5,6 +5,9 @@ const NEWS_SOURCES = [
   ['GameSpot', 'gamespot.com'], ['IGN', 'ign.com'], ['Polygon', 'polygon.com'],
   ['PC Gamer', 'pcgamer.com'], ['VG247', 'vg247.com'], ['Rock Paper Shotgun', 'rockpapershotgun.com'],
 ];
+const homeCache = new Map();
+const endOfDay = () => new Date().setHours(24, 0, 0, 0);
+const newsExpiry = () => Date.now() + 15 * 60_000;
 
 export const useGamesApi = () => {
   const pending = ref(0);
@@ -41,7 +44,22 @@ export const useGamesApi = () => {
     const data = await getGameDetails(id);
     return { count: data.achievements_count || data.parent_achievements?.length || 0, results: data.parent_achievements || [] };
   }
-  async function getPopularGames() {
+  async function getHomeData(key, expiresAt, force, load) {
+    if (force) homeCache.delete(key);
+    const cached = homeCache.get(key);
+    if (cached && Date.now() < cached.expiresAt) {
+      error.value = null;
+      return cached.rows;
+    }
+    const rows = await load();
+    if (!error.value) homeCache.set(key, { rows, expiresAt });
+    return rows;
+  }
+
+  function getPopularGames({ force = false } = {}) {
+    return getHomeData('popular', endOfDay(), force, loadPopularGames);
+  }
+  async function loadPopularGames() {
     const today = new Date();
     const lastYear = new Date();
     lastYear.setFullYear(today.getFullYear() - 1);
@@ -50,11 +68,17 @@ export const useGamesApi = () => {
   async function getRecentGames() {
     return (await request('/games', { ordering: '-released', page_size: 10 })).results || [];
   }
-  async function getThisYearGames() {
+  function getThisYearGames({ force = false } = {}) {
+    return getHomeData('year', endOfDay(), force, loadThisYearGames);
+  }
+  async function loadThisYearGames() {
     const today = new Date();
     return (await request('/games', { dates: `${today.getFullYear()}-01-01,${today.toISOString().slice(0,10)}`, ordering: '-added', page_size: 10 })).results || [];
   }
-  async function getGameNews() {
+  function getGameNews({ force = false } = {}) {
+    return getHomeData('news', newsExpiry(), force, loadGameNews);
+  }
+  async function loadGameNews() {
     pending.value++;
     error.value = null;
     const news = [];

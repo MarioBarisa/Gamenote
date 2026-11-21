@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { GAME_STATUS_MAP, statusFromLegacy } from '../constants/gameStatus.js';
 import { cardProgress } from './cardProgress.js';
 
@@ -60,7 +61,7 @@ export function comparisonRow(left, right) {
   const leftHours = hours(left), rightHours = hours(right);
   return {
     key: `${left?.id || ''}:${right?.id || ''}`, left, right,
-    title: String(game.title || 'Bez naslova'), platform: String(game.platform || '').trim() || '—',
+    title: String(game.title || t('common.untitled')), platform: String(game.platform || '').trim() || '—',
     image: game.image_url || game.background_image || '/game-placeholder.svg',
     background: firstScreenshot(left) || firstScreenshot(right) || game.background_image || game.image_url || '',
     leftHours, rightHours, leftProgress, rightProgress,

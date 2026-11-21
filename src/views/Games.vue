@@ -6,7 +6,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
-          Natrag
+          {{ $t('games.back') }}
         </button>
         <h1 class="text-4xl font-bold">{{ apiGameDetails.name }}</h1>
       </div>
@@ -17,10 +17,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <h3 class="font-bold text-sm sm:text-base">Ova igra je već u vašoj kolekciji!</h3>
+            <h3 class="font-bold text-sm sm:text-base">{{ $t('games.thisGameIsAlreadyIn') }}</h3>
           </div>
         </div>
-        <button @click="navigateToGame(existingGameId)" class="btn btn-sm btn-primary w-full sm:w-auto mt-2 sm:mt-0 shadow-sm">Otvori u kolekciji</button>
+        <button @click="navigateToGame(existingGameId)" class="btn btn-sm btn-primary w-full sm:w-auto mt-2 sm:mt-0 shadow-sm">{{ $t('games.openInCollection') }}</button>
       </div>
 
       <div class="card bg-base-100 shadow-xl">
@@ -34,30 +34,30 @@
               <h2 class="text-2xl font-bold mb-4">{{ apiGameDetails.name }}</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <p><strong>Datum izdavanja:</strong> {{ apiGameDetails.released || 'N/A' }}</p>
-                  <p><strong>Metacritic ocjena:</strong> {{ apiGameDetails.metacritic || 'N/A' }}</p>
+                  <p><strong>{{ $t('games.releaseDate') }}</strong> {{ apiGameDetails.released || 'N/A' }}</p>
+                  <p><strong>{{ $t('games.metacriticScore') }}</strong> {{ apiGameDetails.metacritic || 'N/A' }}</p>
                   <div class="mt-4">
                     <img v-if="apiGameDetails.esrb_rating?.name === 'Mature'" src="https://www.esrb.org/wp-content/uploads/2019/05/M.svg" alt="Mature 17+" class="inline w-12 h-auto" />
                     <img v-else-if="apiGameDetails.esrb_rating?.name === 'Everyone'" src="https://www.esrb.org/wp-content/uploads/2019/05/E.svg" alt="Everyone" class="inline w-12 h-auto" />
                     <img v-else-if="apiGameDetails.esrb_rating?.name === 'Teen'" src="https://www.esrb.org/wp-content/uploads/2019/05/T.svg" alt="Teen" class="inline w-12 h-auto" />
                     <img v-else-if="apiGameDetails.esrb_rating?.name === 'Everyone 10+'" src="https://www.esrb.org/wp-content/uploads/2019/05/E10plus.svg" alt="Everyone 10+" class="inline w-12 h-auto" />
                     <img v-else-if="apiGameDetails.esrb_rating?.name === 'Adults Only'" src="https://www.esrb.org/wp-content/uploads/2019/05/AO.svg" alt="Adults Only 18+" class="inline w-12 h-auto" />
-                    <p v-else-if="apiGameDetails.esrb_rating?.name"><strong>ESRB:</strong> {{ apiGameDetails.esrb_rating.name }}</p>
+                    <p v-else-if="apiGameDetails.esrb_rating?.name"><strong>{{ $t('games.esrb') }}</strong> {{ apiGameDetails.esrb_rating.name }}</p>
                   </div>
                 </div>
                 <div>
-                  <p><strong>Žanrovi:</strong> {{ apiGameDetails.genres?.map(g => g.name).join(', ') || 'N/A' }}</p>
-                  <p><strong>Platforme:</strong> {{ apiGameDetails.platforms?.map(p => p.platform.name).join(', ') ||
+                  <p><strong>{{ $t('games.genres') }}</strong> {{ apiGameDetails.genres?.map(g => g.name).join(', ') || 'N/A' }}</p>
+                  <p><strong>{{ $t('games.platforms') }}</strong> {{ apiGameDetails.platforms?.map(p => p.platform.name).join(', ') ||
                     'N/A' }}</p>
                 </div>
               </div>
               <div class="mb-6">
-                <h3 class="text-lg font-bold mb-2">Opis</h3>
-                <p class="text-sm">{{ apiGameDetails.description_raw || 'Nema opisa.' }}</p>
+                <h3 class="text-lg font-bold mb-2">{{ $t('common.description') }}</h3>
+                <p class="text-sm">{{ apiGameDetails.description_raw || $t('common.noDescription') }}</p>
               </div>
               <div class="card-actions">
                 <button @click="navigateToAddGame(apiGameDetails.id)" class="btn btn-primary">
-                  Dodaj u Gamenote
+                  {{ $t('common.addToGamenote') }}
                 </button>
               </div>
             </div>
@@ -69,7 +69,7 @@
     <div v-else>
       <div class="flex flex-col gap-4 mb-6 sm:mb-8">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Moje igre</h1>
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">{{ $t('common.myGames') }}</h1>
         </div>
 
         <!-- Filter Tabs -->
@@ -86,7 +86,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Dodaj u Gamenote
+            {{ $t('common.addToGamenote') }}
           </router-link>
           </div>
         </LibraryToolbar>
@@ -111,16 +111,16 @@
               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2">Potrebna prijava</h3>
-        <p class="text-gray-400 mb-6">Prijavi se da bi vidio svoje igre</p>
+        <h3 class="text-xl font-bold mb-2">{{ $t('games.signInRequired') }}</h3>
+        <p class="text-gray-400 mb-6">{{ $t('games.signInToSeeYour') }}</p>
         <router-link to="/login" class="btn btn-primary">
-          Prijavi se
+          {{ $t('common.signInLabel') }}
         </router-link>
       </div>
 
       <div v-else-if="filteredGames.length > 0"
         :class="`grid ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container} ${cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap}`">
-        <div v-for="(game, index) in filteredGames" :key="game.id" class="relative cursor-pointer">
+        <div v-for="(game, index) in visibleGames" :key="game.id" class="relative cursor-pointer">
           <GameCard :game="game" :to="`/game/${game.id}`" :lazy="index >= 6" @open="rememberScroll" />
         </div>
       </div>
@@ -134,31 +134,35 @@
           </svg>
         </div>
         <h3 class="text-xl font-bold mb-2">
-          {{ searchQuery.trim() ? 'Nema rezultata pretrage' : activeFilter !== 'all' ? 'Nema igara za odabrani filter' : 'Nema igara za prikaz' }}
+          {{ searchQuery.trim() ? $t('games.noSearchResults') : activeFilter !== 'all' ? $t('games.noGamesMatchTheSelected') : $t('games.noGamesToShow') }}
         </h3>
         <p class="text-gray-400 mb-6">
-          {{ searchQuery.trim() ? 'Pokušaj drugi naziv.' : activeFilter !== 'all' ? 'Pokušaj promijeniti filter' : 'Dodaj svoju prvu igru da bi se prikazala ovdje' }}
+          {{ searchQuery.trim() ? $t('games.tryADifferentTitle') : activeFilter !== 'all' ? $t('games.tryChangingTheFilter') : $t('games.addYourFirstGameTo') }}
         </p>
-        <button v-if="searchQuery.trim()" class="btn btn-outline mr-2" @click="searchQuery = ''">Očisti pretragu</button>
+        <button v-if="searchQuery.trim()" class="btn btn-outline mr-2" @click="searchQuery = ''">{{ $t('common.clearSearch') }}</button>
         <button v-if="activeFilter !== 'all'" @click="filterGames('all')" class="btn btn-outline mr-2">
-          Poništi filter
+          {{ $t('common.clearFilter') }}
         </button>
         <router-link to="/add-game" class="btn btn-primary">
-          Dodaj u Gamenote
+          {{ $t('common.addToGamenote') }}
         </router-link>
+      </div>
+      <div v-if="!isApiGame && !loading && !error && visibleGames.length < filteredGames.length" ref="gridEnd" class="relative h-px">
+        <button type="button" class="btn btn-sm sr-only focus:not-sr-only" @click="showMoreGames">{{ $t('libraryComparison.showMore') }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { t } from '../i18n/index.js';
 import LibraryToolbar from '../components/LibraryToolbar.vue';
 import LibraryStatusFilters from '../components/LibraryStatusFilters.vue';
 import LibraryShareButton from '../components/LibraryShareButton.vue';
 import TcgShareToggle from '../components/TcgShareToggle.vue';
 import LoadingCardGrid from '../components/LoadingCardGrid.vue';
-import { fetchUserRows } from '../services/libraryData';
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { getCachedGames, getFreshGames, onGamesInvalidated } from '../services/libraryCache.js';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useCardSizeStore } from '../stores/cardSize';
@@ -191,6 +195,9 @@ export default {
     const filterDropdownLabel = ref(null);
     const searchQuery = ref(libraryUiStore.searchQuery);
     const existingGameId = ref(null);
+    const gridEnd = ref(null);
+    const visibleCount = ref(40);
+    let requestId = 0;
 
     const isApiGame = computed(() => !!route.query.api_id);
 
@@ -215,34 +222,38 @@ export default {
         }
       } catch (err) {
         console.error('Greška pri dohvaćanju API igre:', err);
-        error.value = 'Greška pri učitavanju detalja igre. Pokušaj ponovno.';
+        error.value = t('games.couldntLoadTheGameDetails');
       } finally {
         loading.value = false;
       }
     };
 
-    const fetchGames = async () => {
+    const fetchGames = async (force = false) => {
       if (!userStore.isLoggedIn || !userStore.user?.id) {
         loading.value = false;
         return;
       }
 
-      loading.value = true;
+      const userId = userStore.user.id;
+      const id = ++requestId;
+      const cached = !force && getFreshGames(userId);
+      if (cached) games.value = cached;
+      loading.value = !cached && (!force || loading.value);
       error.value = null;
 
       try {
-        const userId = userStore.user.id;
-
-        const data = await fetchUserRows(supabase, 'games', userId, { columns: 'id,title,platform,status,currently_playing,rating,notes,genre,genres_list,publisher,play_time,start_date,end_date,created_at,image_url,background_image,progress_mode,progress_value,progress_total,progress_source,achievement_percent' });
-        if (userId !== userStore.user?.id) return;
-
-        games.value = data || [];
+        const data = cached || await getCachedGames(supabase, userId, { force: true });
+        if (id === requestId && userId === userStore.user?.id && !isApiGame.value) games.value = data;
       } catch (err) {
+        if (id !== requestId || userId !== userStore.user?.id || isApiGame.value) return;
         console.error('Greška pri dohvaćanju igara:', err);
-        error.value = 'Greška pri učitavanju igara. Pokušaj ponovno.';
+        error.value = t('games.couldntLoadTheGamesTry');
         games.value = [];
       } finally {
-        loading.value = false;
+        if (id === requestId && !isApiGame.value) {
+          loading.value = false;
+          restoreScrollIfNeeded();
+        }
       }
     };
 
@@ -321,6 +332,31 @@ export default {
 
       return filtered;
     });
+    const visibleGames = computed(() => libraryUiStore.shouldRestore || typeof IntersectionObserver === 'undefined'
+      ? filteredGames.value
+      : filteredGames.value.slice(0, visibleCount.value));
+    const showMoreGames = () => { visibleCount.value += 40; };
+
+    watch([activeFilter, searchQuery, sortField, sortOrder], () => { visibleCount.value = 40; });
+    watch(gridEnd, (element, oldElement, onCleanup) => {
+      if (!element || typeof IntersectionObserver === 'undefined') return;
+      const observer = new IntersectionObserver(entries => {
+        if (entries.some(entry => entry.isIntersecting)) showMoreGames();
+      }, { rootMargin: '240px' });
+      observer.observe(element);
+      onCleanup(() => observer.disconnect());
+    }, { flush: 'post' });
+
+    const refreshOnVisible = () => {
+      const userId = userStore.user?.id;
+      if (document.visibilityState === 'visible' && !isApiGame.value && userId
+        && !getFreshGames(userId, { maxAge: 60_000, requireRealtime: false })) {
+        void fetchGames(true);
+      }
+    };
+    const stopInvalidation = onGamesInvalidated(userId => {
+      if (!isApiGame.value && userStore.user?.id === userId) void fetchGames(true);
+    });
 
     const rememberScroll = () => libraryUiStore.markForRestore(window.scrollY);
 
@@ -363,6 +399,7 @@ export default {
     // Vrati scroll nakon povratka iz detalja igre (tek kad je lista renderirana)
     const restoreScrollIfNeeded = () => {
       if (!libraryUiStore.shouldRestore) return;
+      if (libraryUiStore.savedScrollY) visibleCount.value = Math.max(visibleCount.value, filteredGames.value.length);
       const y = libraryUiStore.consumeRestore();
       if (isApiGame.value || !y) return;
       nextTick(() => {
@@ -374,10 +411,6 @@ export default {
       });
     };
 
-    watch(loading, (isLoading) => {
-      if (!isLoading) restoreScrollIfNeeded();
-    });
-
     // Spremi scroll ako se ide u detalje igre (pokriva i browser back/geste)
     onBeforeRouteLeave((to) => {
       if (['game-details', 'edit-game', 'api-game-details'].includes(to.name)) {
@@ -386,6 +419,7 @@ export default {
     });
 
     onMounted(() => {
+      document.addEventListener('visibilitychange', refreshOnVisible);
       if (route.query.filter) {
         activeFilter.value = route.query.filter;
         libraryUiStore.saveViewState({ filter: route.query.filter });
@@ -395,6 +429,11 @@ export default {
       } else {
         fetchGames();
       }
+    });
+    onUnmounted(() => {
+      requestId++;
+      stopInvalidation();
+      document.removeEventListener('visibilitychange', refreshOnVisible);
     });
 
     return {
@@ -407,6 +446,9 @@ export default {
       sortOrder,
       activeFilter,
       filteredGames,
+      visibleGames,
+      gridEnd,
+      showMoreGames,
       sortGames,
       changeSort,
       filterGames,

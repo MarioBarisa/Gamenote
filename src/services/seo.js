@@ -1,59 +1,40 @@
-import { comparisonFromPath, comparisonPath, comparisonPreviewImage } from './comparisonLink.js';
+import { t } from '../i18n/index.js';
+import { comparisonFromPath, comparisonMetadata } from './comparisonLink.js';
+import { metadataHtml, siteUrl } from './metadataHtml.js';
 
-export const siteUrl = 'https://gamenote.eu';
-export const previewImage = `${siteUrl}/social-preview.png`;
+export { escapeHtml, metadataHtml, previewImage, siteUrl } from './metadataHtml.js';
 
 const pages = {
-  '/library': ['Moje igre', 'Tvoja osobna biblioteka igara.'],
-  '/groups': ['Grupe', 'Organiziraj igre u vlastite grupe.'],
-  '/profile': ['Profil', 'Postavke tvojeg profila.'],
-  '/stats': ['Gamenote Statistika', 'Pregled vremena igranja i tvoje biblioteke.'],
-  '/theme-settings': ['Postavke UI-ja', 'Prilagodi izgled Gamenotea.'],
-  '/importers': ['Importer', 'Uvezi igre iz povezanih platformi.'],
-  '/add-game': ['Pretraži igre', 'Pronađi igru za svoju biblioteku.'],
-  '/': ['Gamenote', 'Organiziraj svoju biblioteku igara, zapiši dojmove i prati napredak. Uvezi igre sa Steama i PlayStationa i vodi svoj gaming dnevnik bez oglasa.'],
-  '/privacy': ['Pravila privatnosti – Gamenote', 'Kako Gamenote koristi i čuva tvoje podatke te kako ih možeš izvesti ili obrisati.'],
-  '/tos': ['Uvjeti korištenja – Gamenote', 'Uvjeti korištenja osobnog gaming dnevnika Gamenote.'],
-  '/login': ['Prijavi se', 'Prijavi se u svoj gaming dnevnik.'],
-  '/register': ['Registriraj se', 'Stvori račun i započni svoju biblioteku igara.'],
-  '/reset-password': ['Resetiranje lozinke', 'Postavi novu lozinku za svoj račun.'],
-  '/shared': ['Podijeljena igra', 'Pogledaj podijeljenu igru na Gamenoteu.'],
+  '/library': ['common.myGames', 'seo.yourPersonalGameLibrary'],
+  '/groups': ['common.groups', 'seo.organizeGamesIntoYourOwn'],
+  '/profile': ['common.profile', 'seo.yourProfileSettings'],
+  '/stats': ['common.gamenoteStats', 'seo.anOverviewOfYourPlaytime'],
+  '/theme-settings': ['common.uiSettings', 'seo.customizeHowGamenoteLooks'],
+  '/importers': ['common.importer', 'seo.importGamesFromConnectedPlatforms'],
+  '/add-game': ['common.searchGamesLabel', 'seo.findAGameForYour'],
+  '/': ['Gamenote', 'seo.organizeYourGameLibraryWrite'],
+  '/privacy': ['seo.privacyPolicyGamenote', 'seo.howGamenoteUsesAndKeeps'],
+  '/tos': ['seo.termsOfServiceGamenote', 'seo.termsOfServiceForThe'],
+  '/login': ['common.signInLabel', 'seo.signInToYourGaming'],
+  '/register': ['common.signUpLabel', 'seo.createAnAccountAndStart'],
+  '/reset-password': ['common.resetPassword', 'seo.setANewPasswordFor'],
+  '/shared': ['seo.sharedGame', 'seo.viewTheSharedGameOn'],
 };
 
 export function pageMetadata(path, query = {}) {
   path = path.replace(/\/+$/, '') || '/';
   const comparison = comparisonFromPath(path);
-  if (comparison) return {
-    title: `Gamenote: ${comparison.left} vs ${comparison.right}`,
-    description: `Usporedi Gamenote zbirke @${comparison.left} i @${comparison.right}.`,
-    canonical: siteUrl + comparisonPath(comparison.left, comparison.right), robots: 'noindex, follow',
-    image: comparisonPreviewImage(comparison.left, comparison.right)
-  };
-  let [title, description] = pages[path] || ['Gamenote', 'Tvoja osobna biblioteka igara na Gamenoteu.'];
-  if (/^\/(?:game|edit-game|api-games)\//.test(path)) title = 'Igra';
-  if (/^\/groups\//.test(path)) title = 'Grupa';
+  if (comparison) {
+    return comparisonMetadata(comparison, t('seo.comparisonDescription', [comparison.left, comparison.right]));
+  }
+  const [titleKey, descriptionKey] = pages[path] || ['Gamenote', 'seo.yourPersonalGameLibraryOn'];
+  let title = titleKey === 'Gamenote' ? titleKey : t(titleKey);
+  const description = t(descriptionKey);
+  if (/^\/(?:game|edit-game|api-games)\//.test(path)) title = t('common.game');
+  if (/^\/groups\//.test(path)) title = t('common.group');
   const url = new URL(path, siteUrl);
   if (path === '/shared' && typeof query.id === 'string') url.searchParams.set('id', query.id);
   return { title, description, canonical: url.href, robots: ['/', '/privacy', '/tos'].includes(path) ? 'index, follow' : 'noindex, follow' };
-}
-
-export const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-
-export function metadataHtml(metadata) {
-  const { title, description, canonical, robots, image = previewImage } = metadata;
-  return `<title>${escapeHtml(title)}</title>
-    <meta name="description" content="${escapeHtml(description)}">
-    <meta name="robots" content="${robots}">
-    <link rel="canonical" href="${escapeHtml(canonical)}">
-    <meta property="og:title" content="${escapeHtml(title)}">
-    <meta property="og:description" content="${escapeHtml(description)}">
-    <meta property="og:url" content="${escapeHtml(canonical)}">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="${escapeHtml(image)}">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${escapeHtml(title)}">
-    <meta name="twitter:description" content="${escapeHtml(description)}">
-    <meta name="twitter:image" content="${escapeHtml(image)}">`;
 }
 
 export function updateMetadata(route) {
@@ -61,7 +42,7 @@ export function updateMetadata(route) {
   const metadata = pageMetadata(route.path, route.query);
   if (route.publicLibrary) {
     metadata.title = `Gamenote · ${route.publicLibrary.name}`;
-    metadata.description = `Pogledaj zbirku @${route.publicLibrary.username} na Gamenoteu.`;
+    metadata.description = t('seo.sharedLibraryDescription', [route.publicLibrary.username]);
   }
   template.innerHTML = metadataHtml(metadata);
   if (route.publicLibrary) {

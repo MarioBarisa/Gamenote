@@ -2,7 +2,7 @@
 <template>
   <div v-if="operationError && !showApiGameModal" role="alert" class="alert alert-error mb-4">{{ operationError }}</div>
   <div class="add-game">
-    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">Pretraži igre</h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-8 text-center">{{ $t('common.searchGamesLabel') }}</h1>
 
     <div class="card bg-base-200 shadow-xl">
       <div class="card-body p-4 sm:p-6">
@@ -13,16 +13,16 @@
               <input 
                 type="text" 
                 v-model="searchQuery" 
-                placeholder="Unesite naziv igre..." 
+                :placeholder="$t('addGame.enterAGameTitle')"
                 class="input input-bordered input-md sm:input-lg w-full pr-10"
                 @keyup.enter="searchGames" 
-               aria-label="Unesite naziv igre..." />
+               :aria-label="$t('addGame.enterAGameTitle')" />
               <button 
                 v-if="searchQuery"
                 @click="clearSearch"
                 class="absolute inset-y-0 right-1 sm:right-2 flex items-center justify-center w-8 sm:w-9 text-base-content/60 hover:text-base-content"
-                title="Očisti pretragu"
-                aria-label="Očisti pretragu"
+                :title="$t('common.clearSearch')"
+                :aria-label="$t('common.clearSearch')"
                 type="button"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -32,13 +32,13 @@
             </div>
             <button @click="searchGames" class="btn btn-primary btn-md sm:btn-lg whitespace-nowrap w-full sm:w-auto" :disabled="searchLoading">
               <span v-if="searchLoading" class="loading loading-spinner"></span>
-              <span v-else>Pretraži</span>
+              <span v-else>{{ $t('addGame.search') }}</span>
             </button>
           </div>
         </div>
         
         <div v-if="searchResults.length > 0" class="search-results mb-6 sm:mb-8">
-          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Rezultati pretrage</h3>
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{{ $t('addGame.searchResults') }}</h3>
           <div :class="`grid ${cardConfig.container} ${cardConfig.gap}`">
             <div 
               v-for="game in searchResults" 
@@ -56,7 +56,7 @@
                         <path d="M0 0h20v20H0z" fill="none" />
                         <path fill="currentColor" fill-rule="evenodd" d="M3.213 5.8c.015.759-.398 1.785-.935 2.321a2.66 2.66 0 0 0 0 3.76c.53.528.92 1.444.935 2.192c.014.662.273 1.32.778 1.824a2.65 2.65 0 0 0 1.748.775c.791.04 1.827.5 2.387 1.06a2.66 2.66 0 0 0 3.759 0c.56-.56 1.596-1.02 2.387-1.06a2.65 2.65 0 0 0 1.748-.775a2.65 2.65 0 0 0 .777-1.826c.015-.746.4-1.656.929-2.184a2.663 2.663 0 0 0 .006-3.766c-.536-.535-.95-1.562-.934-2.32a2.65 2.65 0 0 0-.778-1.932a2.65 2.65 0 0 0-2.015-.775c-.714.036-1.615-.31-2.12-.816a2.66 2.66 0 0 0-3.76 0c-.504.505-1.406.852-2.12.816a2.65 2.65 0 0 0-2.014.775A2.65 2.65 0 0 0 3.213 5.8m9.828.826a1 1 0 0 1 .389 1.36l-2.768 4.982a1 1 0 0 1-.298.343a1 1 0 0 1-1.23-.045l-2.759-2.207a1 1 0 1 1 1.25-1.562l1.853 1.483l2.203-3.966a1 1 0 0 1 1.36-.388" clip-rule="evenodd" />
                       </svg>
-                    U kolekciji
+                    {{ $t('common.inCollection') }}
                   </span>
                 </div>
               </figure>
@@ -64,7 +64,7 @@
                 <h4 :class="`card-title ${cardConfig.titleSize} font-bold mb-1 line-clamp-1`">{{ game.name }}</h4>
                 <div v-show="game.metacritic || getPlatformNames(game).length" class="flex items-center flex-wrap gap-1.5 mb-1">
                   <span v-if="game.metacritic" class="badge badge-outline font-bold text-xs sm:text-sm" :class="getMetacriticBadgeColor(game.metacritic)">
-                    Metacritic: {{ game.metacritic }}
+                    {{ $t('addGame.metacritic') }} {{ game.metacritic }}
                   </span>
                   <span 
                     v-for="platform in getPlatformNames(game).slice(0, 3)" 
@@ -84,7 +84,7 @@
                     @click.stop="selectGameForCollection(game)" 
                     class="btn btn-xs sm:btn-sm btn-primary"
                   >
-                    Dodaj u Gamenote
+                    {{ $t('common.addToGamenote') }}
                   </button>
                 </div>
               </div>
@@ -98,10 +98,10 @@
     </div>
 
     <!-- API dodaj igru -->
-    <AppModal v-if="showApiGameModal" label="Dodaj u Gamenote" :busy="saveLoading" @close="closeApiGameModal">
+    <AppModal v-if="showApiGameModal" :label="$t('common.addToGamenote')" :busy="saveLoading" @close="closeApiGameModal">
       <div class="modal-box max-w-2xl">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="saveLoading" @click.stop="closeApiGameModal">✕</button>
-        <h3 class="font-bold text-2xl mb-4">Dodaj u Gamenote</h3>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" :disabled="saveLoading" @click.stop="closeApiGameModal">✕</button>
+        <h3 class="font-bold text-2xl mb-4">{{ $t('common.addToGamenote') }}</h3>
         
         <div v-if="apiGameDetails" class="mb-6">
           <div class="flex gap-4 mb-4">
@@ -113,8 +113,8 @@
             <div class="min-w-0">
               <h4 class="text-[1.375rem] font-bold [overflow-wrap:anywhere]">{{ apiGameDetails.name }}</h4>
               <p class="text-sm opacity-70">{{ formatReleaseDate(apiGameDetails.released) }}</p>
-              <p class="text-sm"><strong>Žanr:</strong> {{ apiGameDetails.genres?.map(g => g.name).join(', ') || 'N/A' }}</p>
-              <p class="text-sm"><strong>Izdavač:</strong> {{ apiGameDetails.publishers?.map(p => p.name).join(', ') || 'N/A' }}</p>
+              <p class="text-sm"><strong>{{ $t('common.genreLabel') }}</strong> {{ apiGameDetails.genres?.map(g => g.name).join(', ') || 'N/A' }}</p>
+              <p class="text-sm"><strong>{{ $t('common.publisher') }}</strong> {{ apiGameDetails.publishers?.map(p => p.name).join(', ') || 'N/A' }}</p>
             </div>
           </div>
         </div>
@@ -122,14 +122,14 @@
         <form @submit.prevent="saveApiGame" class="space-y-6">
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control col-span-2 sm:col-span-1">
-              <label class="label font-medium" :for="fieldId + '-1'">Naziv</label>
+              <label class="label font-medium" :for="fieldId + '-1'">{{ $t('common.name') }}</label>
               <input type="text" v-model="apiGameForm.title" class="input input-bordered" required  :id="fieldId + '-1'" />
             </div>
             
             <div class="form-control col-span-2 sm:col-span-1">
-              <label class="label font-medium" :for="fieldId + '-2'">Platforma</label>
+              <label class="label font-medium" :for="fieldId + '-2'">{{ $t('common.platform') }}</label>
               <select v-model="apiGameForm.platform" class="select select-bordered" required :id="fieldId + '-2'">
-                <option value="" disabled>Odaberi platformu</option>
+                <option value="" disabled>{{ $t('common.chooseAPlatform') }}</option>
                 <option v-for="platform in platforms" :key="platform" :value="platform">
                   {{ platform }}
                 </option>
@@ -137,12 +137,12 @@
             </div>
             
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-3'">Vrijeme igranja <span class="sr-only sm:not-sr-only">(sati)</span></label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-3'">{{ $t('common.playtime') }} <span class="sr-only sm:not-sr-only">{{ $t('common.hoursLabel') }}</span></label>
               <input type="number" v-model="apiGameForm.play_time" class="input input-bordered w-full min-w-0 min-h-11 sm:min-h-10" min="0"  :id="fieldId + '-3'" />
             </div>
             
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-4'">Status</label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-4'">{{ $t('common.status') }}</label>
               <select v-model="apiGameForm.status" class="select select-bordered w-full min-w-0 font-semibold" :class="GAME_STATUS_SELECT_CLASS[apiGameForm.status]" :id="fieldId + '-4'">
                 <option value="" disabled class="bg-base-100 text-base-content font-normal">{{ statusPlaceholder }}</option>
                 <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key" class="bg-base-100 text-base-content font-normal">{{ s.label }}</option>
@@ -150,23 +150,23 @@
             </div>
 
             <div class="form-control col-span-2 flex items-center gap-2">
-              <span :id="fieldId + '-rating-label'" class="label font-medium shrink-0">Ocjena (1-5)</span>
+              <span :id="fieldId + '-rating-label'" class="label font-medium shrink-0">{{ $t('common.rating15') }}</span>
               <div class="rating rating-sm sm:rating-md shrink-0" role="radiogroup" :aria-labelledby="fieldId + '-rating-label'">
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="apiGameForm.rating"  aria-label="1 od 5" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="apiGameForm.rating"  aria-label="2 od 5" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="apiGameForm.rating"  aria-label="3 od 5" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="apiGameForm.rating"  aria-label="4 od 5" />
-                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="apiGameForm.rating"  aria-label="5 od 5" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="apiGameForm.rating"  :aria-label="$t('common.value1OutOf5')" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="apiGameForm.rating"  :aria-label="$t('common.value2OutOf5')" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="apiGameForm.rating"  :aria-label="$t('common.value3OutOf5')" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="apiGameForm.rating"  :aria-label="$t('common.value4OutOf5')" />
+                <input type="radio" name="api-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="apiGameForm.rating"  :aria-label="$t('common.value5OutOf5')" />
               </div>
             </div>
           </div>
 
           <fieldset class="min-w-0 rounded-box border border-base-300 bg-base-300/30 p-4 space-y-4">
-            <legend class="sr-only">Napredak igre</legend>
+            <legend class="sr-only">{{ $t('common.gameProgress') }}</legend>
             <div class="form-control">
-              <label class="label font-medium" :for="fieldId + '-5'">Vrsta napretka</label>
+              <label class="label font-medium" :for="fieldId + '-5'">{{ $t('common.progressType') }}</label>
               <select v-model="apiGameForm.progress_mode" class="select select-bordered w-full" :id="fieldId + '-5'">
-                <option value="" disabled>Odaberi način praćenja</option>
+                <option value="" disabled>{{ $t('common.chooseHowToTrackProgress') }}</option>
                 <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
               </select>
             </div>
@@ -176,20 +176,20 @@
                 <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-8'">
-                      Ukupno
+                      {{ $t('common.total') }}
                     </label>
                     <input
                       type="number"
                       v-model.number="apiGameForm.progress_total"
                       class="input input-bordered w-full min-w-0 font-bold"
                       min="0"
-                      placeholder="npr. 50"
+                      :placeholder="$t('common.eG50')"
                      :id="fieldId + '-8'" />
                   </div>
 
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-9'">
-                      Ostvareno
+                      {{ $t('common.earned') }}
                     </label>
                     <input
                       type="number"
@@ -197,24 +197,24 @@
                       class="input input-bordered w-full min-w-0 font-bold text-success"
                       min="0"
                       :max="apiGameForm.progress_total || undefined"
-                      placeholder="npr. 25"
+                      :placeholder="$t('common.eG25')"
                      :id="fieldId + '-9'" />
 
                   </div>
 
                   <div class="form-control min-w-0">
-                    <label class="label font-medium text-sm" :for="fieldId + '-10'">Jedinica</label>
+                    <label class="label font-medium text-sm" :for="fieldId + '-10'">{{ $t('common.unit') }}</label>
                     <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-10'">
                       <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ apiGameForm.progress_unit || selectedApiProgressMode.defaultUnit || '—' }}</code>
                     </output>
                   </div>
                   <div class="col-span-3">
                     <span class="text-xs opacity-70">
-                      Napredak:
+                      {{ $t('common.progressLabel') }}
                       <strong v-if="apiGameForm.progress_total > 0">
                         {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
                       </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
+                      <span v-else class="text-warning">{{ $t('common.setATotal') }}</span>
                     </span>
                   </div>
                 </div>
@@ -224,20 +224,20 @@
                 <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-11'">
-                      Ukupno
+                      {{ $t('common.total') }}
                     </label>
                     <input
                       type="number"
                       v-model.number="apiGameForm.progress_total"
                       class="input input-bordered w-full min-w-0 font-bold"
                       min="0"
-                      placeholder="npr. 251"
+                      :placeholder="$t('common.eG251')"
                      :id="fieldId + '-11'" />
                   </div>
 
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-12'">
-                      Uhvaćeno
+                      {{ $t('common.caught') }}
                     </label>
                     <input
                       type="number"
@@ -245,24 +245,24 @@
                       class="input input-bordered w-full min-w-0 font-bold text-success"
                       min="0"
                       :max="apiGameForm.progress_total || undefined"
-                      placeholder="npr. 150"
+                      :placeholder="$t('common.eG150')"
                      :id="fieldId + '-12'" />
 
                   </div>
 
                   <div class="form-control min-w-0">
-                    <label class="label font-medium text-sm" :for="fieldId + '-13'">Jedinica</label>
+                    <label class="label font-medium text-sm" :for="fieldId + '-13'">{{ $t('common.unit') }}</label>
                     <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-13'">
                       <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ apiGameForm.progress_unit || selectedApiProgressMode.defaultUnit || '—' }}</code>
                     </output>
                   </div>
                   <div class="col-span-3">
                     <span class="text-xs opacity-70">
-                      Napredak:
+                      {{ $t('common.progressLabel') }}
                       <strong v-if="apiGameForm.progress_total > 0">
                         {{ Math.round((apiGameForm.progress_value / apiGameForm.progress_total) * 100) }}%
                       </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
+                      <span v-else class="text-warning">{{ $t('common.setATotal') }}</span>
                     </span>
                   </div>
                 </div>
@@ -270,15 +270,15 @@
 
               <div v-else class="grid grid-cols-2 gap-2 sm:gap-4">
                 <div class="form-control" v-if="selectedApiProgressMode.kind === 'count' || selectedApiProgressMode.kind === 'rank'">
-                  <label class="label font-medium text-sm" :for="fieldId + '-14'">Vrijednost</label>
+                  <label class="label font-medium text-sm" :for="fieldId + '-14'">{{ $t('common.value') }}</label>
                   <input type="number" v-model.number="apiGameForm.progress_value" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-14'" />
                 </div>
                 <div class="form-control" v-if="selectedApiProgressMode.requiresTotal">
-                  <label class="label font-medium text-sm" :for="fieldId + '-15'">Ukupno</label>
+                  <label class="label font-medium text-sm" :for="fieldId + '-15'">{{ $t('common.total') }}</label>
                   <input type="number" v-model.number="apiGameForm.progress_total" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-15'" />
                 </div>
                 <div class="form-control">
-                  <label class="label font-medium text-sm" :for="fieldId + '-16'">Jedinica</label>
+                  <label class="label font-medium text-sm" :for="fieldId + '-16'">{{ $t('common.unit') }}</label>
                   <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-16'">
                     <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ apiGameForm.progress_unit || selectedApiProgressMode.defaultUnit || '—' }}</code>
                   </output>
@@ -289,12 +289,12 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-6'">Datum početka</label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-6'">{{ $t('common.startDate') }}</label>
               <input type="date" v-model="apiGameForm.start_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-6'" />
             </div>
 
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-7'">Datum završetka</label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-7'">{{ $t('common.endDate') }}</label>
               <input type="date" v-model="apiGameForm.end_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-7'" />
             </div>
           </div>
@@ -302,7 +302,7 @@
 
           <!-- GRUPE / KOLEKCIJE -->
           <div class="form-control bg-base-200/50 p-4 rounded-box border border-base-300" v-if="apiGameStoresList.length > 0">
-            <label class="label font-medium text-base mb-2" :for="fieldId + '-17'">Dodaj u kolekcije</label>
+            <label class="label font-medium text-base mb-2" :for="fieldId + '-17'">{{ $t('common.addToCollections') }}</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               <label v-for="group in apiGameStoresList" :key="group.id" class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-base-300 bg-base-100 hover:border-primary transition-colors">
                 <input 
@@ -317,7 +317,7 @@
           </div>
           
           <div class="form-control">
-            <label class="label font-medium" :for="fieldId + '-18'">Bilješke</label>
+            <label class="label font-medium" :for="fieldId + '-18'">{{ $t('common.notes') }}</label>
             <textarea v-model="apiGameForm.notes" class="textarea textarea-bordered h-24 w-full" :id="fieldId + '-18'"></textarea>
           </div>
           
@@ -326,10 +326,10 @@
           <div class="modal-action">
             <button type="submit" class="btn btn-primary" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
-              <span v-else>Dodaj u Gamenote</span>
+              <span v-else>{{ $t('common.addToGamenote') }}</span>
             </button>
             <button type="button" @click="closeApiGameModal" class="btn btn-secondary">
-              Odustani
+              {{ $t('common.cancel') }}
             </button>
           </div>
         </form>
@@ -339,11 +339,13 @@
 </template>
 
 <script>
+import { formatLocale, t } from '../i18n/index.js';
 import { useStatusPlaceholder } from '../composables/useStatusPlaceholder.js';
 import { useId } from 'vue';
 import AppModal from '../components/AppModal.vue';
 import { buildGameUpdate, progressFields } from '../services/gameForm';
 import { fetchUserRows } from '../services/libraryData';
+import { invalidateGames } from '../services/libraryCache.js';
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -559,7 +561,7 @@ export default {
         sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
         window.scrollTo({ top: 0 });
       } catch (error) {
-        if (version === searchVersion && error.name !== 'AbortError') operationError.value = error.message || 'Pretraživanje nije uspjelo.';
+        if (version === searchVersion && error.name !== 'AbortError') operationError.value = error.message || t('addGame.searchFailed');
       } finally {
         if (version === searchVersion) searchLoading.value = false;
       }
@@ -585,7 +587,7 @@ export default {
         hasMoreResults.value = computeHasMore(data, searchResults.value.length);
         sessionStorage.setItem('addGameSearchResults', JSON.stringify(searchResults.value));
       } catch (error) {
-        if (version === searchVersion) operationError.value = error.message || 'Dohvat nije uspio.';
+        if (version === searchVersion) operationError.value = error.message || t('addGame.couldntFetchTheData');
       } finally {
         searchLoadingMore.value = false;
       }
@@ -664,7 +666,7 @@ export default {
         }
       }, 100);
       } catch (failure) {
-        if (version === detailVersion) operationError.value = failure.message || 'Detalje nije moguće učitati.';
+        if (version === detailVersion) operationError.value = failure.message || t('addGame.detailsCouldntBeLoaded');
       }
     };
 
@@ -691,8 +693,8 @@ export default {
     };
     
     const formatReleaseDate = (date) => {
-      if (!date) return 'Nepoznat datum';
-      return new Date(date).toLocaleDateString('hr-HR');
+      if (!date) return t('common.unknownDate');
+      return new Date(date).toLocaleDateString(formatLocale.value);
     };
     
     const saveGame = async () => {
@@ -785,10 +787,11 @@ export default {
           .select();
 
         if (error) {
-          operationError.value = error.message || 'Spremanje igre nije uspjelo.';
+          operationError.value = error.message || t('addGame.couldntSaveTheGame');
           return;
         }
 
+        invalidateGames(ownerId);
         // resetiraj popunjavanje
         selectedGame.value = null;
         Object.keys(gameForm).forEach(key => {
@@ -804,7 +807,7 @@ export default {
 
         router.push('/library');
       } catch (error) {
-        operationError.value = error.message || 'Spremanje igre nije uspjelo.';
+        operationError.value = error.message || t('addGame.couldntSaveTheGame');
       } finally {
         saveLoading.value = false;
       }
@@ -909,10 +912,11 @@ export default {
           .single();
 
         if (error) {
-          operationError.value = error.message || 'Spremanje igre nije uspjelo.';
+          operationError.value = error.message || t('addGame.couldntSaveTheGame');
           return;
         }
 
+        invalidateGames(ownerId);
         const newGameId = insertedGame?.id;
         let groupFailed = false;
         
@@ -931,11 +935,11 @@ export default {
           }
         }
 
-        if (groupFailed) alert('Igra je dodana, ali neke grupe nisu spremljene. Uredi grupe iz detalja igre.');
+        if (groupFailed) alert(t('addGame.theGameWasAddedBut'));
         closeApiGameModal();
         router.push('/library');
       } catch (error) {
-        operationError.value = error.message || 'Spremanje igre nije uspjelo.';
+        operationError.value = error.message || t('addGame.couldntSaveTheGame');
       } finally {
         saveLoading.value = false;
       }
@@ -953,7 +957,7 @@ export default {
           showApiGameModal.value = true;
         } catch (error) {
           console.error('Error loading game from API ID:', error);
-          alert('Greška pri učitavanju igre. Pokušajte ponovo.');
+          alert(t('addGame.couldntLoadTheGameTry'));
         } finally {
           saveLoading.value = false;
         }

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 export function normalizeTitle(value) {
   return String(value || '').normalize('NFD').toLowerCase()
     .replace(/[™®©]/g, '').replace(/[:\-–—_]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -30,7 +31,7 @@ export function otherPlatforms(rows, name, platform) {
   const result = new Set();
   for (const row of rows) {
     if (relatedGameTitles(row.title, name) && canonicalPlatform(row.platform) !== canonicalPlatform(platform)) {
-      result.add(row.platform || 'Nepoznata platforma');
+      result.add(row.platform || t('common.unknownPlatform'));
     }
   }
   return [...result];

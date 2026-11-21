@@ -2,7 +2,7 @@
   <span class="relative block w-full h-full">
     <img :src="localAvatar(name)" alt="" class="absolute inset-0 w-full h-full object-cover" />
     <img v-if="source && !failed" :key="`${source}-${attempt}`" :src="source"
-      alt="Profilna slika" referrerpolicy="no-referrer" class="relative w-full h-full object-cover"
+      :alt="$t('common.profilePicture')" referrerpolicy="no-referrer" class="relative w-full h-full object-cover"
       @error="onError" @load="loaded = true" />
   </span>
 </template>

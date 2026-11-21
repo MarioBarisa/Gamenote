@@ -1,8 +1,5 @@
+import { t, translateServiceError } from '../i18n/index.js';
 // PSN sync u pregledniku; auth + trofeji preko stateless relayja.
-import {
-  getUserPlayedGames,
-  getProfileFromAccountId
-} from 'psn-api';
 import { seal, unseal, isEnvelope, deleteKey } from './tokenVault';
 import { useUserStore } from '../stores/user';
 import { findPsnTrophyTitle } from './psnImport';
@@ -17,7 +14,7 @@ const RELAY_ENDPOINT = '/.netlify/functions/psn-relay';
 const PAGE_PACING_MS = 300;
 
 export class PsnAuthRequiredError extends Error {
-  constructor(message = 'PSN račun nije povezan ili je veza istekla.') {
+  constructor(message = t('psnService.yourPsnAccountIsntConnected')) {
     super(message);
     this.name = 'PsnAuthRequiredError';
   }
@@ -28,7 +25,7 @@ const memoryTokens = new Map();
 
 function ownerId() {
   const userId = useUserStore().user?.id;
-  if (!userId) throw new PsnAuthRequiredError('Prijavi se za povezivanje PSN računa.');
+  if (!userId) throw new PsnAuthRequiredError(t('psnService.signInToConnectYour'));
   if (!legacyCleared) {
     for (const key of [TOKENS_KEY, SNAPSHOT_KEY, ACCOUNT_ID_KEY, ONLINE_ID_KEY]) localStorage.removeItem(key);
     legacyCleared = true;
@@ -36,7 +33,7 @@ function ownerId() {
   return userId;
 }
 function assertOwner(userId) {
-  if (useUserStore().user?.id !== userId) throw new PsnAuthRequiredError('Korisnik je promijenjen. Poveži svoj PSN račun.');
+  if (useUserStore().user?.id !== userId) throw new PsnAuthRequiredError(t('psnService.theUserChangedConnectYour'));
 }
 function storageKey(key, userId = ownerId()) { return key + '.' + userId; }
 
@@ -112,12 +109,12 @@ async function exchangeRemote(body) {
       signal: AbortSignal.timeout(15000),
     });
   } catch {
-    throw new Error('PSN auth servis nije dostupan. Pokušaj ponovno.');
+    throw new Error(t('psnService.thePsnSignInService'));
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    if (res.status === 401 && body.mode === 'refresh') throw new PsnAuthRequiredError(data?.error);
-    throw new Error(data?.error || 'PSN autentikacija nije uspjela.');
+    if (res.status === 401 && body.mode === 'refresh') throw new PsnAuthRequiredError(translateServiceError(data?.error));
+    throw new Error(translateServiceError(data?.error) || t('psnService.psnSignInFailed'));
   }
   return data;
 }
@@ -246,11 +243,11 @@ async function relayGet(path, accessToken) {
       signal: AbortSignal.timeout(15000),
     });
   } catch {
-    throw new Error('PSN relay servis nije dostupan.');
+    throw new Error(t('psnService.thePsnRelayIsUnavailable'));
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const msg = data?.error?.message ?? data?.error ?? 'Greška pri dohvaćanju PSN podataka.';
+    const msg = translateServiceError(data?.error?.message ?? data?.error) ?? t('psnService.couldntFetchPsnData');
     throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
   }
   return data;
@@ -285,7 +282,7 @@ async function searchAccountId(onlineId) {
     })
   }).then(async res => {
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.error?.message || `Pretraga nije uspjela (${res.status}).`);
+    if (!res.ok) throw new Error(translateServiceError(json?.error?.message ?? json?.error) || t('psnService.searchFailed', [res.status]));
     return json;
   }));
   const results = data?.domainResponses?.[0]?.results || [];
@@ -321,6 +318,7 @@ async function resolveIdentity({ onlineId } = {}) {
 async function fetchProfileSafe(accountId) {
   if (!accountId) return identityFallback();
   try {
+    const { getProfileFromAccountId } = await import('psn-api');
     const res = await psnCall(auth => getProfileFromAccountId(auth, accountId));
     // flat oblik, legacy fallback
     const p = res?.onlineId !== undefined ? res : (res?.profile ?? {});
@@ -352,7 +350,7 @@ export function extractNpsso(raw) {
 export async function connectWithNpsso(npsso) {
   const userId = ownerId();
   const trimmedNpsso = extractNpsso(npsso);
-  if (trimmedNpsso.length < 30) throw new Error('NPSSO token nije ispravnog formata.');
+  if (trimmedNpsso.length < 30) throw new Error(t('psnService.theNpssoTokenFormatIs'));
   const response = await exchangeRemote({ mode: 'npsso', npsso: trimmedNpsso });
   assertOwner(userId);
   const tokens = await tokensFromResponse(response);
@@ -402,12 +400,12 @@ export async function fetchSyncData(onStage) {
   const userId = ownerId();
   await ensureAuthorization();
 
-  onStage?.('Dohvaćam profil…');
+  onStage?.(t('psnService.fetchingProfile'));
   const accountId = await resolveIdentity();
   const profile = await fetchProfileSafe(accountId);
   if (!accountId) console.warn('[psn] accountId nije riješen — identitet iz idTokena/fallbacka.');
 
-  onStage?.('Dohvaćam trofeje profila…');
+  onStage?.(t('psnService.fetchingProfileTrophies'));
   // level iz svježeg snapshot-a (<24h)
   const snap = loadSnapshot();
   const freshLevel = (snap?.syncedAt && Date.now() - snap.syncedAt < 86_400_000)
@@ -418,21 +416,22 @@ export async function fetchSyncData(onStage) {
     : await psnCall(auth => relayGet(`/api/trophy/v1/users/${accountId || 'me'}/trophySummary`, auth.accessToken))
       .catch(() => null);
 
-  onStage?.('Dohvaćam odigrane igre…');
+  onStage?.(t('psnService.fetchingPlayedGames'));
+  const { getUserPlayedGames } = await import('psn-api');
   const playedGames = await paginate(
     (offset) => psnCall(auth => getUserPlayedGames(auth, accountId || 'me', {
       limit: 200,
       offset,
       categories: 'ps4_game,ps5_native_game'
     })),
-    (count) => onStage?.(`Dohvaćam odigrane igre… (${count})`)
+    (count) => onStage?.(t('psnService.fetchingPlayedGamesError', [count]))
   );
 
-  onStage?.('Dohvaćam trofeje po igrama…');
+  onStage?.(t('psnService.fetchingTrophiesByGame'));
   const trophyTitles = await paginate(
     (offset) => psnCall(auth => relayGet(`/api/trophy/v1/users/${accountId || 'me'}/trophyTitles?limit=${TROPHY_PAGE_LIMIT}&offset=${offset}`, auth.accessToken))
       .then(resp => normalizeTrophyPage(resp, offset)),
-    (count) => onStage?.(`Dohvaćam trofeje po igrama… (${count})`)
+    (count) => onStage?.(t('psnService.fetchingTrophiesByGameError', [count]))
   );
 
   assertOwner(userId);

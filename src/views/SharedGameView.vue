@@ -9,16 +9,16 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2" />
         </svg>
         <div>
-          <h3 class="font-bold">Greška</h3>
+          <h3 class="font-bold">{{ $t('common.error') }}</h3>
           <div class="text-sm">{{ error }}</div>
         </div>
       </div>
-      <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
+      <router-link to="/" class="btn btn-primary mt-4">{{ $t('common.backToHome') }}</router-link>
     </div>
 
     <div v-else-if="isLoadingApi" class="max-w-7xl mx-auto px-4" aria-busy="true">
       <div class="skeleton min-h-[220px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[380px] mt-4 mb-6 w-full rounded-box" aria-hidden="true"></div>
-      <LoadingCardGrid :layout="{ container: 'grid-cols-1 lg:grid-cols-[2fr_3fr]', gap: 'gap-4 lg:gap-6', cardBody: 'p-4' }" variant="panels" label="Učitavam igru…" />
+      <LoadingCardGrid :layout="{ container: 'grid-cols-1 lg:grid-cols-[2fr_3fr]', gap: 'gap-4 lg:gap-6', cardBody: 'p-4' }" variant="panels" :label="$t('common.loadingGame')" />
     </div>
 
     <div v-else-if="apiGame" class="max-w-7xl mx-auto px-4">
@@ -47,7 +47,7 @@
         <!-- Informacije -->
         <div class="card bg-base-200 shadow-xl lg:col-span-2">
           <div class="card-body p-3 sm:p-4 flex flex-col">
-            <h2 class="card-title text-base m-0 mb-3">Informacije</h2>
+            <h2 class="card-title text-base m-0 mb-3">{{ $t('common.information') }}</h2>
 
             <!-- Metacritic + ESRB -->
             <div class="flex flex-wrap items-center justify-evenly gap-x-10 gap-y-3 bg-base-300 rounded-xl p-3 w-full mb-3">
@@ -80,7 +80,7 @@
             <div v-if="platformList.length > 0" class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" /></svg>
-                  Platforme
+                  {{ $t('common.platforms') }}
               </span>
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <span v-for="p in platformList" :key="p" class="tooltip tooltip-top flex items-center justify-center" :data-tip="p" :title="p">
@@ -93,7 +93,7 @@
             <div v-if="getPublishers() !== 'N/A'" class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                Izdavač
+                {{ $t('common.publisherLabel') }}
               </span>
               <span class="text-sm font-semibold text-right">{{ getPublishers() }}</span>
             </div>
@@ -102,7 +102,7 @@
             <div class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" /></svg>
-                Datum izdavanja
+                {{ $t('common.releaseDate') }}
               </span>
               <span class="text-sm font-semibold text-right">{{ formatDate(apiGame.released) }}</span>
             </div>
@@ -111,14 +111,14 @@
             <div v-if="apiGame.website" class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>
-                Službena stranica
+                {{ $t('common.officialWebsite') }}
               </span>
-              <a :href="apiGame.website" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm font-semibold">Otvori</a>
+              <a :href="apiGame.website" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm font-semibold">{{ $t('common.open') }}</a>
             </div>
 
             <div class="flex gap-2 mt-4 pt-3 border-t border-base-300">
               <button @click="goToApp" class="btn btn-primary btn-sm flex-1 px-1">
-                Dodaj u Gamenote
+                {{ $t('common.addToGamenote') }}
               </button>
             </div>
           </div>
@@ -129,17 +129,17 @@
           <div class="card-body p-3 sm:p-4 flex flex-col">
             <div class="flex flex-col flex-1">
               <div role="tablist" class="tabs tabs-lift" @keydown="handleTabKeys">
-                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'" aria-label="Informacije" :id="fieldId + '-tab-info'" :aria-controls="fieldId + '-panel-info'" :tabindex="activeInfoTab === 'info' ? 0 : -1">
+                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'" :aria-label="$t('common.information')" :id="fieldId + '-tab-info'" :aria-controls="fieldId + '-panel-info'" :tabindex="activeInfoTab === 'info' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
-                  <span class="hidden sm:inline font-bold">Informacije</span>
+                  <span class="hidden sm:inline font-bold">{{ $t('common.information') }}</span>
                 </button>
-                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-primary [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'" aria-label="Serija igara" :id="fieldId + '-tab-series'" :aria-controls="fieldId + '-panel-series'" :tabindex="activeInfoTab === 'series' ? 0 : -1">
+                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-primary [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'" :aria-label="$t('common.gameSeries')" :id="fieldId + '-tab-series'" :aria-controls="fieldId + '-panel-series'" :tabindex="activeInfoTab === 'series' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-                  <span class="hidden sm:inline font-bold">Serija igara</span>
+                  <span class="hidden sm:inline font-bold">{{ $t('common.gameSeries') }}</span>
                 </button>
-                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-primary' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'" aria-label="Slike igre" :id="fieldId + '-tab-screens'" :aria-controls="fieldId + '-panel-screens'" :tabindex="activeInfoTab === 'screens' ? 0 : -1">
+                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-primary' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'" :aria-label="$t('common.gameImages')" :id="fieldId + '-tab-screens'" :aria-controls="fieldId + '-panel-screens'" :tabindex="activeInfoTab === 'screens' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-                  <span class="hidden sm:inline font-bold">Slike igre</span>
+                  <span class="hidden sm:inline font-bold">{{ $t('common.gameImages') }}</span>
                 </button>
               </div>
 
@@ -147,8 +147,8 @@
                 <!-- Opis -->
                 <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1" role="tabpanel" :id="fieldId + '-panel-info'" :aria-labelledby="fieldId + '-tab-info'">
                   <div>
-                    <h3 class="text-lg font-bold">Opis</h3>
-                    <p class="whitespace-pre-wrap">{{ apiGame.description_raw || 'Nema opisa.' }}</p>
+                    <h3 class="text-lg font-bold">{{ $t('common.description') }}</h3>
+                    <p class="whitespace-pre-wrap">{{ apiGame.description_raw || $t('common.noDescription') }}</p>
                   </div>
                 </div>
 
@@ -161,9 +161,9 @@
                       </figure>
                       <div class="card-body p-4">
                         <h4 class="card-title text-sm">{{ previousGame.name }}</h4>
-                        <p class="text-xs text-gray-500">Prethodna igra • {{ formatDate(previousGame.released) }}</p>
+                        <p class="text-xs text-gray-500">{{ $t('common.previousGame') }} {{ formatDate(previousGame.released) }}</p>
                         <div class="card-actions justify-end mt-2">
-                          <router-link :to="`/shared?id=${previousGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
+                          <router-link :to="`/shared?id=${previousGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">{{ $t('common.view') }}</router-link>
                         </div>
                       </div>
                     </div>
@@ -174,28 +174,28 @@
                       </figure>
                       <div class="card-body p-4">
                         <h4 class="card-title text-sm">{{ nextGame.name }}</h4>
-                        <p class="text-xs text-gray-500">Sljedeća igra • {{ formatDate(nextGame.released) }}</p>
+                        <p class="text-xs text-gray-500">{{ $t('common.nextGame') }} {{ formatDate(nextGame.released) }}</p>
                         <div class="card-actions justify-end mt-2">
-                          <router-link :to="`/shared?id=${nextGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
+                          <router-link :to="`/shared?id=${nextGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">{{ $t('common.view') }}</router-link>
                         </div>
                       </div>
                     </div>
 
                     <div v-if="!previousGame" class="card bg-base-100 shadow-sm">
                       <div class="card-body p-4 text-center">
-                        <p class="text-sm text-gray-500">Nema prethodne igre u seriji</p>
+                        <p class="text-sm text-gray-500">{{ $t('common.noPreviousGameInThe') }}</p>
                       </div>
                     </div>
 
                     <div v-if="!nextGame" class="card bg-base-100 shadow-sm">
                       <div class="card-body p-4 text-center">
-                        <p class="text-sm text-gray-500">Ova igra je najnovija u seriji! 😊</p>
+                        <p class="text-sm text-gray-500">{{ $t('common.thisIsTheLatestGame') }}</p>
                       </div>
                     </div>
                   </div>
 
                   <div v-if="!previousGame && !nextGame && !isLatestGame && gameSeries.length > 1" class="mt-4">
-                    <h4 class="text-md font-semibold mb-2">Sve igre u seriji:</h4>
+                    <h4 class="text-md font-semibold mb-2">{{ $t('common.allGamesInTheSeries') }}</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div v-for="seriesGame in filteredSeriesGames" :key="seriesGame.id" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
                         <figure class="px-4 pt-4">
@@ -205,7 +205,7 @@
                           <h4 class="card-title text-sm">{{ seriesGame.name }}</h4>
                           <p class="text-xs text-gray-500">{{ formatDate(seriesGame.released) }}</p>
                           <div class="card-actions justify-end mt-2">
-                            <router-link :to="`/shared?id=${seriesGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
+                            <router-link :to="`/shared?id=${seriesGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">{{ $t('common.view') }}</router-link>
                           </div>
                         </div>
                       </div>
@@ -257,7 +257,7 @@
       </div>
 
       <!-- Screenshot lightbox -->
-      <AppModal v-if="selectedScreenshotIndex !== null" label="Pregled screenshotova" @close="closeScreenshotModal">
+      <AppModal v-if="selectedScreenshotIndex !== null" :label="$t('common.screenshotPreview')" @close="closeScreenshotModal">
         <ScreenshotViewer :images="screenshots" :selected-index="selectedScreenshotIndex" @select="openScreenshotModal" @close="closeScreenshotModal" />
       </AppModal>
     </div>
@@ -265,6 +265,7 @@
 </template>
 
 <script>
+import { formatLocale, t } from '../i18n/index.js';
 import ScreenshotViewer from '../components/ScreenshotViewer.vue';
 import { useId } from 'vue';
 import { handleTabKeys } from '../services/tabNavigation.js';
@@ -315,7 +316,7 @@ export default {
           sharedData.value = JSON.parse(decodedString);
           apiIdToFetch = sharedData.value.apiId;
         } else {
-          error.value = 'Nedostaju podaci u poveznici.';
+          error.value = t('sharedGameView.theLinkIsMissingData');
           return;
         }
 
@@ -347,12 +348,12 @@ export default {
             
           } catch(e) {
             console.error('Failed to load API data:', e);
-            error.value = 'Greška pri dohvaćanju informacija o igri.';
+            error.value = t('sharedGameView.couldntFetchGameInformation');
           }
         }
       } catch (err) {
         console.error('Error parsing shared data:', err);
-        error.value = 'Poveznica je neispravna ili je oštećena.';
+        error.value = t('sharedGameView.theLinkIsInvalidOr');
       } finally {
         isLoadingApi.value = false;
       }
@@ -375,7 +376,7 @@ export default {
     
     const formatDate = (dateString) => {
       if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('hr-HR');
+      return new Date(dateString).toLocaleDateString(formatLocale.value);
     };
 
     const getMetacriticColorClass = (score) => {

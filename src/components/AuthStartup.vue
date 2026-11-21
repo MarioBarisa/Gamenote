@@ -4,14 +4,14 @@
       <GamenoteLogo class="w-16 h-auto" />
       <template v-if="error">
         <div role="alert">
-          <h1 class="text-lg font-semibold mb-2">Prijavu nije moguće provjeriti</h1>
+          <h1 class="text-lg font-semibold mb-2">{{ $t('authStartup.signInCouldntBeVerified') }}</h1>
           <p class="text-sm text-base-content/70">{{ error }}</p>
         </div>
-        <button type="button" class="btn btn-primary" @click="$emit('retry')">Pokušaj ponovno</button>
+        <button type="button" class="btn btn-primary" @click="$emit('retry')">{{ $t('common.tryAgain') }}</button>
       </template>
       <div v-else role="status" class="flex items-center gap-3 text-sm text-base-content/70">
         <span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
-        Učitavam Gamenote…
+        {{ $t('authStartup.loadingGamenote') }}
       </div>
     </div>
   </main>

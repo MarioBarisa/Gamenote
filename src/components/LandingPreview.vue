@@ -6,9 +6,9 @@
       </div>
     </div>
     <div v-else-if="kind === 'details'" class="preview-details">
-      <div class="details-webview" aria-label="Detalji igre iz Gamenote kataloga">
+      <div class="details-webview" :aria-label="$t('landingPreview.gameDetailsFromTheGamenote')">
         <ApiGameDetails v-if="mounted" preview-game-id="134588" :preview-platforms="['PlayStation 5', 'PC', 'Xbox Series X/S']" />
-        <a v-else href="/api-games/134588" class="link">Pogledaj detalje igre u Gamenoteu</a>
+        <a v-else href="/api-games/134588" class="link">{{ $t('landingPreview.viewGameDetailsInGamenote') }}</a>
       </div>
     </div>
     <div v-else-if="kind === 'import'" class="preview-import">
@@ -29,14 +29,14 @@
         <span class="import-node source-psn"><svg fill="currentColor" role="img" class="source-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>PlayStation</title><path d="M8.984 2.596v17.547l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.18.76.814.76 1.505v5.875c2.441 1.193 4.362-.002 4.362-3.152 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.39-1.502zm4.656 16.241l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.5V14.98l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.04 1.472 1.576 2.072-.465.6-1.622 1.036-1.622 1.036l-8.544 3.107V18.86zM1.807 18.6c-1.9-.545-2.214-1.668-1.352-2.32.801-.586 2.16-1.052 2.16-1.052l5.615-2.013v2.313L4.205 17c-.705.271-.825.632-.239.826.586.195 1.637.15 2.343-.12L8.247 17v2.074c-.12.03-.256.044-.39.073-1.939.331-3.996.196-6.038-.479z"/></svg></span>
         <span class="import-node source-xbox"><svg fill="currentColor" viewBox="0 0 24 24" class="source-logo" role="img" xmlns="http://www.w3.org/2000/svg">
                 <title>Xbox</title><path d="m24 12c0-.001 0-.001 0-.002 0-3.618-1.606-6.861-4.144-9.054l-.015-.013c-1.91 1.023-3.548 2.261-4.967 3.713l-.004.004c.044.046.087.085.131.132 3.719 4.012 7.106 9.73 6.546 12.471 1.53-1.985 2.452-4.508 2.452-7.246 0-.002 0-.004 0-.006z"/><path d="m12.591 3.955c1.68-1.104 3.699-1.833 5.872-2.022l.048-.003c-1.837-1.21-4.09-1.929-6.511-1.929-2.171 0-4.207.579-5.962 1.591l.058-.031c.658.567 2.837.781 5.484 2.4.143.089.316.142.502.142.189 0 .365-.055.513-.149l-.004.002z"/><path d="m9.166 6.778c.046-.049.093-.09.138-.138-1.17-1.134-2.446-2.174-3.806-3.1l-.099-.064c-.302-.221-.681-.354-1.091-.354-.146 0-.288.017-.425.049l.013-.002c-2.398 2.198-3.896 5.344-3.896 8.84 0 2.909 1.037 5.576 2.762 7.651l-.016-.02c-1.031-2.547 2.477-8.672 6.419-12.862z"/><path d="m12.084 9.198c-3.962 3.503-9.477 8.73-8.632 11.218 2.174 2.213 5.198 3.584 8.542 3.584 3.493 0 6.637-1.496 8.826-3.883l.008-.009c.486-2.618-4.755-7.337-8.744-10.91z"/>
-              </svg><span class="future-label">Dolazi uskoro</span></span>
+              </svg><span class="future-label">{{ $t('landingPreview.comingSoon') }}</span></span>
 
-        <span class="import-node source-nintendo"><svg xmlns="http://www.w3.org/2000/svg" class="source-logo" role="img" viewBox="0 0 24 24"><title>Nintendo</title><path fill="currentColor" d="M14.176 24h3.674c3.376 0 6.15-2.774 6.15-6.15V6.15C24 2.775 21.226 0 17.85 0H14.1c-.074 0-.15.074-.15.15v23.7c-.001.076.075.15.226.15m4.574-13.199c1.351 0 2.399 1.125 2.399 2.398c0 1.352-1.125 2.4-2.399 2.4c-1.35 0-2.4-1.049-2.4-2.4c-.075-1.349 1.05-2.398 2.4-2.398M11.4 0H6.15C2.775 0 0 2.775 0 6.15v11.7C0 21.226 2.775 24 6.15 24h5.25c.074 0 .15-.074.15-.149V.15c.001-.076-.075-.15-.15-.15M9.676 22.051H6.15a4.194 4.194 0 0 1-4.201-4.201V6.15A4.194 4.194 0 0 1 6.15 1.949H9.6zM3.75 7.199c0 1.275.975 2.25 2.25 2.25s2.25-.975 2.25-2.25c0-1.273-.975-2.25-2.25-2.25s-2.25.977-2.25 2.25"/></svg><span class="future-label">Dolazi uskoro</span></span>
+        <span class="import-node source-nintendo"><svg xmlns="http://www.w3.org/2000/svg" class="source-logo" role="img" viewBox="0 0 24 24"><title>Nintendo</title><path fill="currentColor" d="M14.176 24h3.674c3.376 0 6.15-2.774 6.15-6.15V6.15C24 2.775 21.226 0 17.85 0H14.1c-.074 0-.15.074-.15.15v23.7c-.001.076.075.15.226.15m4.574-13.199c1.351 0 2.399 1.125 2.399 2.398c0 1.352-1.125 2.4-2.399 2.4c-1.35 0-2.4-1.049-2.4-2.4c-.075-1.349 1.05-2.398 2.4-2.398M11.4 0H6.15C2.775 0 0 2.775 0 6.15v11.7C0 21.226 2.775 24 6.15 24h5.25c.074 0 .15-.074.15-.149V.15c.001-.076-.075-.15-.15-.15M9.676 22.051H6.15a4.194 4.194 0 0 1-4.201-4.201V6.15A4.194 4.194 0 0 1 6.15 1.949H9.6zM3.75 7.199c0 1.275.975 2.25 2.25 2.25s2.25-.975 2.25-2.25c0-1.273-.975-2.25-2.25-2.25s-2.25.977-2.25 2.25"/></svg><span class="future-label">{{ $t('landingPreview.comingSoon') }}</span></span>
         <div class="import-target" role="img" aria-label="Gamenote"><GamenoteLogo class="w-16 h-14 text-[#F9461F]" /></div>
       </div>
     </div>
     <div v-else class="preview-summary">
-      <GamerCard v-if="mounted" :games="games" name="Player One" created-at="2024-01-01" color="theme:night" avatar-url="/landing-avatar.jpeg" />
+      <GamerCard v-if="mounted" :games="games" name="Player One" created-at="2024-01-01" color="theme:night" avatar-url="/landing-avatar.webp" />
       <div v-else class="summary-placeholder"><GamenoteLogo class="w-16 h-14 text-[#F9461F]" /></div>
     </div>
   </figure>
@@ -119,7 +119,7 @@ const games = [
 .source-xbox { left: 92.5%; top: 50%; opacity: .4; }
 .future-label { position: absolute; top: 100%; width: 5rem; text-align: center; font-size: .65rem; }
 .import-target { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; }
-.import-particle { stroke-width: 2.5; stroke-linecap: round; stroke-opacity: 1; stroke-dasharray: 12 188; filter: drop-shadow(0 0 3px currentColor); animation: import-flow var(--pulse-duration, 3s) linear var(--pulse-delay, 0s) both; }
+.import-particle { --pulse-duration: 3s; --pulse-delay: 0s; stroke-width: 2.5; stroke-linecap: round; stroke-opacity: 1; stroke-dasharray: 12 188; filter: drop-shadow(0 0 3px currentColor); animation: import-flow var(--pulse-duration) linear var(--pulse-delay) both; }
 .particle-steam { color: #fff; stroke: currentColor; }
 .particle-psn { color: #168bff; stroke: currentColor; }
 .particle-xbox { color: #107c10; stroke: currentColor; }

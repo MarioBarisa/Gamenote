@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect } from '@playwright/test';
 
 export async function checkLibrarySharing(browser, origin, artifacts) {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ locale: 'hr-HR' });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -297,7 +297,7 @@ export async function checkLibrarySharing(browser, origin, artifacts) {
   await expect(page.getByRole('heading', { name: 'Gamenote Statistika' })).toBeVisible();
   await expect(page.locator('canvas').first()).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'TCG', exact: true })).toHaveCount(0);
-  await page.evaluate(async () => { window.auditSession = { user: { id: 'user-a', email: 'private@example.test' }, access_token: 'fixture' }; window.auditStore.setUser(window.auditSession.user); });
+  await page.evaluate(async () => { window.auditSession = { user: { id: 'user-a', email: 'private@example.test' }, access_token: 'fixture' }; window.auditStore.setSession(window.auditSession); });
   await expect(page).toHaveURL(/\/u\/player-a/);
   await expect(page.locator('.gamer-card')).toBeVisible();
   await page.evaluate(async () => {

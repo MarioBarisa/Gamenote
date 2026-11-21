@@ -9,3 +9,17 @@ if (!supabaseAnonKey) throw new Error('Missing VITE_SUPABASE_ANON_KEY env var.')
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 supabase.auth.onAuthStateChange(handleRecoveryEvent)
+
+let passwordCheckClient;
+
+export function createPasswordCheckClient() {
+  passwordCheckClient ||= createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storageKey: 'gamenote.auth.password-check',
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+  return passwordCheckClient;
+}

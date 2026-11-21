@@ -9,7 +9,7 @@
     <rect x="638" y="200" width="526" height="260" rx="32" fill="url(#comparison-right)" />
     <GamenoteLogo x="56" y="48" width="74" height="60" color="#f6f5ff" />
     <text x="150" y="94" font-size="44" font-weight="700" fill="#f6f5ff">Gamenote</text>
-    <text x="152" y="128" font-size="19" letter-spacing="3" fill="#b8b8d0">USPOREDBA</text>
+    <text x="152" y="128" font-size="19" letter-spacing="3" fill="#b8b8d0">{{ $t('comparisonSocialCard.comparison') }}</text>
     <path d="M36 400c150-130 300 90 526-60v90H68a32 32 0 0 1-32-30" fill="#d0c5ff" opacity=".06" />
     <path d="M638 370c170 80 340-150 526-20v78a32 32 0 0 1-32 32H638Z" fill="#f0c6ff" opacity=".06" />
     <text x="298" y="344" text-anchor="middle" :font-size="fontSize(left)" font-weight="700" fill="#f6f5ff" :textLength="left.length > 20 ? 390 : undefined" lengthAdjust="spacingAndGlyphs">@{{ left }}</text>

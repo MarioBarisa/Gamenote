@@ -51,3 +51,15 @@ Aplikacija omogućava korisnicima praćenje odigranih videoigara kroz sljedeće 
 
 
 
+
+## Jezici sučelja
+
+Gamenote koristi Vue I18n. Pri prvom otvaranju hrvatski se odabire za jezik preglednika `hr` ili njegovu regionalnu varijantu. Za ostale jezike zadani je engleski. Izbornik u podnožju i u **Postavkama UI-ja** odmah mijenja jezik, oznaku `lang` dokumenta i format datuma i brojeva. Ručni odabir sprema se u preglednik pod ključem `gamenote.locale` i vrijedi i za javne stranice. Prethodno generirani javni HTML i slike za dijeljenje koriste hrvatski.
+
+Za dodavanje jezika kopiraj strukturu datoteke `src/i18n/locales/en.json`, prevedi vrijednosti i registriraj katalog u popisu `languages` u `src/i18n/index.js`. Polje `label` sadrži naziv jezika na tom jeziku, a `format` je lokalitet za datume i brojeve. Izbornik se puni iz istog popisa. Nedostajući prijevodi prikazuju se na engleskom. Puni tekst pravnih dokumenata održava se u `PrivacyPolicy.vue` i `TermsOfService.vue`, s engleskim tekstom kao rezervom za dodatne jezike.
+
+Novi tekst dodaj pod istim ključem u oba kataloga. U predlošcima koristi `$t()`, a u JavaScriptu `t()` iz `src/i18n/index.js`. Za tekst koji se mora osvježiti pri promjeni jezika pozovi `t()` unutar `computed()` ili pri prikazu. U dinamičkim porukama prednost daj imenovanim parametrima, primjerice `{name}`.
+
+Nazivi platformi i statusi igranja **Backlog, Playing, Completed, Paused, Dropped, Wishlist** koriste se izravno u svim jezicima. Naslovi igara, bilješke i sadržaj vanjskih kataloga prikazuju se kako su spremljeni ili dohvaćeni.
+
+`npm run test:i18n` provjerava odabir jezika, ključeve u kodu, podudaranje kataloga i interpolaciju u svim registriranim jezicima. GitHub Actions ga pokreće u koraku **Provjera i18n lokalizacije**. Postojeće Chromium regresije provjeravaju promjenu jezika u podnožju i postavkama te pamćenje odabira nakon ponovnog učitavanja.

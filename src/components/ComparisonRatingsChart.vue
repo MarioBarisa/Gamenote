@@ -1,13 +1,13 @@
 <template>
   <figure class="block min-w-0">
-    <figcaption class="font-bold text-lg">Ocjene i Metacritic</figcaption>
-    <p class="text-xs text-base-content/70 mt-1">Zajedničke igre · do 12 najvećih razlika</p>
+    <figcaption class="font-bold text-lg">{{ $t('comparisonRatingsChart.ratingsAndMetacritic') }}</figcaption>
+    <p class="text-xs text-base-content/70 mt-1">{{ $t('comparisonRatingsChart.sharedGamesUpTo12') }}</p>
     <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs mt-3">
       <span v-for="(profile, index) in [left, right]" :key="index" class="inline-flex items-center gap-2 font-semibold"><span class="chart-symbol" :class="{ diamond: index === 1 }" :style="{ background: profile.color }"></span>{{ profile.label }}</span>
     </div>
     <template v-if="points.length">
       <div class="ratings-chart mt-4">
-        <span class="chart-axis-title text-xs">Ocjena / 5</span>
+        <span class="chart-axis-title text-xs">{{ $t('comparisonRatingsChart.rating5') }}</span>
         <div class="chart-y-labels text-xs tabular-nums" aria-hidden="true"><span v-for="value in [5, 4, 3, 2, 1, 0]" :key="value" :style="{ top: (5 - value) * 20 + '%' }">{{ value }}</span></div>
         <div class="chart-plot">
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 size-full" aria-hidden="true">
@@ -24,11 +24,11 @@
       </div>
       <div class="rounded-box bg-base-100 p-3 text-sm min-h-22 mt-3">
         <template v-if="selected"><p class="font-bold break-words">{{ selected.title }} <span class="text-xs font-normal text-base-content/70">· {{ selected.platform }}</span></p><div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs"><span>{{ left.label }} <strong>{{ selected.left }}/5</strong></span><span>{{ right.label }} <strong>{{ selected.right }}/5</strong></span><span>Metacritic <strong>{{ selected.metacritic }}</strong></span></div></template>
-        <p v-else class="text-base-content/70">Dodirni točku za usporedbu ocjena.</p>
+        <p v-else class="text-base-content/70">{{ $t('comparisonRatingsChart.tapAPointToCompare') }}</p>
       </div>
-      <details class="mt-3 text-xs"><summary class="cursor-pointer py-1 font-medium">Podaci grafa</summary><div class="overflow-x-auto mt-2"><table class="table table-xs"><caption class="sr-only">Ocjene zajedničkih igara i Metacritic</caption><thead><tr><th scope="col">Igra</th><th scope="col">Metacritic</th><th scope="col">{{ left.label }}</th><th scope="col">{{ right.label }}</th></tr></thead><tbody><tr v-for="point in points" :key="point.key"><th scope="row">{{ point.title }} · {{ point.platform }}</th><td>{{ point.metacritic }}</td><td>{{ point.left }}/5</td><td>{{ point.right }}/5</td></tr></tbody></table></div></details>
+      <details class="mt-3 text-xs"><summary class="cursor-pointer py-1 font-medium">{{ $t('common.chartData') }}</summary><div class="overflow-x-auto mt-2"><table class="table table-xs"><caption class="sr-only">{{ $t('comparisonRatingsChart.ratingsAndMetacriticForShared') }}</caption><thead><tr><th scope="col">{{ $t('common.game') }}</th><th scope="col">Metacritic</th><th scope="col">{{ left.label }}</th><th scope="col">{{ right.label }}</th></tr></thead><tbody><tr v-for="point in points" :key="point.key"><th scope="row">{{ point.title }} · {{ point.platform }}</th><td>{{ point.metacritic }}</td><td>{{ point.left }}/5</td><td>{{ point.right }}/5</td></tr></tbody></table></div></details>
     </template>
-    <p v-else class="text-sm text-base-content/70 py-12 text-center">Za graf su potrebne zajedničke ocijenjene igre sa spremljenim Metacriticom.</p>
+    <p v-else class="text-sm text-base-content/70 py-12 text-center">{{ $t('comparisonRatingsChart.theChartNeedsSharedRated') }}</p>
   </figure>
 </template>
 <script setup>

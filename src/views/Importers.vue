@@ -2,8 +2,8 @@
     <div class="space-y-6 pb-6">
   
       <div class="pt-2 text-start">
-        <h1 class="text-3xl font-bold">Importer</h1>
-        <p class="text-base-content/60 mt-1 text-sm">Dodaj igre s platformi direktno u Gamenote</p>
+        <h1 class="text-3xl font-bold">{{ $t('common.importer') }}</h1>
+        <p class="text-base-content/60 mt-1 text-sm">{{ $t('importers.addGamesFromPlatformsDirectly') }}</p>
       </div>
 
       <div v-if="toast.show" role="status" aria-atomic="true" class="toast toast-top toast-end z-[100]">
@@ -18,49 +18,49 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
-        <span>Prijavi se da bi koristio importere.</span>
-        <router-link to="/login" class="btn btn-sm btn-primary ml-auto">Prijava</router-link>
+        <span>{{ $t('importers.signInToUseThe') }}</span>
+        <router-link to="/login" class="btn btn-sm btn-primary ml-auto">{{ $t('common.signIn') }}</router-link>
       </div>
   
       <template v-else>
   
         <!-- Platforme i alati -->
         <div>
-          <div role="tablist" class="tabs tabs-box gap-1 max-w-full overflow-x-auto overflow-y-clip" aria-label="Importeri i alati" @keydown="handleTabKeys">
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'psn' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'psn'" @click="activeTab = 'psn'" aria-label="PlayStation" :title="isConnected ? `PlayStation · povezan profil: ${psnProfileData?.onlineId || 'PSN'}` : 'PlayStation · profil nije povezan'" :aria-describedby="isConnected ? 'psn-connection-status' : undefined" :id="fieldId + '-tab-psn'" :aria-controls="fieldId + '-panel-psn'" :tabindex="activeTab === 'psn' ? 0 : -1">
+          <div role="tablist" class="tabs tabs-box gap-1 max-w-full overflow-x-auto overflow-y-clip" :aria-label="$t('importers.importersAndTools')" @keydown="handleTabKeys">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'psn' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'psn'" @click="activeTab = 'psn'" aria-label="PlayStation" :title="isConnected ? $t('importers.playstationConnectedProfile', [psnProfileData?.onlineId || 'PSN']) : $t('importers.playstationNoProfileConnected')" :aria-describedby="isConnected ? 'psn-connection-status' : undefined" :id="fieldId + '-tab-psn'" :aria-controls="fieldId + '-panel-psn'" :tabindex="activeTab === 'psn' ? 0 : -1">
               <svg fill="currentColor" viewBox="0 0 32 32" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3.262 24.248c-2.374-0.681-2.767-2.084-1.69-2.899 0.776-0.51 1.668-0.954 2.612-1.288l0.087-0.027 7.017-2.516v2.89l-5.030 1.839c-0.881 0.339-1.031 0.79-0.299 1.032 0.365 0.093 0.783 0.147 1.214 0.147 0.615 0 1.204-0.109 1.749-0.308l-0.035 0.011 2.422-0.882v2.592c-0.15 0.037-0.32 0.055-0.487 0.091-0.775 0.136-1.667 0.214-2.577 0.214-1.778 0-3.486-0.298-5.078-0.846l0.11 0.033zM18.049 24.544l7.868-2.843c0.893-0.322 1.032-0.781 0.307-1.022-0.363-0.089-0.779-0.14-1.208-0.14-0.622 0-1.22 0.108-1.774 0.305l0.037-0.011-5.255 1.874v-2.983l0.3-0.106c1.050-0.349 2.284-0.62 3.557-0.761l0.083-0.008c0.468-0.050 1.010-0.078 1.559-0.078 1.877 0 3.677 0.331 5.343 0.939l-0.108-0.035c2.309 0.751 2.549 1.839 1.969 2.589-0.559 0.557-1.235 0.998-1.988 1.282l-0.039 0.013-10.677 3.883v-2.869zM12.231 4.248v21.927l4.892 1.576v-18.39c0-0.862 0.38-1.438 0.992-1.238 0.795 0.225 0.95 1.017 0.95 1.881v7.342c3.050 1.491 5.451-0.003 5.451-3.939 0-4.045-1.407-5.842-5.546-7.282-1.785-0.648-4.040-1.294-6.347-1.805l-0.389-0.072z"/>
               </svg>
               <span class="font-semibold text-xs sm:text-sm"><span class="sm:hidden">PSN</span><span class="hidden sm:inline">PlayStation</span></span>
               <svg v-if="isConnected" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 shrink-0 text-success" data-testid="psn-connected" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-6" /></svg>
-              <span v-if="isConnected" id="psn-connection-status" class="sr-only">Povezan profil: {{ psnProfileData?.onlineId || 'PSN' }}</span>
+              <span v-if="isConnected" id="psn-connection-status" class="sr-only">{{ $t('importers.connectedProfile') }} {{ psnProfileData?.onlineId || 'PSN' }}</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'steam' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'steam'" @click="activeTab = 'steam'" aria-label="Steam" :title="steamConnection.connected ? `Steam · povezan profil: ${steamConnection.name}` : 'Steam · profil nije povezan'" :aria-describedby="steamConnection.connected ? 'steam-connection-status' : undefined" :id="fieldId + '-tab-steam'" :aria-controls="fieldId + '-panel-steam'" :tabindex="activeTab === 'steam' ? 0 : -1">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'steam' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'steam'" @click="activeTab = 'steam'" aria-label="Steam" :title="steamConnection.connected ? $t('importers.steamConnectedProfile', [steamConnection.name]) : $t('importers.steamNoProfileConnected')" :aria-describedby="steamConnection.connected ? 'steam-connection-status' : undefined" :id="fieldId + '-tab-steam'" :aria-controls="fieldId + '-panel-steam'" :tabindex="activeTab === 'steam' ? 0 : -1">
               <svg fill="currentColor" viewBox="0 0 32 32" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.102 12.129c0-1.564 1.268-2.831 2.831-2.831s2.831 1.268 2.831 2.831c0 1.564-1.267 2.831-2.831 2.831-1.563 0-2.83-1.267-2.83-2.83v0zM24.691 12.135c0-2.081-1.687-3.768-3.768-3.768s-3.768 1.687-3.768 3.768c0 2.081 1.687 3.768 3.768 3.768 2.080-0.003 3.765-1.688 3.768-3.767v-0zM10.427 23.76l-1.841-0.762c0.524 1.078 1.611 1.808 2.868 1.808 1.317 0 2.448-0.801 2.93-1.943l0.008-0.021c0.155-0.362 0.246-0.784 0.246-1.226 0-1.757-1.424-3.181-3.181-3.181-0.405 0-0.792 0.076-1.148 0.213l0.022-0.007 1.903 0.787c0.852 0.364 1.439 1.196 1.439 2.164 0 1.296-1.051 2.347-2.347 2.347-0.324 0-0.632-0.066-0.913-0.184l0.015 0.006zM15.974 1.004c-7.857 0.001-14.301 6.046-14.938 13.738l-0.004 0.054 8.038 3.322c0.668-0.462 1.495-0.737 2.387-0.737h-0c0.079 0 0.156 0.005 0.235 0.008l3.575-5.176v-0.074c0.003-3.12 2.533-5.648 5.653-5.648 3.122 0 5.653 2.531 5.653 5.653s-2.531 5.653-5.653 5.653h-0.131l-5.094 3.638c0 0.065 0.005 0.131 0.005 0.199 0 2.342-1.899 4.241-4.241 4.241-2.047 0-3.756-1.451-4.153-3.38l-0.005-0.027-5.755-2.383c1.841 6.345 7.601 10.905 14.425 10.905 8.281 0 14.994-6.713 14.994-14.994s-6.713-14.994-14.994-14.994z"/>
               </svg>
               <span class="font-semibold text-xs sm:text-sm">Steam</span>
               <svg v-if="steamConnection.connected" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 shrink-0 text-success" data-testid="steam-connected" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-6" /></svg>
-              <span v-if="steamConnection.connected" id="steam-connection-status" class="sr-only">Povezan profil: {{ steamConnection.name }}</span>
+              <span v-if="steamConnection.connected" id="steam-connection-status" class="sr-only">{{ $t('importers.connectedProfile') }} {{ steamConnection.name }}</span>
             </button>
             <button role="tab" class="tab tab-lifted gap-1.5 opacity-40 cursor-not-allowed" disabled>
               <svg fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
                 <path d="m24 12c0-.001 0-.001 0-.002 0-3.618-1.606-6.861-4.144-9.054l-.015-.013c-1.91 1.023-3.548 2.261-4.967 3.713l-.004.004c.044.046.087.085.131.132 3.719 4.012 7.106 9.73 6.546 12.471 1.53-1.985 2.452-4.508 2.452-7.246 0-.002 0-.004 0-.006z"/><path d="m12.591 3.955c1.68-1.104 3.699-1.833 5.872-2.022l.048-.003c-1.837-1.21-4.09-1.929-6.511-1.929-2.171 0-4.207.579-5.962 1.591l.058-.031c.658.567 2.837.781 5.484 2.4.143.089.316.142.502.142.189 0 .365-.055.513-.149l-.004.002z"/><path d="m9.166 6.778c.046-.049.093-.09.138-.138-1.17-1.134-2.446-2.174-3.806-3.1l-.099-.064c-.302-.221-.681-.354-1.091-.354-.146 0-.288.017-.425.049l.013-.002c-2.398 2.198-3.896 5.344-3.896 8.84 0 2.909 1.037 5.576 2.762 7.651l-.016-.02c-1.031-2.547 2.477-8.672 6.419-12.862z"/><path d="m12.084 9.198c-3.962 3.503-9.477 8.73-8.632 11.218 2.174 2.213 5.198 3.584 8.542 3.584 3.493 0 6.637-1.496 8.826-3.883l.008-.009c.486-2.618-4.755-7.337-8.744-10.91z"/>
               </svg>
               <span class="font-bold hidden sm:inline">Xbox</span>
-              <span class="badge badge-xs badge-ghost hidden sm:inline-flex">Uskoro</span>
+              <span class="badge badge-xs badge-ghost hidden sm:inline-flex">{{ $t('importers.comingSoon') }}</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'migrate' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'migrate'" @click="activeTab = 'migrate'" title="Migracija podataka" aria-label="Migracija podataka" :id="fieldId + '-tab-migrate'" :aria-controls="fieldId + '-panel-migrate'" :tabindex="activeTab === 'migrate' ? 0 : -1">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'migrate' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'migrate'" @click="activeTab = 'migrate'" :title="$t('importers.dataMigration')" :aria-label="$t('importers.dataMigration')" :id="fieldId + '-tab-migrate'" :aria-controls="fieldId + '-panel-migrate'" :tabindex="activeTab === 'migrate' ? 0 : -1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
-              <span class="font-bold hidden sm:inline">Migracija podataka</span>
+              <span class="font-bold hidden sm:inline">{{ $t('importers.dataMigration') }}</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'backup' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'backup'" @click="activeTab = 'backup'" title="Sigurnosna kopija" aria-label="Sigurnosna kopija" :id="fieldId + '-tab-backup'" :aria-controls="fieldId + '-panel-backup'" :tabindex="activeTab === 'backup' ? 0 : -1">
+            <button role="tab" class="tab tab-lifted gap-1.5" :class="activeTab === 'backup' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'backup'" @click="activeTab = 'backup'" :title="$t('importers.backup')" :aria-label="$t('importers.backup')" :id="fieldId + '-tab-backup'" :aria-controls="fieldId + '-panel-backup'" :tabindex="activeTab === 'backup' ? 0 : -1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span class="font-bold hidden sm:inline">Sigurnosna kopija</span>
+              <span class="font-bold hidden sm:inline">{{ $t('importers.backup') }}</span>
             </button>
-            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" data-tip="Osvježava metapodatke svih igara u biblioteci (naslovnicu, opis, žanrove, datume, ocjene, snimke zaslona) iz Gamenote API-a, bez mijenjanja tvojih ocjena, stanja i napretka." :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" title="Osvježi metadata igara" aria-label="Osvježi metadata igara" :id="fieldId + '-tab-refresh'" :aria-controls="fieldId + '-panel-refresh'" :tabindex="activeTab === 'refresh' ? 0 : -1">
+            <button role="tab" class="tab tab-lifted gap-1.5 tooltip tooltip-bottom" :data-tip="$t('importers.refreshesMetadataForAllGames')" :class="activeTab === 'refresh' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'text-base-content/60 hover:text-base-content'" :aria-selected="activeTab === 'refresh'" @click="activeTab = 'refresh'" :title="$t('importers.refreshGameMetadata')" :aria-label="$t('importers.refreshGameMetadata')" :id="fieldId + '-tab-refresh'" :aria-controls="fieldId + '-panel-refresh'" :tabindex="activeTab === 'refresh' ? 0 : -1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-              <span class="font-bold hidden sm:inline">Osvježi metadata igara</span>
+              <span class="font-bold hidden sm:inline">{{ $t('importers.refreshGameMetadata') }}</span>
             </button>
           </div>
         </div>
@@ -87,7 +87,7 @@
                     </div>
                   </div>
                   <div class="min-w-0">
-                    <div class="font-bold text-lg leading-tight truncate">{{ psnProfileData?.onlineId || 'PSN račun povezan' }}</div>
+                    <div class="font-bold text-lg leading-tight truncate">{{ psnProfileData?.onlineId || $t('importers.psnAccountConnected') }}</div>
                     <div class="flex items-center gap-1.5 mt-0.5">
                       <svg fill="currentColor" viewBox="0 0 32 32" class="h-3.5 w-3.5 opacity-50" xmlns="http://www.w3.org/2000/svg">
                         <path d="M3.262 24.248c-2.374-0.681-2.767-2.084-1.69-2.899 0.776-0.51 1.668-0.954 2.612-1.288l0.087-0.027 7.017-2.516v2.89l-5.030 1.839c-0.881 0.339-1.031 0.79-0.299 1.032 0.365 0.093 0.783 0.147 1.214 0.147 0.615 0 1.204-0.109 1.749-0.308l-0.035 0.011 2.422-0.882v2.592c-0.15 0.037-0.32 0.055-0.487 0.091-0.775 0.136-1.667 0.214-2.577 0.214-1.778 0-3.486-0.298-5.078-0.846l0.11 0.033zM18.049 24.544l7.868-2.843c0.893-0.322 1.032-0.781 0.307-1.022-0.363-0.089-0.779-0.14-1.208-0.14-0.622 0-1.22 0.108-1.774 0.305l0.037-0.011-5.255 1.874v-2.983l0.3-0.106c1.050-0.349 2.284-0.62 3.557-0.761l0.083-0.008c0.468-0.050 1.010-0.078 1.559-0.078 1.877 0 3.677 0.331 5.343 0.939l-0.108-0.035c2.309 0.751 2.549 1.839 1.969 2.589-0.559 0.557-1.235 0.998-1.988 1.282l-0.039 0.013-10.677 3.883v-2.869zM12.231 4.248v21.927l4.892 1.576v-18.39c0-0.862 0.38-1.438 0.992-1.238 0.795 0.225 0.95 1.017 0.95 1.881v7.342c3.050 1.491 5.451-0.003 5.451-3.939 0-4.045-1.407-5.842-5.546-7.282-1.785-0.648-4.040-1.294-6.347-1.805l-0.389-0.072z"/>
@@ -99,21 +99,21 @@
                       <span>Trophy Level {{ psnProfileData.trophyLevel }}</span>
                     </div>
                     <div v-if="hasSynced && psnGames.length" class="text-xs opacity-50 mt-0.5">
-                      {{ psnGames.length }} igara učitano
+                      {{ psnGames.length }} {{ $t('importers.gamesLoaded') }}
                     </div>
                     <div v-if="lastSyncedAt" class="text-xs opacity-50 mt-0.5">
-                      Zadnja sinkronizacija: {{ formatSyncedAt(lastSyncedAt) }}
+                      {{ $t('importers.lastSynced') }} {{ formatSyncedAt(lastSyncedAt) }}
                     </div>
                   </div>
                 </div>
   
                 <!-- Action buttons -->
                 <div class="flex flex-wrap gap-2 shrink-0">
-                  <button class="btn btn-sm btn-error btn-outline gap-1 tooltip tooltip-left" data-tip="Briše PSN vezu iz ovog preglednika. Kolekcija ostaje netaknuta." aria-label="Odspoji" :disabled="syncLoading || importLoading" @click="disconnectPsn">
+                  <button class="btn btn-sm btn-error btn-outline gap-1 tooltip tooltip-left" :data-tip="$t('importers.removesThePsnConnectionFrom')" :aria-label="$t('common.disconnect')" :disabled="syncLoading || importLoading" @click="disconnectPsn">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
-                    Odspoji
+                    {{ $t('common.disconnect') }}
                   </button>
                 </div>
               </div>
@@ -127,22 +127,22 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <h2 class="font-semibold">Poveži svoj PlayStation račun</h2>
+                <h2 class="font-semibold">{{ $t('importers.connectYourPlaystationAccount') }}</h2>
               </div>
               <p class="text-sm text-base-content/60">
-                Sinkroniziraj odigrane igre, vrijeme igranja i trofeje direktno sa svog PSN računa. Podaci se dohvaćaju lokalno u tvom pregledniku.
+                {{ $t('importers.syncPlayedGamesPlaytimeAnd') }}
               </p>
               <button class="btn btn-primary w-fit gap-1.5" @click="openWizard">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
                 </svg>
-                Poveži PSN račun
+                {{ $t('importers.connectPsnAccount') }}
               </button>
               <p class="text-xs text-base-content/50 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                Trebat ćeš vlastiti NPSSO token — upute su unutar čarobnjaka.
+                {{ $t('importers.youllNeedYourOwnNpsso') }}
               </p>
             </div>
           </div>
@@ -164,7 +164,7 @@
             <ImporterGameList
               source="psn" :games="psnListGames" :selected-new="selectedMap" :selected-existing="updateMap"
               :extras="gameExtras" :groups="groups" :status-options="statusOptions"
-              :busy="syncLoading || importLoading" refresh-label="Osvježi s PSN-a"
+              :busy="syncLoading || importLoading" :refresh-label="$t('importers.refreshFromPsn')"
               metadata-required :progress="importProgress" :done="importDone" :total="importTotal"
               @resolve="resolvePsnGame" @poster="setPsnPoster" @select="selectPsnGame" @refresh="syncPsn" @import="importSelected" @sync="updateSelected"
             />
@@ -181,8 +181,8 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <span><strong>{{ importDoneCount }}</strong> igara uspješno importano / ažurirano.</span>
-              <router-link class="btn btn-sm btn-outline ml-auto" to="/library">Otvori kolekciju</router-link>
+              <span><strong>{{ importDoneCount }}</strong> {{ $t('importers.gamesWereImportedOrUpdated') }}</span>
+              <router-link class="btn btn-sm btn-outline ml-auto" to="/library">{{ $t('importers.openCollection') }}</router-link>
             </div>
   
           </template>
@@ -191,12 +191,12 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <span>PSN račun je povezan. Pokreni prvu sinkronizaciju za dohvat igara.</span>
+            <span>{{ $t('importers.yourPsnAccountIsConnected') }}</span>
             <button class="btn btn-sm btn-primary gap-1 ml-auto shrink-0" :disabled="syncLoading" @click="syncPsn">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
-              Sinkroniziraj sad
+              {{ $t('importers.syncNow') }}
             </button>
           </div>
 
@@ -204,19 +204,19 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>
-            <span>Nisu pronađene igre na ovom PSN računu.</span>
+            <span>{{ $t('importers.noGamesWereFoundOn') }}</span>
           </div>
 
           <!-- ===== ČAROBNJAK ZA POVEZIVANJE ===== -->
-          <AppModal v-if="wizardOpen" label="Poveži PSN račun" :busy="wizardLoading" @close="closeWizard">
+          <AppModal v-if="wizardOpen" :label="$t('importers.connectPsnAccount')" :busy="wizardLoading" @close="closeWizard">
             <div class="modal-box max-w-lg space-y-4">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="wizardLoading" @click.stop="closeWizard">✕</button>
-              <h3 class="font-bold text-lg">Poveži PSN račun</h3>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" :disabled="wizardLoading" @click.stop="closeWizard">✕</button>
+              <h3 class="font-bold text-lg">{{ $t('importers.connectPsnAccount') }}</h3>
               <ol class="space-y-4">
                 <li class="flex gap-3">
                   <span class="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-content font-bold text-sm flex items-center justify-center">1</span>
                   <div class="text-sm leading-relaxed pt-1">
-                    Prijavi se na <a class="link link-primary" href="https://www.playstation.com/" target="_blank" rel="noopener">playstation.com</a>
+                    {{ $t('importers.signInAt') }} <a class="link link-primary" href="https://www.playstation.com/" target="_blank" rel="noopener">playstation.com</a>
                   </div>
                 </li>
                 <li class="flex gap-3">
@@ -225,14 +225,14 @@
                     :class="wizardNpsso.trim() ? 'bg-primary text-primary-content' : 'bg-base-300 text-base-content/60'"
                   >2</span>
                   <div class="text-sm leading-relaxed space-y-1.5 pt-0.5">
-                    <p>Otvori ssocookie stranicu u istom pregledniku:</p>
+                    <p>{{ $t('importers.openTheSsocookiePageIn') }}</p>
                     <a class="btn btn-xs btn-outline gap-1" href="https://ca.account.sony.com/api/v1/ssocookie" target="_blank" rel="noopener">
                       ca.account.sony.com/api/v1/ssocookie
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                       </svg>
                     </a>
-                    <p class="opacity-70">Kopiraj vrijednost <code class="bg-base-300 px-1 rounded">npsso</code> iz JSON odgovora.</p>
+                    <p class="opacity-70">{{ $t('importers.copyThe') }} <code class="bg-base-300 px-1 rounded">npsso</code> {{ $t('importers.valueFromTheJsonResponse') }}</p>
                   </div>
                 </li>
                 <li class="flex gap-3">
@@ -241,7 +241,7 @@
                     :class="isConnected ? 'bg-primary text-primary-content' : 'bg-base-300 text-base-content/60'"
                   >3</span>
                   <div class="text-sm leading-relaxed pt-1">
-                    Zalijepi token ovdje i poveži se. <span class="opacity-60">Cijeli JSON odgovor također radi.</span>
+                    {{ $t('importers.pasteTheTokenHereAnd') }} <span class="opacity-60">{{ $t('importers.theFullJsonResponseAlso') }}</span>
                   </div>
                 </li>
               </ol>
@@ -249,15 +249,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
-                <span>NPSSO je ekvivalent lozinke. Sprema se samo u ovaj preglednik i ne čuva se na Gamenote serverima.</span>
+                <span>{{ $t('importers.anNpssoTokenIsEquivalent') }}</span>
               </div>
               <input
                 v-model="wizardNpsso"
                 type="password"
                 class="input input-bordered w-full font-mono"
-                placeholder='{"npsso":"…"} ili samo token'
+                :placeholder="$t('importers.tokenExample')"
                 @keyup.enter="connectPsn"
-               aria-label="{&quot;npsso&quot;:&quot;…&quot;} ili samo token" />
+               :aria-label="$t('importers.tokenExample')" />
               <div v-if="wizardError" class="alert alert-error text-sm py-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -266,10 +266,10 @@
               </div>
               <PsnCredit/>
               <div class="modal-action">
-                <button class="btn btn-ghost" @click="closeWizard">Odustani</button>
+                <button class="btn btn-ghost" @click="closeWizard">{{ $t('common.cancel') }}</button>
                 <button class="btn btn-primary gap-1" :disabled="wizardLoading || wizardNpssoParsed.length < 30" @click="connectPsn">
                   <span v-if="wizardLoading" class="loading loading-spinner loading-sm"></span>
-                  Poveži se
+                  {{ $t('importers.connect') }}
                 </button>
               </div>
             </div>
@@ -285,14 +285,14 @@
             <div class="card-body p-4">
               <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <div class="flex items-start gap-2 flex-1 min-w-0">
-                  <div class="tooltip tooltip-right shrink-0" data-tip="Uvijek prvo spremi sigurnosnu kopiju prije bilo kakvih promjena u kolekciji.">
+                  <div class="tooltip tooltip-right shrink-0" :data-tip="$t('importers.alwaysSaveABackupBefore')">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                     </svg>
                   </div>
                   <div>
-                    <h2 class="font-bold leading-tight">Napravi backup prije migracije</h2>
-                    <p class="text-sm text-base-content/60 mt-0.5">Migracija mijenja podatke u tvojoj kolekciji. Prvo preuzmi sigurnosnu kopiju!</p>
+                    <h2 class="font-bold leading-tight">{{ $t('importers.backUpBeforeMigrating') }}</h2>
+                    <p class="text-sm text-base-content/60 mt-0.5">{{ $t('importers.migrationChangesDataInYour') }}</p>
                   </div>
                 </div>
                 <div class="flex flex-wrap gap-2 shrink-0">
@@ -301,13 +301,13 @@
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                    Preuzmi backup
+                    {{ $t('importers.downloadBackup') }}
                   </button>
                   <button class="btn btn-sm btn-ghost gap-1" @click="activeTab = 'backup'">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
-                    Uvezi backup
+                    {{ $t('importers.importBackup') }}
                   </button>
                 </div>
               </div>
@@ -321,16 +321,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <h2 class="text-lg font-bold">RAWG podaci u biblioteci</h2>
+                <h2 class="text-lg font-bold">{{ $t('importers.rawgDataInYourLibrary') }}</h2>
               </div>
-              <p class="text-sm text-base-content/60">Pronalazi nove (Gamenote) ID-jeve za igre dodane prije prelaska na novi API te ažurira njihove metapodatke (naslovnicu, opis, žanrove, datume, ocjene…). Tvoji dodani podaci se NEĆE izgubiti!
-              Preporučuje se da ovo napraviš na računalu jer je iskustvo puno bolje i brže.</p>
+              <p class="text-sm text-base-content/60">{{ $t('importers.findsNewGamenoteIdsFor') }}</p>
               <button class="btn btn-outline btn-sm gap-1 w-fit" :disabled="migrateScanLoading" @click="scanMigration">
                 <span v-if="migrateScanLoading" class="loading loading-spinner loading-sm"></span>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                Skeniraj biblioteku
+                {{ $t('importers.scanLibrary') }}
               </button>
 
               <div v-if="migrateScanError" class="alert alert-error shadow">
@@ -341,9 +340,9 @@
               </div>
 
               <div v-if="!migrateScanLoading && migrateGames.length" class="flex flex-wrap gap-2 items-center">
-                <span class="badge badge-lg badge-success badge-outline font-bold">{{ migrateKandidatCount }} kandidata</span>
-                <span class="badge badge-lg badge-info badge-outline">{{ migrateLinkedCount }} već povezano</span>
-                <span class="badge badge-lg badge-ghost">{{ migrateNoMatchCount }} bez rezultata</span>
+                <span class="badge badge-lg badge-success badge-outline font-bold">{{ migrateKandidatCount }} {{ $t('importers.candidates') }}</span>
+                <span class="badge badge-lg badge-info badge-outline">{{ migrateLinkedCount }} {{ $t('importers.alreadyLinked') }}</span>
+                <span class="badge badge-lg badge-ghost">{{ migrateNoMatchCount }} {{ $t('importers.noResults') }}</span>
               </div>
             </div>
           </div>
@@ -353,20 +352,20 @@
             <!-- Controls card -->
             <div class="card bg-base-200 shadow">
               <div class="card-body p-3 space-y-3">
-                <input v-model="migrateFilter" class="input input-sm input-bordered w-full" placeholder="Pretraži igre..." aria-label="Pretraži igre..." />
+                <input v-model="migrateFilter" class="input input-sm input-bordered w-full" :placeholder="$t('common.searchGames')" :aria-label="$t('common.searchGames')" />
                 <div class="flex flex-wrap gap-2 items-center justify-between">
                   <div class="flex flex-wrap gap-1">
                     <button class="btn btn-xs btn-ghost gap-1" @click="migrateSelectAll(true)">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                       </svg>
-                      Sve kandidate
+                      {{ $t('importers.allCandidates') }}
                     </button>
                     <button class="btn btn-xs btn-ghost gap-1" @click="migrateSelectAll(false)">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                       </svg>
-                      Poništi
+                      {{ $t('common.reset') }}
                     </button>
                   </div>
                   <button class="btn btn-sm btn-success gap-1" :disabled="migrateLoading || migrateSelectedCount === 0" @click="runMigration">
@@ -374,7 +373,7 @@
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                     </svg>
-                    Migriraj ({{ migrateSelectedCount }})
+                    {{ $t('importers.migrate') }}{{ migrateSelectedCount }})
                   </button>
                 </div>
 
@@ -409,7 +408,7 @@
                         <span v-if="g.newId" class="badge badge-md" :class="g.score < 3 ? 'badge-warning' : 'badge-ghost'">{{ (g.score || 0).toFixed(2) }}</span>
                       </div>
                       <div v-if="g.newId" class="text-sm opacity-70 line-clamp-1">{{ g.newName }} <span class="opacity-50">(ID {{ g.newId }})</span></div>
-                      <div class="text-sm opacity-40">Stari ID: {{ g.oldId }}</div>
+                      <div class="text-sm opacity-40">{{ $t('importers.oldId') }} {{ g.oldId }}</div>
                     </div>
                   </div>
                 </div>
@@ -426,12 +425,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                       </svg>
                     </th>
-                    <th>Naziv</th>
-                    <th>Stari ID (RAWG)</th>
-                    <th>Novi ID (Gamenote)</th>
-                    <th>Datum</th>
-                    <th class="w-28 text-center">Pouzdanost</th>
-                    <th class="min-w-[10rem] text-center">Status</th>
+                    <th>{{ $t('common.name') }}</th>
+                    <th>{{ $t('importers.oldIdRawg') }}</th>
+                    <th>{{ $t('importers.newIdGamenote') }}</th>
+                    <th>{{ $t('importers.date') }}</th>
+                    <th class="w-28 text-center">{{ $t('importers.confidence') }}</th>
+                    <th class="min-w-[10rem] text-center">{{ $t('common.status') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -484,8 +483,8 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <span><strong>{{ migrateDoneCount }}</strong> igara uspješno migrirano.</span>
-              <router-link class="btn btn-sm btn-outline ml-auto" to="/library">Otvori kolekciju</router-link>
+              <span><strong>{{ migrateDoneCount }}</strong> {{ $t('importers.gamesMigratedSuccessfully') }}</span>
+              <router-link class="btn btn-sm btn-outline ml-auto" to="/library">{{ $t('importers.openCollection') }}</router-link>
             </div>
 
           </template>
@@ -494,7 +493,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <span>Nema igara koje treba migrirati — sve je već povezano s novim API-jem.</span>
+            <span>{{ $t('importers.noGamesNeedToBe') }}</span>
           </div>
 
         </div>
@@ -507,10 +506,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-                <h2 class="text-lg font-bold">Sigurnosna kopija podataka</h2>
+                <h2 class="text-lg font-bold">{{ $t('importers.dataBackup') }}</h2>
               </div>
               <p class="text-sm text-base-content/60">
-                Preuzmi kompletnu sigurnosnu kopiju svoje kolekcije (igre, grupe i povezivanja) ili uvezi ranije spremljenu kopiju.
+                {{ $t('importers.downloadAFullBackupOf') }}
               </p>
               <div class="flex flex-col sm:flex-row gap-3">
                 <button @click="exportBackup" class="btn btn-outline btn-info" :disabled="backupLoading || importing">
@@ -519,7 +518,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                    Preuzmi backup
+                    {{ $t('importers.downloadBackup') }}
                   </span>
                 </button>
                 <label class="btn btn-outline btn-warning cursor-pointer" :class="{ 'btn-disabled': importing || backupLoading }">
@@ -528,7 +527,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
-                    Uvezi backup
+                    {{ $t('importers.importBackup') }}
                   </span>
                   <input type="file" accept=".json" hidden @change="importBackup" :disabled="importing" />
                 </label>
@@ -537,7 +536,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>Uvoz <strong>zamjenjuje</strong> sve trenutne podatke podacima iz backup datoteke. Preporučamo prvo preuzeti backup.</span>
+                <span>{{ $t('importers.importing') }} <strong>{{ $t('importers.replaces') }}</strong> {{ $t('importers.allCurrentDataWithThe') }}</span>
               </div>
             </div>
           </div>
@@ -546,18 +545,17 @@
           <div v-if="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div class="card bg-base-200 w-full max-w-md mx-4 shadow-2xl">
               <div class="card-body p-6">
-                <h3 class="text-xl font-bold text-warning">Uvezi backup</h3>
+                <h3 class="text-xl font-bold text-warning">{{ $t('importers.importBackup') }}</h3>
                 <p class="text-sm leading-relaxed mt-2">
-                  Ovo će <strong>zamijeniti</strong> sve tvoje trenutne podatke
-                  (igre, grupe, pratitelje) podacima iz backup datoteke.
+                  {{ $t('importers.thisWill') }} <strong>{{ $t('importers.replace') }}</strong> {{ $t('importers.allYourCurrentDataGames') }}
                 </p>
-                <p class="text-sm text-base-content/60 mt-1">Jesi li siguran da želiš nastaviti?</p>
+                <p class="text-sm text-base-content/60 mt-1">{{ $t('importers.areYouSureYouWant') }}</p>
 
                 <div class="flex gap-2 mt-6">
-                  <button @click="closeImportModal" class="btn btn-ghost flex-1">Odustani</button>
+                  <button @click="closeImportModal" class="btn btn-ghost flex-1">{{ $t('common.cancel') }}</button>
                   <button @click="confirmImport" class="btn btn-warning flex-1">
                     <span v-if="importing" class="loading loading-spinner"></span>
-                    <span v-else>Uvezi backup</span>
+                    <span v-else>{{ $t('importers.importBackup') }}</span>
                   </button>
                 </div>
               </div>
@@ -573,10 +571,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                <h2 class="text-lg font-bold">Osvježi metadata igara</h2>
+                <h2 class="text-lg font-bold">{{ $t('importers.refreshGameMetadata') }}</h2>
               </div>
               <p class="text-sm text-base-content/60">
-                Gamenote prolazi kroz tvoje dodane igre i osvježava metapodatke svih igara koje imaju povezan Gamenote ID — naslovnicu, opis, žanrove, datume, ocjene i snimke zaslona. Tvoje ocjene, stanje, bilješke i progresija se ne mijenjaju.
+                {{ $t('importers.gamenoteRefreshesMetadataForEvery') }}
               </p>
               <div class="flex flex-wrap gap-3">
                 <button class="btn btn-outline btn-primary gap-1" :disabled="refreshLoading" @click="runRefresh">
@@ -584,7 +582,7 @@
                   <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                   </svg>
-                  Osvježi biblioteku
+                  {{ $t('importers.refreshLibrary') }}
                 </button>
               </div>
 
@@ -607,7 +605,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span><strong>{{ refreshDoneCount }}</strong> igara osvježeno iz Gamenote API-a.</span>
+                <span><strong>{{ refreshDoneCount }}</strong> {{ $t('importers.gamesRefreshedFromTheGamenote') }}</span>
               </div>
             </div>
           </div>
@@ -618,11 +616,13 @@
   </template>
   
   <script>
+import { formatLocale, t } from '../i18n/index.js';
 import { useId } from 'vue';
 import { handleTabKeys } from '../services/tabNavigation.js';
 import AppModal from '../components/AppModal.vue';
 import { validateBackup } from '../services/backupValidation';
 import { fetchUserRows } from '../services/libraryData';
+import { invalidateGames } from '../services/libraryCache.js';
   import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
   import { useUserStore } from '../stores/user';
   import { supabase } from '../supabase';
@@ -655,7 +655,7 @@ import {
       const ownerId = userStore.user?.id;
       let disposed = false;
       const assertOwner = () => {
-        if (disposed || !ownerId || userStore.user?.id !== ownerId) throw new Error('Korisnik je promijenjen. Ponovno otvori importer.');
+        if (disposed || !ownerId || userStore.user?.id !== ownerId) throw new Error(t('importers.theUserChangedReopenThe'));
       };
       onBeforeUnmount(() => { disposed = true; });
   
@@ -810,10 +810,10 @@ const refreshDoneCount = ref(0);
           psnProfileData.value = await connectWithNpsso(wizardNpssoParsed.value);
           isConnected.value = true;
           closeWizard();
-          showToast('PSN račun povezan!');
+          showToast(t('importers.psnAccountConnectedError'));
           await syncPsn();
         } catch (e) {
-          wizardError.value = e?.message || 'Povezivanje nije uspjelo.';
+          wizardError.value = e?.message || t('importers.couldntConnect');
         } finally {
           wizardLoading.value = false;
         }
@@ -834,7 +834,7 @@ const refreshDoneCount = ref(0);
       };
 
       const formatSyncedAt = (ts) => {
-        try { return new Date(ts).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' }); } catch { return ''; }
+        try { return new Date(ts).toLocaleString(formatLocale.value, { dateStyle: 'short', timeStyle: 'short' }); } catch { return ''; }
       };
    
       // indeks: npcId → titleId → naziv
@@ -900,14 +900,14 @@ const refreshDoneCount = ref(0);
           saveSnapshot(data);
           lastSyncedAt.value = Date.now();
           await markExisting();
-          showToast(`Sinkronizacija dovršena: ${psnGames.value.length} igara.`);
+          showToast(t('importers.syncCompleteGames', [psnGames.value.length]));
         } catch (e) {
           if (e?.name === 'PsnAuthRequiredError') {
             isConnected.value = hasPsnConnection();
             openWizard();
             syncError.value = e.message;
           } else {
-            syncError.value = e?.message || 'Greška pri PSN syncu.';
+            syncError.value = e?.message || t('importers.psnSyncFailed');
           }
         } finally {
           syncLoading.value = false;
@@ -935,7 +935,7 @@ const refreshDoneCount = ref(0);
             const match = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
             if (match.blocked) { unresolved.push(game.name); continue; }
             if (match.row) continue;
-            importProgress.value = `Importiram: ${game.name}`;
+            importProgress.value = t('importers.importingError', [game.name]);
             const extras = gameExtras.value[game._key] || defaultExtras();
             const metadata = await loadImporterMetadata(gamesApi, game.name);
             if (!metadata) { missingMetadata.push(game.name); importDone.value++; continue; }
@@ -947,11 +947,12 @@ const refreshDoneCount = ref(0);
             assertOwner();
             const { data, error } = await supabase.from('games').insert([row]).select('id');
             if (error) {
-              importError.value = `Dodano: ${importDoneCount.value}. ${error.message || 'Import nije uspio.'}`;
+              importError.value = `Dodano: ${importDoneCount.value}. ${error.message || t('importers.importFailed')}`;
               return;
             }
+            invalidateGames(ownerId);
             if (!data?.[0]?.id) {
-              importError.value = `Dodano: ${importDoneCount.value}. Spremanje nije potvrđeno. Osvježi popis prije ponavljanja.`;
+              importError.value = t('importers.addedTheSaveWasntConfirmed', [importDoneCount.value]);
               return;
             }
             importDoneCount.value++;
@@ -966,19 +967,19 @@ const refreshDoneCount = ref(0);
               assertOwner();
               const { error: groupError } = await supabase.from('game_groups').insert([{ user_id: ownerId, game_id: data[0].id, group_id: extras.groupId }]);
               if (groupError) {
-                importError.value = `Dodano: ${importDoneCount.value}. Igra je dodana, ali grupa nije spremljena. Dodaj je u grupu iz detalja igre.`;
+                importError.value = t('importers.addedTheGameWasAdded', [importDoneCount.value]);
                 return;
               }
             }
           }
-          showToast(`Import dovršen: ${importDoneCount.value} igara.`);
+          showToast(t('importers.importCompleteGames', [importDoneCount.value]));
         } catch (error) {
-          importError.value = `Dodano: ${importDoneCount.value}. ${error.message || 'Import nije uspio.'}`;
+          importError.value = `Dodano: ${importDoneCount.value}. ${error.message || t('importers.importFailed')}`;
         } finally {
           try { assertOwner(); await markExisting(); }
           catch (error) { if (!disposed) importError.value += ` ${error.message}`; }
-          if (missingMetadata.length) metadataWarning.value = `Nisu dodane igre bez potvrđenog podudaranja u Gamenote katalogu: ${missingMetadata.join(', ')}. Pronađi ih kroz Dodaj u Gamenote.`;
-          if (unresolved.length) metadataWarning.value += ` Odaberi postojeću igru ili zaseban unos za: ${unresolved.join(', ')}.`;
+          if (missingMetadata.length) metadataWarning.value = t('common.gamesWithoutAConfirmedMatch', [missingMetadata.join(', ')]);
+          if (unresolved.length) metadataWarning.value += t('importers.chooseAnExistingGameOr', [unresolved.join(', ')]);
           importLoading.value = false;
           importProgress.value = '';
           importTotal.value = 0;
@@ -1002,7 +1003,7 @@ const refreshDoneCount = ref(0);
           for (const game of toUpdate) {
             const match = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
             if (match.row && targets.has(match.row.id)) {
-              importError.value = `Sinkronizirano: ${importDoneCount.value}. Odaberi samo jedan izvor napretka za istu igru.`;
+              importError.value = t('importers.syncedChooseOnlyOneSource', [importDoneCount.value]);
               return;
             }
             if (match.row) targets.add(match.row.id);
@@ -1012,23 +1013,24 @@ const refreshDoneCount = ref(0);
             const resolution = resolveImporterGame(psnLibraryRows, 'psn', game, psnChoices.value[game._key], index);
             const match = resolution.row;
             if (!match || resolution.blocked) continue;
-            importProgress.value = `Sinkroniziram: ${game.name}`;
+            importProgress.value = t('importers.syncing', [game.name]);
             const { data, error } = await supabase.from('games').update(buildPsnPatch(game, match))
               .eq('user_id', ownerId).eq('id', match.id).eq('platform', match.platform).select('id');
             if (error) {
-              importError.value = `Sinkronizirano: ${importDoneCount.value}. ${error.message || 'Ažuriranje nije uspjelo.'}`;
+              importError.value = `Sinkronizirano: ${importDoneCount.value}. ${error.message || t('importers.updateFailed')}`;
               return;
             }
+            invalidateGames(ownerId);
             if (!data?.length) {
-              importError.value = `Sinkronizirano: ${importDoneCount.value}. Igra je promijenjena ili uklonjena. Osvježi popis.`;
+              importError.value = t('importers.syncedTheGameChangedOr', [importDoneCount.value]);
               return;
             }
             importDoneCount.value++;
             importDone.value++;
           }
-          showToast(`Sinkronizirano: ${importDoneCount.value} igara.`);
+          showToast(t('importers.syncedGames', [importDoneCount.value]));
         } catch (error) {
-          importError.value = `Sinkronizirano: ${importDoneCount.value}. ${error.message || 'Ažuriranje nije uspjelo.'}`;
+          importError.value = `Sinkronizirano: ${importDoneCount.value}. ${error.message || t('importers.updateFailed')}`;
         } finally {
           importLoading.value = false;
           importProgress.value = '';
@@ -1066,10 +1068,10 @@ const refreshDoneCount = ref(0);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('Backup preuzet!');
+        showToast(t('importers.backupDownloaded'));
       } catch (error) {
         console.error('Greška pri backupu:', error);
-        showToast(error.message || 'Greška pri izradi backupa', 'error');
+        showToast(error.message || t('importers.couldntCreateTheBackup'), 'error');
       } finally {
         backupLoading.value = false;
       }
@@ -1085,7 +1087,7 @@ const refreshDoneCount = ref(0);
         showImportModal.value = true;
       } catch (error) {
         console.error('Greška pri čitanju backupa:', error);
-        showToast(error.message || 'Neispravna datoteka', 'error');
+        showToast(error.message || t('importers.invalidFile'), 'error');
       }
 
       event.target.value = '';
@@ -1108,7 +1110,7 @@ const refreshDoneCount = ref(0);
         assertOwner();
 
         if (data.games.length === 0 && data.groups.length === 0 && data.gameGroups.length === 0) {
-          const message = 'Backup datoteka ne sadrži podatke (svi nizovi su prazni).';
+          const message = t('importers.theBackupFileHasNo');
           console.error('Greška pri uvozu backupa:', new Error(message));
           showToast(message, 'error');
           importFileData.value = null;
@@ -1135,27 +1137,28 @@ const refreshDoneCount = ref(0);
         });
 
         if (error || !result?.ok) {
-          const failure = error || new Error(result?.error || 'Nepoznata greška pri uvozu.');
+          const failure = error || new Error(result?.error || t('importers.unknownImportError'));
           console.error('Greška pri uvozu backupa:', failure);
-          showToast(failure.message || 'Uvoz nije uspio. Provjeri podatke i pokušaj ponovno.', 'error');
+          showToast(failure.message || t('importers.importFailedCheckTheData'), 'error');
           importFileData.value = null;
           return;
         }
 
+        invalidateGames(ownerId);
         importFileData.value = null;
         await loadGroups();
         await markExisting();
-        showToast(`Backup uspješno uvezen! (${result.inserted.games} igara, ${result.inserted.groups} grupa)`);
+        showToast(t('importers.backupImportedSuccessfullyGamesGroups', [result.inserted.games, result.inserted.groups]));
       } catch (error) {
         console.error('Greška pri uvozu backupa:', error);
-        showToast(error.message || 'Uvoz nije uspio. Provjeri podatke i pokušaj ponovno.', 'error');
+        showToast(error.message || t('importers.importFailedCheckTheData'), 'error');
         importFileData.value = null;
       } finally {
         importing.value = false;
       }
     };
 
-    const migrateStatusLabel = (s) => s === 'kandidat' ? 'Kandidat' : s === 'linked' ? 'Već povezano' : 'Bez rezultata';
+    const migrateStatusLabel = (s) => s === 'kandidat' ? t('importers.candidate') : s === 'linked' ? t('importers.alreadyLinkedError') : t('importers.noResultsError');
 
     const migrateSelectAll = (value) => {
       const next = { ...migrateSelectedMap.value };
@@ -1183,7 +1186,7 @@ const refreshDoneCount = ref(0);
         migrateDone.value = 0;
 
         for (const g of candidates) {
-          migrateProgress.value = `Skeniram: ${g.title}`;
+          migrateProgress.value = t('importers.scanning', [g.title]);
           const year = (g.release_date && String(g.release_date).slice(0, 4)) || null;
           let match = null;
           try { match = await gamesApi.matchGame(g.title, year); } catch (e) { match = null; }
@@ -1228,7 +1231,7 @@ const refreshDoneCount = ref(0);
         for (const r of rows) next[r._key] = r.status === 'kandidat';
         migrateSelectedMap.value = next;
       } catch (e) {
-        migrateScanError.value = e?.message || 'Greška pri skeniranju biblioteke.';
+        migrateScanError.value = e?.message || t('importers.couldntScanTheLibrary');
       } finally {
         migrateScanLoading.value = false;
       }
@@ -1237,7 +1240,7 @@ const refreshDoneCount = ref(0);
     const buildGameMetadata = async (apiId, extra = {}) => {
       const update = { updated_at: new Date().toISOString(), ...extra };
       const details = await gamesApi.getGameDetails(apiId);
-      if (!details?.id) throw new Error('Metapodaci nisu dostupni. Pokušaj ponovno.');
+      if (!details?.id) throw new Error(t('importers.metadataIsUnavailableTryAgain'));
       let screenshots = [];
       let seriesGames = [];
       try { screenshots = (await gamesApi.getGameScreenshots(apiId)) || []; } catch (e) { console.error('[Importers] screenshots failed:', e); }
@@ -1280,7 +1283,7 @@ const refreshDoneCount = ref(0);
       migrateTotal.value = 0;
       const userId = userStore.user?.id;
       if (!userId) {
-        migrateError.value = 'Nema user_id.';
+        migrateError.value = t('importers.missingUserId');
         return;
       }
       const toMigrate = migrateGames.value.filter(g => migrateSelectedMap.value[g._key] && g.status === 'kandidat');
@@ -1292,7 +1295,7 @@ const refreshDoneCount = ref(0);
         let done = 0;
 
         for (const g of toMigrate) {
-          migrateProgress.value = `Migriram: ${g.db.title}`;
+          migrateProgress.value = t('importers.migrating', [g.db.title]);
           migrateDone.value = done;
 
           const year = (g.db.release_date && String(g.db.release_date).slice(0, 4)) || null;
@@ -1316,6 +1319,7 @@ const refreshDoneCount = ref(0);
             return;
           }
 
+          invalidateGames(userId);
           g.status = 'linked';
           g.newReleased = update.release_date || g.newReleased;
           done++;
@@ -1330,7 +1334,7 @@ const refreshDoneCount = ref(0);
         for (const r of migrateGames.value) next[r._key] = r.status === 'kandidat';
         migrateSelectedMap.value = next;
       } catch (e) {
-        migrateError.value = e?.message || 'Greška pri migraciji.';
+        migrateError.value = e?.message || t('importers.migrationFailed');
         migrateProgress.value = '';
         migrateTotal.value = 0;
       } finally {
@@ -1346,7 +1350,7 @@ const refreshDoneCount = ref(0);
       refreshTotal.value = 0;
       const userId = userStore.user?.id;
       if (!userId) {
-        refreshError.value = 'Nema user_id.';
+        refreshError.value = t('importers.missingUserId');
         return;
       }
       try {
@@ -1360,26 +1364,29 @@ const refreshDoneCount = ref(0);
         refreshTotal.value = toRefresh.length;
         let done = 0;
         for (const g of toRefresh) {
-          refreshProgress.value = `Osvježavam: ${g.title}`;
+          refreshProgress.value = t('importers.refreshing', [g.title]);
           refreshDone.value = done;
           try {
             const update = await buildGameMetadata(String(g.game_api_id));
             assertOwner();
             if (String(g.website_url || '').startsWith('https://store.steampowered.com/app/')) delete update.website_url;
             const { error: updateError } = await supabase.from('games').update(update).eq('user_id', userId).eq('id', g.id);
-            if (updateError) refreshError.value = `Neke igre nisu osvježene: ${updateError.message || 'greška dohvata'}`;
-            else done++;
+            if (updateError) refreshError.value = t('importers.someGamesWerentRefreshed', { reason: updateError.message || t('importers.fetchFailed') });
+            else {
+              invalidateGames(userId);
+              done++;
+            }
           } catch (e) {
-            refreshError.value = `Neke igre nisu osvježene: ${e.message || 'greška dohvata'}`;
+            refreshError.value = t('importers.someGamesWerentRefreshed', { reason: e.message || t('importers.fetchFailed') });
           }
           refreshDone.value = done;
         }
         refreshDoneCount.value = done;
         refreshProgress.value = '';
         refreshTotal.value = 0;
-        showToast(`${done} igara osvježeno iz Gamenote API-a.`);
+        showToast(t('importers.gamesRefreshedFromTheGamenoteApi', [done]));
       } catch (e) {
-        refreshError.value = e?.message || 'Greška pri osvježavanju.';
+        refreshError.value = e?.message || t('importers.refreshFailed');
         refreshProgress.value = '';
         refreshTotal.value = 0;
       } finally {
@@ -1404,7 +1411,7 @@ const refreshDoneCount = ref(0);
       await markExisting();
     }
   }
-  } catch (error) { syncError.value = error.message || 'Učitavanje nije uspjelo.'; }
+  } catch (error) { syncError.value = error.message || t('common.couldntLoadTheData'); }
 });
 
   

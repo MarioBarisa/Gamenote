@@ -1,12 +1,13 @@
+import { formatLocale, t } from '../i18n/index.js';
 import { GAME_STATUS } from '../constants/gameStatus.js';
 
 export const PLAYER_TITLES = [
-  { hours: 0, label: 'Početnik' },
-  { hours: 10, label: 'Znatiželjni igrač' },
-  { hours: 50, label: 'Istraživač' },
-  { hours: 200, label: 'Iskusni igrač' },
+  { hours: 0, get label() { return t('common.beginner'); } },
+  { hours: 10, get label() { return t('gamerCard.curiousPlayer'); } },
+  { hours: 50, get label() { return t('gamerCard.explorer'); } },
+  { hours: 200, get label() { return t('gamerCard.experiencedPlayer'); } },
   { hours: 500, label: 'Veteran' },
-  { hours: 1000, label: 'Majstor igre' },
+  { hours: 1000, get label() { return t('gamerCard.gameMaster'); } },
   { hours: 2500, label: 'Spirit guide' },
   { hours: 5000, label: 'Archon' },
   { hours: 10000, label: 'Professional' },
@@ -63,7 +64,7 @@ export function getGamerCardStats(games) {
 }
 
 export function formatCardNumber(value) {
-  return Number(value).toLocaleString('hr-HR', { maximumFractionDigits: 1 });
+  return Number(value).toLocaleString(formatLocale.value, { maximumFractionDigits: 1 });
 }
 
 export async function exportGamerCard(svg) {
@@ -77,19 +78,19 @@ export async function exportGamerCard(svg) {
   const image = new Image();
   await new Promise((resolve, reject) => {
     image.onload = resolve;
-    image.onerror = () => reject(new Error('Karticu nije moguće pripremiti.'));
+    image.onerror = () => reject(new Error(t('gamerCard.theCardCouldntBePrepared')));
     image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
   });
   const canvas = document.createElement('canvas');
   canvas.width = width * 2;
   canvas.height = height * 2;
   const context = canvas.getContext('2d');
-  if (!context) throw new Error('Preglednik ne podržava izvoz slike.');
+  if (!context) throw new Error(t('gamerCard.yourBrowserDoesntSupportExporting'));
   context.drawImage(image, 0, 0);
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
       if (blob) resolve(blob);
-      else reject(new Error('Slika nije spremljena. Pokušaj ponovno.'));
+      else reject(new Error(t('gamerCard.theImageWasntSavedTry')));
     }, 'image/png');
   });
 }

@@ -19,9 +19,10 @@ import { useUserStore } from '/src/stores/user.js';
 import { supabase } from '/src/supabase.js';
 import '/src/assets/main.css';
 supabase.auth.getSession = async () => ({ data: { session: { access_token: 'fixture-token', user: { id: '${userId}' } } }, error: null });
-const app = createApp(Importers); app.use(createPinia());
+import { i18n } from '/src/i18n/index.js';
+const app = createApp(Importers); app.use(i18n); app.use(createPinia());
 app.use(createRouter({ history: createMemoryHistory(), routes: [{ path: '/', component: { template: '<div />' } }, { path: '/library', component: { template: '<div />' } }] }));
-useUserStore().setUser({ id: '${userId}' }); app.mount('#app');
+useUserStore().setSession({ user: { id: '${userId}' } }); app.mount('#app');
 </script></body></html>`;
 
 const server = await createServer({
@@ -42,7 +43,7 @@ const server = await createServer({
 let browser;
 
 async function fixturePage(provider, viewport) {
-  const context = await browser.newContext({ viewport });
+  const context = await browser.newContext({ locale: 'hr-HR', viewport });
   const page = await context.newPage();
   const foreign = { ...existingRow(provider), id: 'other-platform', title: provider.newName, platform: provider.id === 'steam' ? 'PlayStation 4' : 'PC', website_url: 'https://store.steampowered.com/app/220/', psn_title_id: 'CUSA00001', psn_np_communication_id: 'NPWR00001' };
   const state = { rows: [existingRow(provider), foreign], writes: [], libraryFailed: false, insertFailed: false, emptyUpdate: false, gameDataMissing: false, earned: 1, total: 4, errors: [] };

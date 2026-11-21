@@ -1,7 +1,7 @@
 <template>
   <ShareGuestHeader v-if="!userStore.isLoggedIn" />
   <div v-if="!isPublicComparison" class="public-library space-y-5 min-w-0 max-w-[1600px] mx-auto px-3 sm:px-4 py-5">
-    <div v-if="error" role="alert" class="alert alert-error"><span>{{ error }}</span><button class="btn btn-sm" @click="load">Pokušaj ponovno</button></div>
+    <div v-if="error" role="alert" class="alert alert-error"><span>{{ error }}</span><button class="btn btn-sm" @click="load">{{ $t('common.tryAgain') }}</button></div>
     <template v-if="loading && !header">
       <div class="skeleton h-8 w-64 max-w-full" aria-hidden="true"></div>
       <GamerCardSkeleton />
@@ -12,75 +12,75 @@
         <GamerCard :name="header.name" :username="header.username" :avatar-url="header.avatar_url" :created-at="header.created_at" :card-stats="header.card" color="signature" />
       </div>
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <nav class="flex flex-wrap gap-1" aria-label="Podijeljena zbirka">
+        <nav class="flex flex-wrap gap-1" :aria-label="$t('publicLibrary.sharedLibrary')">
           <router-link v-for="item in tabs" :key="item.key" :to="{ path: route.path, query: item.key === 'games' ? {} : { tab: item.key } }" class="collection-nav-link" :class="{ 'bg-base-200 text-primary': tab === item.key }" :aria-current="tab === item.key ? 'page' : undefined"><CollectionNavIcon :name="item.key" class="h-5 w-5" />{{ item.label }}</router-link>
         </nav>
         <button v-if="canCompare" type="button" class="btn btn-accent btn-sm gap-2" @click="compareOpen = true">
           <svg viewBox="0 0 256 256" fill="currentColor" class="size-7 shrink-0" aria-hidden="true" focusable="false">
             <path v-for="(path, index) in VERSUS_PATHS" :key="index" :d="path" />
           </svg>
-          Usporedi Gamenote
+          {{ $t('publicLibrary.compareGamenote') }}
         </button>
-        <p v-if="comparisonCheckError" role="alert" class="text-sm">{{ comparisonCheckError }} <button type="button" class="btn btn-xs btn-ghost" @click="comparisonRetry++">Pokušaj ponovno</button></p>
+        <p v-if="comparisonCheckError" role="alert" class="text-sm">{{ comparisonCheckError }} <button type="button" class="btn btn-xs btn-ghost" @click="comparisonRetry++">{{ $t('common.tryAgain') }}</button></p>
       </div>
     </template>
     <template v-if="header && tab === 'games'">
       <LibraryStatusFilters ratings :model-value="filters.status || 'all'" @update:model-value="filterStatus" />
-      <LibraryToolbar :model-value="filters.search" :sort-value="sortValue" placeholder="Pretraži zbirku…" @update:model-value="searchGames" @sort="sortGames">
+      <LibraryToolbar :model-value="filters.search" :sort-value="sortValue" :placeholder="$t('publicLibrary.searchLibrary')" @update:model-value="searchGames" @sort="sortGames">
         <template #controls><TcgShareToggle class="sm:ml-auto shrink-0" :model-value="tcgActive" @update:model-value="toggleTcg" /></template>
       </LibraryToolbar>
     </template>
     <template v-if="loading">
-      <LoadingCardGrid v-if="tab === 'groups'" :layout="groupLayout" variant="groups" banner label="Učitavam grupe…" />
-      <LoadingCardGrid v-else-if="tab === 'stats'" :layout="statsLayout" variant="panels" label="Učitavam statistiku…" />
+      <LoadingCardGrid v-if="tab === 'groups'" :layout="groupLayout" variant="groups" banner :label="$t('common.loadingGroupsLabel')" />
+      <LoadingCardGrid v-else-if="tab === 'stats'" :layout="statsLayout" variant="panels" :label="$t('publicLibrary.loadingStats')" />
       <LoadingCardGrid v-else :layout="cardLayout" />
     </template>
     <template v-else-if="header">
       <StatsContent v-if="tab === 'stats' && statsGames" :public-games="statsGames" @open-game="openGame" />
       <template v-else-if="tab === 'groups'">
-        <h2 class="sr-only">Grupe</h2>
-        <p v-if="!items.length">Ova zbirka još nema grupa.</p>
+        <h2 class="sr-only">{{ $t('common.groups') }}</h2>
+        <p v-if="!items.length">{{ $t('publicLibrary.thisLibraryHasNoGroups') }}</p>
         <div v-else class="grid" :class="[groupLayout.container, groupLayout.gap]">
           <GroupCard v-for="group in items" :key="group.id" :group="group" :load-images="loadGroupImages" @open="openGroup(group)" />
         </div>
       </template>
       <template v-else>
-        <p v-if="!items.length">Nema igara za prikaz.</p>
+        <p v-if="!items.length">{{ $t('publicLibrary.noGamesToShow') }}</p>
         <div v-else class="grid" :class="[cardLayout.container, cardLayout.gap]">
-          <div v-for="entry in items" :key="entry.id" role="button" tabindex="0" :aria-label="`Pogledaj igru: ${entry.title}`" class="min-w-0 cursor-pointer rounded-box focus-visible:outline-2 focus-visible:outline-primary" @click="openGame(entry.id)" @keydown.enter.prevent="openGame(entry.id)" @keydown.space.prevent="openGame(entry.id)">
+          <div v-for="entry in items" :key="entry.id" role="button" tabindex="0" :aria-label="$t('publicLibrary.viewGame', [entry.title])" class="min-w-0 cursor-pointer rounded-box focus-visible:outline-2 focus-visible:outline-primary" @click="openGame(entry.id)" @keydown.enter.prevent="openGame(entry.id)" @keydown.space.prevent="openGame(entry.id)">
             <GameCard :game="entry" :lazy="true" :tcg="tcgActive" />
           </div>
         </div>
       </template>
-      <nav v-if="!loading && tab !== 'stats' && total > 48" class="flex justify-center items-center gap-3" aria-label="Stranice zbirke">
-        <button class="btn btn-sm" :disabled="page <= 1" @click="changePage(page - 1)">Prethodna</button><span>{{ page }} / {{ Math.ceil(total / 48) }}</span><button class="btn btn-sm" :disabled="page * 48 >= total" @click="changePage(page + 1)">Sljedeća</button>
+      <nav v-if="!loading && tab !== 'stats' && total > 48" class="flex justify-center items-center gap-3" :aria-label="$t('publicLibrary.libraryPages')">
+        <button class="btn btn-sm" :disabled="page <= 1" @click="changePage(page - 1)">{{ $t('publicLibrary.previous') }}</button><span>{{ page }} / {{ Math.ceil(total / 48) }}</span><button class="btn btn-sm" :disabled="page * 48 >= total" @click="changePage(page + 1)">{{ $t('publicLibrary.next') }}</button>
       </nav>
     </template>
   </div>
-  <h1 v-else class="sr-only">Gamenote usporedba</h1>
-  <p v-if="isPublicComparison && !publicPair" class="max-w-[80rem] mx-auto px-3 py-5">Usporedba nije dostupna.</p>
+  <h1 v-else class="sr-only">{{ $t('common.gamenoteComparison') }}</h1>
+  <p v-if="isPublicComparison && !publicPair" class="max-w-[80rem] mx-auto px-3 py-5">{{ $t('common.theComparisonIsUnavailable') }}</p>
 
   <LibraryComparison v-if="compareOpen && (isPublicComparison || canCompare)" :key="isPublicComparison ? comparisonTitle : userStore.user.id + header.username" :header="header || {}" :user="userStore.user || {}" :own-share="ownShare || {}" :initial-page="isPublicComparison ? null : comparisonInitialPage" :public-pair="publicPair" @open-game="openComparisonGame" @close="compareOpen = false" />
   <dialog ref="groupDialog" class="modal" aria-labelledby="shared-group-title" @close="closeGroup">
     <div class="modal-box w-11/12 max-w-6xl p-3 sm:p-4 md:p-6">
-      <div class="flex justify-between items-center gap-3 mb-4"><h2 id="shared-group-title" class="text-xl font-bold">{{ selectedGroup?.name || 'Grupa' }}</h2><button class="btn btn-sm btn-circle btn-ghost" aria-label="Zatvori grupu" @click="groupDialog.close()">✕</button></div>
+      <div class="flex justify-between items-center gap-3 mb-4"><h2 id="shared-group-title" class="text-xl font-bold">{{ selectedGroup?.name || $t('common.group') }}</h2><button class="btn btn-sm btn-circle btn-ghost" :aria-label="$t('publicLibrary.closeGroup')" @click="groupDialog.close()">✕</button></div>
       <LoadingCardGrid v-if="groupLoading" :layout="groupCardLayout" />
       <p v-else-if="groupError" role="alert" class="alert alert-error">{{ groupError }}</p>
-      <p v-else-if="!groupItems.length">Grupa još nema igara.</p>
+      <p v-else-if="!groupItems.length">{{ $t('publicLibrary.thisGroupHasNoGames') }}</p>
       <div v-else class="grid" :class="[groupCardLayout.container, groupCardLayout.gap]">
-        <div v-for="entry in groupItems" :key="entry.id" role="button" tabindex="0" :aria-label="`Pogledaj igru: ${entry.title}`" class="min-w-0 cursor-pointer rounded-box focus-visible:outline-2 focus-visible:outline-primary" @click="openGame(entry.id)" @keydown.enter.prevent="openGame(entry.id)" @keydown.space.prevent="openGame(entry.id)"><GameCard :game="entry" size="medium" :lazy="true" :tcg="tcgActive" /></div>
+        <div v-for="entry in groupItems" :key="entry.id" role="button" tabindex="0" :aria-label="$t('publicLibrary.viewGame', [entry.title])" class="min-w-0 cursor-pointer rounded-box focus-visible:outline-2 focus-visible:outline-primary" @click="openGame(entry.id)" @keydown.enter.prevent="openGame(entry.id)" @keydown.space.prevent="openGame(entry.id)"><GameCard :game="entry" size="medium" :lazy="true" :tcg="tcgActive" /></div>
       </div>
-      <div v-if="groupTotal > 48" class="flex justify-center items-center gap-3 mt-4"><button class="btn btn-sm" :disabled="groupLoading || groupPage <= 1" @click="loadGroup(groupPage - 1)">Prethodna</button><span>{{ groupPage }} / {{ Math.ceil(groupTotal / 48) }}</span><button class="btn btn-sm" :disabled="groupLoading || groupPage * 48 >= groupTotal" @click="loadGroup(groupPage + 1)">Sljedeća</button></div>
+      <div v-if="groupTotal > 48" class="flex justify-center items-center gap-3 mt-4"><button class="btn btn-sm" :disabled="groupLoading || groupPage <= 1" @click="loadGroup(groupPage - 1)">{{ $t('publicLibrary.previous') }}</button><span>{{ groupPage }} / {{ Math.ceil(groupTotal / 48) }}</span><button class="btn btn-sm" :disabled="groupLoading || groupPage * 48 >= groupTotal" @click="loadGroup(groupPage + 1)">{{ $t('publicLibrary.next') }}</button></div>
     </div>
-    <form method="dialog" class="modal-backdrop"><button>Zatvori grupu</button></form>
+    <form method="dialog" class="modal-backdrop"><button>{{ $t('publicLibrary.closeGroup') }}</button></form>
   </dialog>
 
   <dialog ref="gameDialog" class="modal" aria-labelledby="shared-game-title" @close="closeGame">
     <div class="modal-box w-11/12 max-w-4xl">
-      <div class="flex justify-between items-center gap-3 mb-4"><h2 id="shared-game-title" class="text-xl font-bold">{{ game?.title || 'Informacije o igri' }}</h2><button class="btn btn-sm btn-circle btn-ghost" aria-label="Zatvori igru" @click="gameDialog.close()">✕</button></div>
+      <div class="flex justify-between items-center gap-3 mb-4"><h2 id="shared-game-title" class="text-xl font-bold">{{ game?.title || $t('publicLibrary.gameInformation') }}</h2><button class="btn btn-sm btn-circle btn-ghost" :aria-label="$t('publicLibrary.closeGame')" @click="gameDialog.close()">✕</button></div>
       <div v-if="gameLoading" class="grid md:grid-cols-[200px_1fr] gap-5">
         <div class="skeleton w-full aspect-[3/4] self-start" aria-hidden="true"></div>
-        <LoadingCardGrid :layout="statsLayout" variant="panels" label="Učitavam igru…" />
+        <LoadingCardGrid :layout="statsLayout" variant="panels" :label="$t('common.loadingGame')" />
       </div>
       <p v-else-if="gameError" role="alert" class="alert alert-error">{{ gameError }}</p>
       <template v-else-if="game">
@@ -88,9 +88,9 @@
           <GameCard :game="game" :tcg="false" />
           <div class="space-y-4 min-w-0">
             <div>
-              <span class="flex items-center gap-2 text-sm opacity-70 font-semibold mb-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>Opis</span>
-              <p id="shared-game-description" ref="descriptionText" class="shared-game-description whitespace-pre-line break-words" :class="descriptionExpanded ? '' : 'line-clamp-3 sm:line-clamp-none'">{{ game.description || 'Opis nije dostupan.' }}</p>
-              <button v-if="descriptionOverflow || descriptionExpanded" type="button" class="btn btn-link btn-sm px-0 sm:hidden" :aria-expanded="descriptionExpanded" aria-controls="shared-game-description" @click="descriptionExpanded = !descriptionExpanded">{{ descriptionExpanded ? 'Sažmi opis' : 'Pročitaj cijeli opis' }}</button>
+              <span class="flex items-center gap-2 text-sm opacity-70 font-semibold mb-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>{{ $t('common.description') }}</span>
+              <p id="shared-game-description" ref="descriptionText" class="shared-game-description whitespace-pre-line break-words" :class="descriptionExpanded ? '' : 'line-clamp-3 sm:line-clamp-none'">{{ game.description || $t('publicLibrary.descriptionUnavailable') }}</p>
+              <button v-if="descriptionOverflow || descriptionExpanded" type="button" class="btn btn-link btn-sm px-0 sm:hidden" :aria-expanded="descriptionExpanded" aria-controls="shared-game-description" @click="descriptionExpanded = !descriptionExpanded">{{ descriptionExpanded ? $t('publicLibrary.collapseDescription') : $t('publicLibrary.readFullDescription') }}</button>
             </div>
             <dl class="shared-game-info grid grid-cols-2 gap-3">
               <div v-for="field in detailFields" :key="field.label">
@@ -110,29 +110,30 @@
             </dl>
             <GameSeriesSection :game="game" @open-game="openSeriesGame" />
             <div class="game-screenshots flex gap-3 overflow-x-auto" @wheel="scrollScreenshots">
-              <button v-for="(url, index) in screenshots" :key="index" type="button" class="shrink-0 rounded-box hover:opacity-90 transition-opacity" :aria-label="`Otvori screenshot ${index + 1}`" @click="openScreenshotModal(index)">
+              <button v-for="(url, index) in screenshots" :key="index" type="button" class="shrink-0 rounded-box hover:opacity-90 transition-opacity" :aria-label="$t('publicLibrary.openScreenshot', [index + 1])" @click="openScreenshotModal(index)">
                 <img :src="url" :alt="`Screenshot ${index + 1}`" class="w-64 aspect-video object-cover rounded-box" loading="lazy" />
               </button>
             </div>
           </div>
         </div>
         <div v-if="userStore.isLoggedIn" class="shared-game-actions mt-5">
-          <button v-if="ownGameId" class="btn btn-sm btn-success min-h-10" @click="openOwnGame">Već u Gamenoteu</button>
-          <button v-else-if="libraryCheckError" class="btn btn-sm min-h-10" @click="libraryCheckVersion++">Ponovi provjeru</button>
-          <button v-else class="btn btn-sm btn-primary min-h-10" :disabled="libraryChecking" @click="addModal.open(game)">{{ libraryChecking ? 'Provjeravam Gamenote…' : 'Dodaj u Gamenote' }}</button>
+          <button v-if="ownGameId" class="btn btn-sm btn-success min-h-10" @click="openOwnGame">{{ $t('publicLibrary.alreadyInGamenote') }}</button>
+          <button v-else-if="libraryCheckError" class="btn btn-sm min-h-10" @click="libraryCheckVersion++">{{ $t('publicLibrary.checkAgain') }}</button>
+          <button v-else class="btn btn-sm btn-primary min-h-10" :disabled="libraryChecking" @click="addModal.open(game)">{{ libraryChecking ? $t('publicLibrary.checkingGamenote') : $t('common.addToGamenote') }}</button>
           <p v-if="libraryCheckError" role="alert" class="text-sm text-error mt-2">{{ libraryCheckError }}</p>
         </div>
       </template>
     </div>
-    <form method="dialog" class="modal-backdrop"><button>Zatvori igru</button></form>
+    <form method="dialog" class="modal-backdrop"><button>{{ $t('publicLibrary.closeGame') }}</button></form>
   </dialog>
-  <dialog ref="screenshotDialog" class="modal" aria-label="Pregled screenshotova" @close="selectedScreenshotIndex = null">
+  <dialog ref="screenshotDialog" class="modal" :aria-label="$t('common.screenshotPreview')" @close="selectedScreenshotIndex = null">
     <ScreenshotViewer v-if="selectedScreenshotIndex !== null" :images="screenshots" :selected-index="selectedScreenshotIndex" @select="openScreenshotModal" @close="closeScreenshotModal" />
-    <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori pregled screenshotova">Zatvori</button></form>
+    <form method="dialog" class="modal-backdrop"><button :aria-label="$t('publicLibrary.closeScreenshotPreview')">{{ $t('common.close') }}</button></form>
   </dialog>
   <AddSharedGameModal ref="addModal" @added="onGameAdded" />
 </template>
 <script setup>
+import { formatLocale, locale, t } from '../i18n/index.js';
 import ScreenshotViewer from '../components/ScreenshotViewer.vue';
 import { computed, defineAsyncComponent, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -167,7 +168,7 @@ const router = useRouter();
 const userStore = useUserStore();
 const isPublicComparison = computed(() => route.name === 'public-comparison');
 const publicPair = computed(() => isPublicComparison.value ? comparisonNames(route.params.left, route.params.right) : null);
-const comparisonTitle = computed(() => publicPair.value ? `Gamenote: ${publicPair.value.left} vs ${publicPair.value.right}` : 'Gamenote usporedba');
+const comparisonTitle = computed(() => publicPair.value ? `Gamenote: ${publicPair.value.left} vs ${publicPair.value.right}` : t('common.gamenoteComparison'));
 const gamesApi = useGamesApi();
 const themeStore = useThemeStore();
 const cardSizeStore = useCardSizeStore();
@@ -187,7 +188,7 @@ watch([() => userStore.user?.id, () => header.value?.username, comparisonRetry, 
     const settings = await loadShareSettings(userId, request.signal);
     if (!request.signal.aborted) ownShare.value = settings;
   } catch {
-    if (!request.signal.aborted) comparisonCheckError.value = 'Provjeru usporedbe nije moguće učitati.';
+    if (!request.signal.aborted) comparisonCheckError.value = t('publicLibrary.couldntCheckWhetherComparisonIs');
   }
 });
 
@@ -225,12 +226,12 @@ watch([game, () => userStore.user?.id, libraryCheckVersion], async ([source, own
     const { data, error: failure } = await query.limit(1).abortSignal(request.signal);
     if (request.signal.aborted) return;
     if (failure) {
-      libraryCheckError.value = 'Nije moguće provjeriti tvoj Gamenote. Pokušaj ponovno.';
+      libraryCheckError.value = t('publicLibrary.couldntCheckYourGamenoteTry');
       return;
     }
     ownGameId.value = data?.[0]?.id || null;
   } catch {
-    if (!request.signal.aborted) libraryCheckError.value = 'Nije moguće provjeriti tvoj Gamenote. Pokušaj ponovno.';
+    if (!request.signal.aborted) libraryCheckError.value = t('publicLibrary.couldntCheckYourGamenoteTry');
   } finally {
     if (!request.signal.aborted) libraryChecking.value = false;
   }
@@ -289,12 +290,12 @@ function sortGames(value) {
 
 const tab = computed(() => ['groups', 'stats'].includes(route.query.tab) ? route.query.tab : 'games');
 const page = computed(() => Math.max(1, Math.min(100000, Number.parseInt(route.query.page) || 1)));
-const tabs = computed(() => [{ key: 'games', label: 'Igre' }, { key: 'groups', label: 'Grupe' }, ...(header.value?.share_scope === 'all' ? [{ key: 'stats', label: 'Statistika' }] : [])]);
+const tabs = computed(() => [{ key: 'games', label: t('common.games') }, { key: 'groups', label: t('common.groups') }, ...(header.value?.share_scope === 'all' ? [{ key: 'stats', label: t('common.stats') }] : [])]);
 function toggleTcg(value) { if (userStore.isLoggedIn) themeStore.setTcgMode(value); else { guestTcgChosen = true; guestTcg.value = value; } }
-function date(value) { return value ? new Date(value).toLocaleDateString('hr-HR') : ''; }
+function date(value) { return value ? new Date(value).toLocaleDateString(formatLocale.value) : ''; }
 const detailFields = computed(() => game.value ? [
-  { label: 'Izdavač', value: game.value.publisher, icon: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h1.5c.621 0 1.125.504 1.125 1.125V21' },
-  { label: 'Datum izlaska', value: date(game.value.release_date), icon: 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5' },
+  { label: t('common.publisherLabel'), value: game.value.publisher, icon: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h1.5c.621 0 1.125.504 1.125 1.125V21' },
+  { label: t('publicLibrary.releaseDate'), value: date(game.value.release_date), icon: 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5' },
 ] : []);
 const esrbImage = computed(() => {
   const ratings = { Mature: 'M', Everyone: 'E', Teen: 'T', 'Everyone 10+': 'E10plus', 'Adults Only': 'AO' };
@@ -375,7 +376,7 @@ async function load() {
     else { items.value = result.items; total.value = result.total; }
     updateMetadata({ path: `/${data.username}`, query: {}, publicLibrary: data });
     if (route.query.game) await openGame(String(route.query.game));
-    else if (route.query.group) await openGroup({ id: String(route.query.group), name: String(route.query.name || 'Grupa') });
+    else if (route.query.group) await openGroup({ id: String(route.query.group), name: String(route.query.name || t('common.group')) });
   } catch (failure) { if (current === revision) { error.value = failure.message; header.value = null; } }
   finally { if (current === revision) loading.value = false; }
 }
@@ -394,7 +395,7 @@ async function openGame(id, own = false, username = String(route.params.username
     if (own) {
       const result = await supabase.from('games').select(COMPARISON_COLUMNS + ',description,publisher,release_date,esrb_rating,series_games,progress_unit').eq('user_id', userStore.user.id).eq('id', id).maybeSingle().abortSignal(gameController.signal);
       if (result.error || !result.data) {
-        if (current === gameRevision) gameError.value = result.error ? result.error.message : 'Igra više nije u tvom Gamenoteu.';
+        if (current === gameRevision) gameError.value = result.error ? result.error.message : t('publicLibrary.theGameIsNoLonger');
         return;
       }
       data = result.data;
@@ -419,7 +420,7 @@ async function openSeriesGame(entry) {
     const images = results[0].status === 'fulfilled' ? results[0].value : [];
     const series = results[1].status === 'fulfilled' ? results[1].value.results || [] : [];
     game.value = catalogGameDetails(data, images, series);
-  } catch { if (current === gameRevision) gameError.value = 'Informacije o igri nije moguće učitati. Pokušaj ponovno.'; }
+  } catch { if (current === gameRevision) gameError.value = t('publicLibrary.gameInformationCouldntBeLoaded'); }
   finally { if (current === gameRevision) gameLoading.value = false; }
 }
 function closeGame() { gameRevision++; gameController?.abort(); closeScreenshotModal(); gameLoading.value = false; game.value = null; }
@@ -447,6 +448,11 @@ function filterStatus(value) {
   applyFilters({ status: value === 'all' ? '' : value });
 }
 watch(() => route.fullPath, load, { immediate: true });
+watch(locale, () => {
+  if (header.value && !isPublicComparison.value) {
+    updateMetadata({ path: `/${header.value.username}`, query: {}, publicLibrary: header.value });
+  }
+}, { flush: 'post' });
 watch(() => userStore.isLoggedIn, (loggedIn) => {
   gameDialog.value?.close(); groupDialog.value?.close();
   if (isPublicComparison.value) return;

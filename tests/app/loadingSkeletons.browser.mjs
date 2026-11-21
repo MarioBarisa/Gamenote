@@ -15,7 +15,7 @@ async function checkRows(grid, columns) {
 }
 
 export async function checkLoadingSkeletons(browser, origin, artifacts) {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ locale: 'hr-HR' });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -139,7 +139,7 @@ export async function checkLoadingSkeletons(browser, origin, artifacts) {
 
     await page.evaluate(() => {
       window.auditSession = { user: { id: 'user-a', email: 'fixture@example.test' }, access_token: 'fixture' };
-      window.auditStore.setUser(window.auditSession.user);
+      window.auditStore.setSession(window.auditSession);
     });
     await expect(page).toHaveURL(new URL('u/loader-user', origin).href);
     const releasePublicGroups = hold('public-groups');
@@ -182,7 +182,7 @@ export async function checkLoadingSkeletons(browser, origin, artifacts) {
     await expect(page.getByRole('button', { name: 'Dodaj u Gamenote', exact: true })).toBeVisible();
     await expect(page.locator('.loading-card-grid')).toHaveCount(0);
     assert.deepEqual(errors, []);
-    const touchContext = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 850 } });
+    const touchContext = await browser.newContext({ locale: 'hr-HR', hasTouch: true, viewport: { width: 390, height: 850 } });
     try {
       const touchPage = await touchContext.newPage();
       await touchContext.route('**/*', route => {

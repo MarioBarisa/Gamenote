@@ -1,5 +1,5 @@
 <template>
-  <div class="gamercard-loading max-w-xl mx-auto w-full" role="status" aria-label="Učitavam gamercard…" aria-busy="true">
+  <div class="gamercard-loading max-w-xl mx-auto w-full" role="status" :aria-label="$t('gamerCardSkeleton.loadingGamercard')" aria-busy="true">
     <div class="gamercard-skeleton skeleton w-full rounded-3xl" aria-hidden="true"></div>
   </div>
 </template>

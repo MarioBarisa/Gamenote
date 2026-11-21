@@ -11,31 +11,28 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@iconify/vue@^5.0.4",
-        "npm:@supabase/supabase-js@^2.118.0",
-        "npm:@tailwindcss/vite@^4.3.3",
-        "npm:@vitejs/plugin-vue@^6.0.10",
+        "npm:@iconify/vue@^5.0.5",
+        "npm:@playwright/test@^1.65.1",
+        "npm:@resvg/resvg-js@^2.6.2",
+        "npm:@supabase/supabase-js@^2.119.2",
+        "npm:@tailwindcss/vite@^4.3.5",
+        "npm:@vitejs/plugin-vue@^6.0.11",
         "npm:@vue/devtools-api@^8.2.1",
         "npm:chart.js@^4.6.1",
-        "npm:daisyui@^5.7.50",
+        "npm:culori@^4.0.2",
+        "npm:daisyui@^5.8.2",
         "npm:hover-tilt@1",
-        "npm:html2canvas@^1.4.1",
-        "npm:netlify-cli@^27.15.0",
+        "npm:netlify-cli@^27.20.1",
         "npm:pinia-plugin-persistedstate@^4.7.1",
         "npm:pinia@^4.1.0",
         "npm:psn-api@^2.18.1",
-        "npm:tailwindcss@^4.3.3",
+        "npm:tailwindcss@^4.3.5",
         "npm:vite-plugin-vue-devtools@^8.2.1",
-        "npm:vite@^8.3.5",
-        "npm:vue-router@^5.4.0",
-        "npm:vue@^3.5.44"
-      ],
-      "overrides": {
-        "netlify-cli": {
-          "sharp": "^0.35.5"
-        },
-        "toml": "5.0.1"
-      }
+        "npm:vite@^8.3.8",
+        "npm:vue-i18n@^11.4.23",
+        "npm:vue-router@^5.5.1",
+        "npm:vue@^3.5.46"
+      ]
     }
   }
 }

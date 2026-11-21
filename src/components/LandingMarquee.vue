@@ -11,7 +11,7 @@
           </div>
         </div>
       </div>
-      <button type="button" class="btn btn-ghost btn-xs pointer-events-auto absolute bottom-2 right-2" @click="paused = !paused" :aria-label="paused ? 'Pokreni animaciju kartica' : 'Pauziraj animaciju kartica'">{{ paused ? '▶' : 'Ⅱ' }}</button>
+      <button type="button" class="btn btn-ghost btn-xs pointer-events-auto absolute bottom-2 right-2" @click="paused = !paused" :aria-label="paused ? $t('landingMarquee.playCardAnimation') : $t('landingMarquee.pauseCardAnimation')">{{ paused ? '▶' : 'Ⅱ' }}</button>
     </div>
 </template>
 <script setup>

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { supabase } from '../supabase.js';
 import { fetchUserRows } from './libraryData.js';
 import { loadPublicLibrary } from './libraryShare.js';
@@ -14,14 +15,14 @@ async function loadSharedGames(username, signal, initialPage) {
   signal.throwIfAborted();
   const first = reuseFirst ? initialPage : await loadPublicLibrary(username, 'games', { page: 1, sort: 'title' }, signal);
   const total = first.total;
-  if (!Number.isInteger(total) || total < 0) throw new Error('Usporedbu nije moguće učitati.');
+  if (!Number.isInteger(total) || total < 0) throw new Error(t('loadLibraryComparison.theComparisonCouldntBeLoaded'));
 
   function appendPage(result, page) {
     signal.throwIfAborted();
     const expected = Math.min(PAGE_SIZE, total - (page - 1) * PAGE_SIZE);
-    if (result.total !== total || !Array.isArray(result.items) || result.items.length !== expected) throw new Error('Zbirka je promijenjena. Ponovi usporedbu.');
+    if (result.total !== total || !Array.isArray(result.items) || result.items.length !== expected) throw new Error(t('loadLibraryComparison.theLibraryChangedRunThe'));
     for (const game of result.items) {
-      if (!game.id || seen.has(game.id)) throw new Error('Zbirka je promijenjena. Ponovi usporedbu.');
+      if (!game.id || seen.has(game.id)) throw new Error(t('loadLibraryComparison.theLibraryChangedRunThe'));
       seen.add(game.id);
       // Detalje igre učitavamo tek pri otvaranju.
       const entry = {};
@@ -54,13 +55,13 @@ export async function loadLibraryComparison(userId, username, signal, initialPag
 
 export async function loadPublicComparison(left, right, signal) {
   const names = comparisonNames(left, right);
-  if (!names) throw new Error('Usporedba nije dostupna.');
+  if (!names) throw new Error(t('common.theComparisonIsUnavailable'));
   const [leftHeader, rightHeader] = await Promise.all([
     loadPublicLibrary(names.left, 'header', {}, signal),
     loadPublicLibrary(names.right, 'header', {}, signal)
   ]);
   for (const [index, header] of [leftHeader, rightHeader].entries()) {
-    if (!['library', 'all'].includes(header.share_scope) || header.username !== [names.left, names.right][index]) throw new Error('Usporedba nije dostupna.');
+    if (!['library', 'all'].includes(header.share_scope) || header.username !== [names.left, names.right][index]) throw new Error(t('common.theComparisonIsUnavailable'));
   }
   const [own, shared] = await Promise.all([
     loadSharedGames(names.left, signal), loadSharedGames(names.right, signal)

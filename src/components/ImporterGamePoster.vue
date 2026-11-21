@@ -1,7 +1,7 @@
 <template>
   <div ref="container" class="relative w-12 sm:w-14 aspect-[2/3] shrink-0 overflow-hidden rounded-lg bg-base-300 ring-1 ring-base-content/10" data-testid="importer-poster" :aria-busy="loading">
-    <img v-if="posterUrl && !failed" :src="posterUrl" :alt="`Poster igre ${name}`" width="112" height="168" loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" @error="nextImage" @load="$emit('loaded', posterUrl)" />
-    <div v-else class="absolute inset-0 flex items-center justify-center text-base-content/40" :role="loading ? 'status' : 'img'" :aria-label="loading ? `Učitavam poster igre ${name}` : `Poster nije dostupan za ${name}`">
+    <img v-if="posterUrl && !failed" :src="posterUrl" :alt="$t('importerGamePoster.posterFor', [name])" width="112" height="168" loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" @error="nextImage" @load="$emit('loaded', posterUrl)" />
+    <div v-else class="absolute inset-0 flex items-center justify-center text-base-content/40" :role="loading ? 'status' : 'img'" :aria-label="loading ? $t('importerGamePoster.loadingPosterFor', [name]) : $t('importerGamePoster.noPosterAvailableFor', [name])">
       <span v-if="loading" class="loading loading-spinner loading-xs"></span>
       <Icon v-else icon="mdi:image-off-outline" class="h-5 w-5" aria-hidden="true" />
     </div>

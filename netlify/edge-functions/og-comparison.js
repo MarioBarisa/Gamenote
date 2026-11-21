@@ -1,5 +1,6 @@
-import { comparisonFromPath } from '../../src/services/comparisonLink.js';
-import { metadataHtml, pageMetadata, previewImage } from '../../src/services/seo.js';
+import { comparisonFromPath, comparisonMetadata } from '../../src/services/comparisonLink.js';
+import { metadataHtml, previewImage } from '../../src/services/metadataHtml.js';
+import hr from '../../src/i18n/locales/hr.json' with { type: 'json' };
 
 export default async (request, context) => {
   const url = new URL(request.url);
@@ -17,7 +18,9 @@ export default async (request, context) => {
   } catch { failed = true; }
   const response = await context.next();
   if (!response.headers.get('content-type')?.includes('text/html')) return response;
-  const metadata = pageMetadata(url.pathname);
+  const description = hr.seo.comparisonDescription.replaceAll("{'@'}", '@')
+    .replace('{0}', names.left).replace('{1}', names.right);
+  const metadata = comparisonMetadata(names, description);
   if (!available) {
     metadata.title = 'Usporedba nije dostupna | Gamenote';
     metadata.description = 'Oba Gamenotea moraju biti javno podijeljena.';

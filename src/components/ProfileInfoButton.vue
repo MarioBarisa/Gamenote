@@ -1,52 +1,53 @@
 <template>
   <button type="button" class="btn btn-sm btn-outline gap-2" @click="open">
     <svg class="size-4 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.333 16.048L16.57 3.81a2.56 2.56 0 0 1 3.62 3.619L7.951 19.667a2 2 0 0 1-1.022.547L3 21l.786-3.93a2 2 0 0 1 .547-1.022"/><path d="m14.5 6.5l3 3"/></g></svg>
-    <span>Uredi info</span>
+    <span>{{ $t('profileInfoButton.editInfo') }}</span>
   </button>
   <Teleport to="body">
     <dialog ref="dialog" class="modal" :aria-labelledby="titleId" @cancel="preventBusyClose" @close="invalidateRequests">
       <div class="modal-box max-w-lg">
         <div class="flex items-start justify-between gap-3 mb-5">
-          <h2 :id="titleId" class="text-xl font-bold">Uredi info</h2>
-          <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" aria-label="Zatvori uređivanje informacija" :disabled="busy" @click="dialog.close()">✕</button>
+          <h2 :id="titleId" class="text-xl font-bold">{{ $t('profileInfoButton.editInfo') }}</h2>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" :aria-label="$t('profileInfoButton.closeEditInfo')" :disabled="busy" @click="dialog.close()">✕</button>
         </div>
         <section :aria-labelledby="`${titleId}-avatar`">
-          <h3 :id="`${titleId}-avatar`" class="font-semibold">Profilna slika</h3>
-          <p class="text-sm opacity-65 mt-1">Unesi izravnu poveznicu ili odaberi sliku s uređaja.</p>
+          <h3 :id="`${titleId}-avatar`" class="font-semibold">{{ $t('common.profilePicture') }}</h3>
+          <p class="text-sm opacity-65 mt-1">{{ $t('profileInfoButton.enterADirectLinkOr') }}</p>
           <form class="space-y-3 mt-4" @submit.prevent="saveAvatar">
             <p v-if="avatarError" role="alert" class="alert alert-error text-sm">{{ avatarError }}</p>
             <p v-if="avatarMessage" role="status" class="text-sm text-success">{{ avatarMessage }}</p>
-            <label class="block"><span class="block text-sm mb-1">Izravna poveznica na sliku</span><input v-model="avatarDraft" aria-label="Izravna poveznica na sliku" type="url" class="input input-bordered w-full" placeholder="https://example.com/slika.jpg" maxlength="2048" :disabled="busy" /></label>
-            <div v-if="previewUrl" class="flex justify-center"><img :src="previewFailed ? '/apple-touch-icon.png' : previewUrl" alt="Pregled profilne slike" class="size-20 rounded-full object-cover ring-2 ring-primary" @error="previewFailed = true" /></div>
-            <label class="block"><span class="block text-sm mb-1">Odaberi sliku s uređaja</span><input aria-label="Odaberi sliku s uređaja" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="file-input file-input-bordered w-full" :disabled="busy" @change="upload" /><span class="block text-xs opacity-60 mt-1">Maksimalno 3 MB (JPG, PNG, GIF, WebP)</span></label>
-            <p v-if="uploading" role="status" class="text-sm">Prenosim sliku…</p>
-            <div class="flex justify-end"><button class="btn btn-sm btn-primary" :disabled="busy || !avatarDraft.trim() || avatarDraft.trim() === originalAvatar">{{ savingAvatar ? 'Spremam…' : 'Spremi sliku' }}</button></div>
+            <label class="block"><span class="block text-sm mb-1">{{ $t('profileInfoButton.directImageLink') }}</span><input v-model="avatarDraft" :aria-label="$t('profileInfoButton.directImageLink')" type="url" class="input input-bordered w-full" placeholder="https://example.com/slika.jpg" maxlength="2048" :disabled="busy" /></label>
+            <div v-if="previewUrl" class="flex justify-center"><img :src="previewFailed ? '/apple-touch-icon.png' : previewUrl" :alt="$t('profileInfoButton.profilePicturePreview')" class="size-20 rounded-full object-cover ring-2 ring-primary" @error="previewFailed = true" /></div>
+            <label class="block"><span class="block text-sm mb-1">{{ $t('profileInfoButton.chooseAnImageFromYour') }}</span><input :aria-label="$t('profileInfoButton.chooseAnImageFromYour')" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="file-input file-input-bordered w-full" :disabled="busy" @change="upload" /><span class="block text-xs opacity-60 mt-1">{{ $t('profileInfoButton.upTo3MbJpg') }}</span></label>
+            <p v-if="uploading" role="status" class="text-sm">{{ $t('profileInfoButton.uploadingImage') }}</p>
+            <div class="flex justify-end"><button class="btn btn-sm btn-primary" :disabled="busy || !avatarDraft.trim() || avatarDraft.trim() === originalAvatar">{{ savingAvatar ? $t('common.saving') : $t('profileInfoButton.saveImage') }}</button></div>
           </form>
         </section>
         <section class="border-t border-base-content/10 mt-6 pt-5" :aria-labelledby="`${titleId}-username`">
-          <h3 :id="`${titleId}-username`" class="font-semibold">Korisničko ime</h3>
-          <p class="text-sm opacity-65 mt-1">Ime za tvoju Gamenote poveznicu.</p>
-          <p v-if="loadingUsername" role="status" class="py-4">Učitavam korisničko ime…</p>
+          <h3 :id="`${titleId}-username`" class="font-semibold">{{ $t('profileInfoButton.username') }}</h3>
+          <p class="text-sm opacity-65 mt-1">{{ $t('profileInfoButton.theNameForYourGamenote') }}</p>
+          <p v-if="loadingUsername" role="status" class="py-4">{{ $t('profileInfoButton.loadingUsername') }}</p>
           <form v-else class="space-y-3 mt-4" @submit.prevent="saveUsername">
             <p v-if="usernameErrorMessage" role="alert" class="alert alert-error text-sm">{{ usernameErrorMessage }}</p>
             <p v-if="usernameMessage" role="status" class="text-sm text-success">{{ usernameMessage }}</p>
-            <p v-if="originalUsername" class="text-sm">Trenutačno ime: <strong>@{{ originalUsername }}</strong></p>
-            <label class="block"><span class="block text-sm mb-1">Korisničko ime</span><input v-model="username" aria-label="Korisničko ime" class="input input-bordered w-full" maxlength="30" autocomplete="off" :disabled="busy || failedLoad" /><span class="text-xs opacity-60">3–30 znakova: a–z, brojevi, crtica ili podvlaka.</span></label>
-            <p v-if="originalUsername && normalized !== originalUsername" class="text-sm text-warning">Promjenom imena stara poveznica prestaje raditi.</p>
-            <p v-if="availability !== null" role="status" class="text-sm" :class="availability ? 'text-success' : 'text-error'">{{ availability ? normalized === originalUsername ? 'Ovo je tvoje korisničko ime.' : 'Korisničko ime je dostupno.' : 'Korisničko ime je zauzeto.' }}</p>
+            <p v-if="originalUsername" class="text-sm">{{ $t('profileInfoButton.currentUsername') }} <strong>@{{ originalUsername }}</strong></p>
+            <label class="block"><span class="block text-sm mb-1">{{ $t('profileInfoButton.username') }}</span><input v-model="username" :aria-label="$t('profileInfoButton.username')" class="input input-bordered w-full" maxlength="30" autocomplete="off" :disabled="busy || failedLoad" /><span class="text-xs opacity-60">{{ $t('common.value330CharactersA') }}</span></label>
+            <p v-if="originalUsername && normalized !== originalUsername" class="text-sm text-warning">{{ $t('profileInfoButton.changingYourUsernameWillStop') }}</p>
+            <p v-if="availability !== null" role="status" class="text-sm" :class="availability ? 'text-success' : 'text-error'">{{ availability ? normalized === originalUsername ? $t('profileInfoButton.thisIsYourUsername') : $t('profileInfoButton.usernameIsAvailable') : $t('profileInfoButton.usernameIsTaken') }}</p>
             <div class="flex flex-wrap justify-end gap-2">
-              <button v-if="failedLoad" type="button" class="btn btn-sm" :disabled="busy" @click="loadUsername">Pokušaj ponovno</button>
-              <button type="button" class="btn btn-sm btn-outline" :disabled="checking || busy || failedLoad" @click="checkUsername">{{ checking ? 'Provjeravam…' : 'Provjeri dostupnost' }}</button>
-              <button class="btn btn-sm btn-primary" :disabled="busy || checking || !availability || checkedName !== normalized || normalized === originalUsername">{{ savingUsername ? 'Spremam…' : 'Spremi korisničko ime' }}</button>
+              <button v-if="failedLoad" type="button" class="btn btn-sm" :disabled="busy" @click="loadUsername">{{ $t('common.tryAgain') }}</button>
+              <button type="button" class="btn btn-sm btn-outline" :disabled="checking || busy || failedLoad" @click="checkUsername">{{ checking ? $t('profileInfoButton.checking') : $t('profileInfoButton.checkAvailability') }}</button>
+              <button class="btn btn-sm btn-primary" :disabled="busy || checking || !availability || checkedName !== normalized || normalized === originalUsername">{{ savingUsername ? $t('common.saving') : $t('profileInfoButton.saveUsername') }}</button>
             </div>
           </form>
         </section>
       </div>
-      <form method="dialog" class="modal-backdrop"><button :disabled="busy">Zatvori</button></form>
+      <form method="dialog" class="modal-backdrop"><button :disabled="busy">{{ $t('common.close') }}</button></form>
     </dialog>
   </Teleport>
 </template>
 <script setup>
+import { t } from '../i18n/index.js';
 import { computed, onUnmounted, ref, useId, watch } from 'vue';
 import { useUserStore } from '../stores/user.js';
 import { supabase } from '../supabase.js';
@@ -104,7 +105,7 @@ async function loadUsername() {
 }
 async function sessionFor(ownerId) {
   const { data, error } = await supabase.auth.getSession();
-  if (error || !data.session || data.session.user.id !== ownerId) throw new Error('Prijavi se ponovno.');
+  if (error || !data.session || data.session.user.id !== ownerId) throw new Error(t('profileInfoButton.signInAgain'));
   return data.session;
 }
 async function upload(event) {
@@ -112,7 +113,7 @@ async function upload(event) {
   if (!file || busy.value) return;
   avatarError.value = ''; avatarMessage.value = '';
   if (file.size > 3 * 1024 * 1024) { avatarError.value = 'Slika je prevelika. Maksimalno 3 MB.'; event.target.value = ''; return; }
-  if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) { avatarError.value = 'Odaberi JPG, PNG, GIF ili WebP sliku.'; event.target.value = ''; return; }
+  if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) { avatarError.value = t('profileInfoButton.chooseAJpgPngGif'); event.target.value = ''; return; }
   const current = revision;
   const ownerId = userStore.user?.id;
   uploading.value = true;
@@ -121,15 +122,15 @@ async function upload(event) {
     const image = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result).split(',')[1]);
-      reader.onerror = () => reject(new Error('Sliku nije moguće pročitati.'));
+      reader.onerror = () => reject(new Error(t('profileInfoButton.theImageCouldntBeRead')));
       reader.readAsDataURL(file);
     });
     if (current !== revision || userStore.user?.id !== ownerId) return;
     const data = await requestAppApi({ action: 'avatar', image }, { token: session.access_token });
     if (current !== revision || userStore.user?.id !== ownerId) return;
     avatarDraft.value = uploadedUrl.value = normalizeAvatarUrl(data.url);
-    avatarMessage.value = 'Slika je prenesena. Spremi je za svoj profil.';
-  } catch (failure) { if (current === revision) avatarError.value = failure.message || 'Sliku nije moguće prenijeti. Pokušaj ponovno.'; }
+    avatarMessage.value = t('profileInfoButton.imageUploadedSaveItTo');
+  } catch (failure) { if (current === revision) avatarError.value = failure.message || t('profileInfoButton.theImageCouldntBeUploaded'); }
   finally { if (current === revision) uploading.value = false; event.target.value = ''; }
 }
 async function saveAvatar() {
@@ -144,15 +145,15 @@ async function saveAvatar() {
     if (current !== revision || userStore.user?.id !== ownerId) return;
     const { error } = await supabase.auth.updateUser({ data: { avatar_url: url } });
     if (error) {
-      if (current === revision) avatarError.value = 'Profilnu sliku nije moguće spremiti. Pokušaj ponovno.';
+      if (current === revision) avatarError.value = t('profileInfoButton.yourProfilePictureCouldntBe');
       return;
     }
     if (current !== revision || userStore.user?.id !== ownerId) return;
     originalAvatar.value = url;
     emit('avatar-saved', url);
     await userStore.fetchUser();
-    if (current === revision) avatarMessage.value = 'Profilna slika je spremljena.';
-  } catch (failure) { if (current === revision) avatarError.value = failure.message || 'Profilnu sliku nije moguće spremiti. Pokušaj ponovno.'; }
+    if (current === revision) avatarMessage.value = t('profileInfoButton.profilePictureSaved');
+  } catch (failure) { if (current === revision) avatarError.value = failure.message || t('profileInfoButton.yourProfilePictureCouldntBe'); }
   finally { if (current === revision) savingAvatar.value = false; }
 }
 async function checkUsername() {
@@ -175,7 +176,7 @@ async function saveUsername() {
   savingUsername.value = true; usernameErrorMessage.value = ''; usernameMessage.value = '';
   try {
     const data = await saveLibraryUsername(normalized.value);
-    if (current === revision) { username.value = originalUsername.value = data.username; availability.value = null; checkedName.value = ''; usernameMessage.value = 'Korisničko ime je spremljeno.'; }
+    if (current === revision) { username.value = originalUsername.value = data.username; availability.value = null; checkedName.value = ''; usernameMessage.value = t('profileInfoButton.usernameSaved'); }
   } catch (failure) { if (current === revision) { usernameErrorMessage.value = failure.message; availability.value = null; } }
   finally { if (current === revision) savingUsername.value = false; }
 }

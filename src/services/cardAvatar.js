@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { requestAppApi } from './appApi.js';
 import { supabase } from '../supabase.js';
 
@@ -14,8 +15,8 @@ function rasterizeAvatar(url, signal) {
       image.src = '';
       reject(error);
     }
-    function abort() { fail(new DOMException('Dohvat je prekinut.', 'AbortError')); }
-    const timer = setTimeout(() => fail(new Error('Profilna slika nije dostupna.')), 5000);
+    function abort() { fail(new DOMException(t('cardAvatar.theRequestWasCanceled'), 'AbortError')); }
+    const timer = setTimeout(() => fail(new Error(t('cardAvatar.profilePictureUnavailable'))), 5000);
     signal.addEventListener('abort', abort, { once: true });
     if (signal.aborted) return abort();
     image.crossOrigin = 'anonymous';
@@ -30,7 +31,7 @@ function rasterizeAvatar(url, signal) {
         resolve(data);
       } catch (error) { fail(error); }
     };
-    image.onerror = () => fail(new Error('Profilna slika nije dostupna.'));
+    image.onerror = () => fail(new Error(t('cardAvatar.profilePictureUnavailable')));
     image.src = url;
   });
 }

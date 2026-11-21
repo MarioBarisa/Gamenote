@@ -1,19 +1,19 @@
 <template>
-  <div class="news-carousel bg-base-200 rounded-lg px-3 sm:px-8 py-3 sm:py-6" role="region" aria-roledescription="karusel" aria-label="Gaming vijesti">
-    <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4"><h2 class="text-xl sm:text-2xl font-bold">Gaming Vijesti</h2><button v-if="news.length > 1" type="button" class="btn btn-ghost btn-xs" @click="togglePause">{{ paused ? 'Pokreni' : 'Pauziraj' }}</button></div>
+  <div class="news-carousel bg-base-200 rounded-lg px-3 sm:px-8 py-3 sm:py-6" role="region" aria-roledescription="karusel" :aria-label="$t('common.gamingNews')">
+    <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4"><h2 class="text-xl sm:text-2xl font-bold">{{ $t('gameN.gamingNews') }}</h2><button v-if="news.length > 1" type="button" class="btn btn-ghost btn-xs" @click="togglePause">{{ paused ? $t('gameN.start') : $t('gameN.pause') }}</button></div>
 
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
-    <div v-else-if="currentNews" class="relative" role="group" :aria-label="`Vijest ${currentIndex + 1} od ${news.length}`">
+    <div v-else-if="currentNews" class="relative" role="group" :aria-label="$t('gameN.storyOf', [currentIndex + 1, news.length])">
       <button
         v-if="news.length > 1"
         @click="goToPrevious"
         class="absolute -left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10
                btn btn-circle btn-xs sm:btn-sm btn-ghost hover:btn-primary
                transition-all duration-300 bg-base-100/90 backdrop-blur-sm shadow-lg"
-        aria-label="Prethodna vijest"
+        :aria-label="$t('gameN.previousNewsStory')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -32,7 +32,7 @@
         class="absolute -right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10
                btn btn-circle btn-xs sm:btn-sm btn-ghost hover:btn-primary
                transition-all duration-300 bg-base-100/90 backdrop-blur-sm shadow-lg"
-        aria-label="Sljedeća vijest"
+        :aria-label="$t('gameN.nextNewsStory')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +98,7 @@
                   class="font-bold text-sm sm:text-lg mb-1 leading-tight
                          line-clamp-2"
                 >
-                  {{ currentNews.title || 'Bez naslova' }}
+                  {{ currentNews.title || $t('common.untitled') }}
                 </h3>
                 <p
                   class="text-xs sm:text-sm opacity-70 leading-snug
@@ -135,7 +135,7 @@
             index === currentIndex ? 'bg-primary w-6 sm:w-8' : 'bg-base-content opacity-30'
           ]"
           @click="goToSlide(index)"
-          :aria-label="`Idi na vijest ${index + 1}`"
+          :aria-label="$t('gameN.goToStory', [index + 1])"
         ></button>
       </div>
     </div>
@@ -160,7 +160,7 @@
       <div class="flex flex-wrap gap-2 justify-center mt-4">
         <button @click="retryFetch" class="btn btn-sm btn-primary" :disabled="isRetrying">
           <span v-if="isRetrying" class="loading loading-spinner loading-xs"></span>
-          {{ isRetrying ? 'Učitavanje...' : 'Pokušaj ponovno' }}
+          {{ isRetrying ? $t('gameN.loading') : $t('common.tryAgain') }}
         </button>
       </div>
     </div>
@@ -181,10 +181,10 @@
             d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
           />
         </svg>
-        <p>Nema dostupnih vijesti</p>
+        <p>{{ $t('gameN.noNewsAvailable') }}</p>
         <div class="flex flex-wrap gap-2 justify-center">
           <button @click="retryFetch" class="btn btn-sm btn-primary">
-            Osvježi
+            {{ $t('gameN.refresh') }}
           </button>
         </div>
       </div>
@@ -193,6 +193,7 @@
 </template>
 
 <script>
+import { formatLocale, t } from '../i18n/index.js';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGamesApi } from '../services/gamesApi';
@@ -295,14 +296,14 @@ export default {
       }
     };
 
-    const stripHtml = (html) => safeStripHtml(html) || 'Nema dostupnog opisa';
+    const stripHtml = (html) => safeStripHtml(html) || t('gameN.noDescriptionAvailable');
 
     const formatDate = (dateString) => {
       if (!dateString) return '';
       try {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return '';
-        return date.toLocaleDateString('hr-HR', {
+        return date.toLocaleDateString(formatLocale.value, {
           day: 'numeric',
           month: 'short',
           hour: '2-digit',

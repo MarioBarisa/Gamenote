@@ -3,7 +3,7 @@
   <div v-if="loadError" role="alert" class="alert alert-error mb-4">{{ loadError }}</div>
   <div class="stats-page">
     <!-- NASLOV -->
-    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-4 sm:mb-6">Gamenote Statistika</h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-4 sm:mb-6">{{ $t('common.gamenoteStats') }}</h1>
 
     <!-- LOADING SKELETON -->
     <div v-if="loading" class="space-y-4">
@@ -24,9 +24,9 @@
           <svg class="w-16 h-16 mx-auto opacity-30 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/>
           </svg>
-          <h2 class="text-xl font-bold mb-2">Još nema podataka</h2>
-          <p class="opacity-70 mb-4">Dodaj svoje prve igre kako bi vidio statistiku i evoluciju igranja.</p>
-          <button v-if="publicGames === null" class="btn btn-primary" @click="router.push('/add-game')">Dodaj u Gamenote</button>
+          <h2 class="text-xl font-bold mb-2">{{ $t('common.noDataYet') }}</h2>
+          <p class="opacity-70 mb-4">{{ $t('statsContent.addYourFirstGamesTo') }}</p>
+          <button v-if="publicGames === null" class="btn btn-primary" @click="router.push('/add-game')">{{ $t('common.addToGamenote') }}</button>
         </div>
       </div>
     </div>
@@ -36,22 +36,22 @@
       <div class="card bg-base-200 shadow-xl mb-4 sm:mb-6">
         <div class="card-body p-4 sm:p-6">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-            <h2 class="card-title text-lg sm:text-xl">Tvoji Gamenote kroz vrijeme</h2>
+            <h2 class="card-title text-lg sm:text-xl">{{ $t('statsContent.yourGamenoteOverTime') }}</h2>
           </div>
 
           <div class="flex flex-row flex-wrap items-center gap-2 mb-3">
             <div class="flex gap-2 flex-1 sm:flex-none items-center min-w-0">
-              <select aria-label="Godina" v-model="selectedYear" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm">
-                <option :value="null">Sve godine</option>
+              <select :aria-label="$t('statsContent.year')" v-model="selectedYear" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm">
+                <option :value="null">{{ $t('statsContent.allYears') }}</option>
                 <option v-for="y in availableYears" :key="y" :value="y">{{ y }}.</option>
               </select>
-              <select aria-label="Mjesec" v-model="selectedMonth" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm" :disabled="selectedYear === null">
-                <option :value="null">Svi mjeseci</option>
-                <option v-for="(m, idx) in HR_MONTHS" :key="m" :value="idx + 1">{{ m }}</option>
+              <select :aria-label="$t('statsContent.month')" v-model="selectedMonth" class="select select-bordered flex-1 sm:flex-none sm:select-sm min-h-11 sm:min-h-0 text-sm" :disabled="selectedYear === null">
+                <option :value="null">{{ $t('statsContent.allMonths') }}</option>
+                <option v-for="(m, idx) in months" :key="m" :value="idx + 1">{{ m }}</option>
               </select>
-              <button v-if="selectedYear !== null || selectedMonth !== null || selectedBucket" class="btn btn-error btn-sm shadow-sm shrink-0 sm:px-4 px-2.5" @click="clearTimelineFilters" aria-label="Poništi filter">
+              <button v-if="selectedYear !== null || selectedMonth !== null || selectedBucket" class="btn btn-error btn-sm shadow-sm shrink-0 sm:px-4 px-2.5" @click="clearTimelineFilters" :aria-label="$t('common.clearFilter')">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
-                <span class="hidden sm:inline">Poništi</span>
+                <span class="hidden sm:inline">{{ $t('common.reset') }}</span>
               </button>
             </div>
           </div>
@@ -60,7 +60,7 @@
             <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none px-4" :style="{ opacity: watermarkOpacity }">
               <img :src="bannerUrl" alt="" class="max-w-[85%] sm:max-w-[75%] max-h-[45%] sm:max-h-[50%] object-contain" :class="watermarkClass" />
             </div>
-            <canvas role="img" aria-label="Igre kroz vrijeme" aria-details="stats-data" ref="timelineRef" class="relative z-10 bg-transparent"></canvas>
+            <canvas role="img" :aria-label="$t('statsContent.gamesOverTime')" aria-details="stats-data" ref="timelineRef" class="relative z-10 bg-transparent"></canvas>
           </div>
 
 
@@ -68,38 +68,38 @@
       </div>
 
       <details id="stats-data" class="mb-4 text-sm">
-        <summary class="cursor-pointer link">Podaci grafova</summary>
-        <div class="overflow-x-auto mt-3" tabindex="0" role="region" aria-label="Podaci grafova">
+        <summary class="cursor-pointer link">{{ $t('statsContent.chartData') }}</summary>
+        <div class="overflow-x-auto mt-3" tabindex="0" role="region" :aria-label="$t('statsContent.chartData')">
           <table class="table table-sm">
-            <caption class="sr-only">Igre kroz vrijeme</caption>
-            <thead><tr><th scope="col">Razdoblje</th><th scope="col">Dodano</th><th scope="col">{{ GAME_STATUS_MAP.completed.label }}</th><th scope="col">{{ GAME_STATUS_MAP.dropped.label }}</th><th scope="col">{{ GAME_STATUS_MAP.paused.label }}</th><th scope="col">{{ GAME_STATUS_MAP.wishlist.label }}</th><th scope="col">5/5</th></tr></thead>
+            <caption class="sr-only">{{ $t('statsContent.gamesOverTime') }}</caption>
+            <thead><tr><th scope="col">{{ $t('statsContent.period') }}</th><th scope="col">{{ $t('statsContent.added') }}</th><th scope="col">{{ GAME_STATUS_MAP.completed.label }}</th><th scope="col">{{ GAME_STATUS_MAP.dropped.label }}</th><th scope="col">{{ GAME_STATUS_MAP.paused.label }}</th><th scope="col">{{ GAME_STATUS_MAP.wishlist.label }}</th><th scope="col">5/5</th></tr></thead>
             <tbody><tr v-for="bucket in timelineChartSource" :key="bucket.key"><th scope="row"><button type="button" class="link" :aria-pressed="selectedBucket === bucket.key" @click="toggleBucket(bucket.key)">{{ bucket.fullLabel }}</button></th><td>{{ bucket.added }}</td><td>{{ bucket.completed }}</td><td>{{ bucket.dropped }}</td><td>{{ bucket.paused }}</td><td>{{ bucket.wishlist }}</td><td>{{ bucket.fiveStar }}</td></tr></tbody>
           </table>
-          <table class="table table-sm"><caption class="sr-only">Žanrovi</caption><thead><tr><th scope="col">Žanr</th><th scope="col">Igre</th><th scope="col">Sati</th></tr></thead><tbody><tr v-for="(value, name) in genreAggregates" :key="name"><th scope="row">{{ name }}</th><td>{{ value.count }}</td><td>{{ formatHours(value.hours) }}</td></tr></tbody></table>
-          <table class="table table-sm"><caption class="sr-only">Platforme</caption><thead><tr><th scope="col">Platforma</th><th scope="col">Igre</th><th scope="col">Sati</th></tr></thead><tbody><tr v-for="(value, name) in platformAggregates" :key="name"><th scope="row">{{ name }}</th><td>{{ value.count }}</td><td>{{ formatHours(value.hours) }}</td></tr></tbody></table>
-          <table v-if="scatterData.length" class="table table-sm"><caption class="sr-only">Kritičari i tvoje ocjene</caption><thead><tr><th scope="col">Igra</th><th scope="col">Metacritic</th><th scope="col">Ocjena</th></tr></thead><tbody><tr v-for="game in games.filter(entry => entry.metacritic_score && entry.rating != null)" :key="game.id"><th scope="row">{{ game.title }}</th><td>{{ game.metacritic_score }}</td><td>{{ game.rating }}/5</td></tr></tbody></table>
+          <table class="table table-sm"><caption class="sr-only">{{ $t('common.genres') }}</caption><thead><tr><th scope="col">{{ $t('common.genre') }}</th><th scope="col">{{ $t('common.games') }}</th><th scope="col">{{ $t('common.hours') }}</th></tr></thead><tbody><tr v-for="(value, name) in genreAggregates" :key="name"><th scope="row">{{ name }}</th><td>{{ value.count }}</td><td>{{ formatHours(value.hours) }}</td></tr></tbody></table>
+          <table class="table table-sm"><caption class="sr-only">{{ $t('common.platforms') }}</caption><thead><tr><th scope="col">{{ $t('common.platform') }}</th><th scope="col">{{ $t('common.games') }}</th><th scope="col">{{ $t('common.hours') }}</th></tr></thead><tbody><tr v-for="(value, name) in platformAggregates" :key="name"><th scope="row">{{ name }}</th><td>{{ value.count }}</td><td>{{ formatHours(value.hours) }}</td></tr></tbody></table>
+          <table v-if="scatterData.length" class="table table-sm"><caption class="sr-only">{{ $t('statsContent.criticsAndYourRatings') }}</caption><thead><tr><th scope="col">{{ $t('common.game') }}</th><th scope="col">Metacritic</th><th scope="col">{{ $t('common.rating') }}</th></tr></thead><tbody><tr v-for="game in games.filter(entry => entry.metacritic_score && entry.rating != null)" :key="game.id"><th scope="row">{{ game.title }}</th><td>{{ game.metacritic_score }}</td><td>{{ game.rating }}/5</td></tr></tbody></table>
         </div>
       </details>
 
       <!-- Sažetak statistike. -->
       <div class="stats grid grid-cols-2 grid-flow-row sm:flex shadow w-full mb-4 sm:mb-6 bg-base-200 text-center">
         <div class="stat py-3">
-          <div class="stat-title text-xs">Igara u razdoblju</div>
+          <div class="stat-title text-xs">{{ $t('statsContent.gamesInThisPeriod') }}</div>
           <div class="stat-value text-2xl sm:text-3xl text-primary">{{ scopedStats.total }}</div>
-          <div v-if="selectedBucket" class="stat-desc">od ukupno {{ games.length }}</div>
+          <div v-if="selectedBucket" class="stat-desc">{{ $t('statsContent.outOf') }} {{ games.length }}</div>
         </div>
         <div class="stat py-3">
-          <div class="stat-title text-xs">Ukupno sati</div>
+          <div class="stat-title text-xs">{{ $t('common.totalHours') }}</div>
           <div class="stat-value text-2xl sm:text-3xl">{{ formatHours(scopedStats.hours) }}</div>
-          <div class="stat-desc">≈ {{ Math.floor(scopedStats.hours / 24) }} dana igranja</div>
+          <div class="stat-desc">≈ {{ Math.floor(scopedStats.hours / 24) }} {{ $t('statsContent.daysPlayed') }}</div>
         </div>
         <div class="stat py-3">
-          <div class="stat-title text-xs">Prosječna ocjena</div>
+          <div class="stat-title text-xs">{{ $t('common.averageRating') }}</div>
           <div class="stat-value text-2xl sm:text-3xl flex items-center justify-center gap-1">
             {{ scopedStats.avgRating }}
             <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
           </div>
-          <div class="stat-desc">{{ scopedStats.ratedCount }} ocijenjenih</div>
+          <div class="stat-desc">{{ scopedStats.ratedCount }} {{ $t('statsContent.rated') }}</div>
         </div>
         <div class="stat py-3">
           <div class="stat-title text-xs mb-1">{{ GAME_STATUS_MAP.completed.label }}</div>
@@ -108,16 +108,16 @@
               <span class="text-xs font-bold">{{ scopedStats.completionRate }}%</span>
             </div>
           </div>
-          <div class="stat-desc">{{ scopedStats.completed }} igara</div>
+          <div class="stat-desc">{{ scopedStats.completed }} {{ $t('common.gameCountUnit') }}</div>
         </div>
         <div class="stat py-3">
           <div class="stat-title text-xs">{{ GAME_STATUS_MAP.playing.label }}</div>
           <div class="stat-value text-2xl sm:text-3xl text-info">{{ scopedStats.playing }}</div>
         </div>
         <div class="stat py-3">
-          <div class="stat-title text-xs">Savršene igre</div>
+          <div class="stat-title text-xs">{{ $t('statsContent.perfectGames') }}</div>
           <div class="stat-value text-2xl sm:text-3xl text-warning">{{ scopedStats.perfect }}</div>
-          <div class="stat-desc">100% dovršene</div>
+          <div class="stat-desc">{{ $t('statsContent.value100Completed') }}</div>
         </div>
       </div>
 
@@ -125,19 +125,19 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         <div class="card bg-base-200 shadow-xl">
           <div class="card-body p-4 sm:p-6">
-            <h2 class="card-title text-lg">Rast biblioteke &amp; završene igre</h2>
+            <h2 class="card-title text-lg">{{ $t('statsContent.libraryGrowthCompletedGames') }}</h2>
             <div class="relative h-64 sm:h-72">
-              <canvas role="img" aria-label="Rast biblioteke" aria-details="stats-data" ref="evolutionRef"></canvas>
+              <canvas role="img" :aria-label="$t('statsContent.libraryGrowth')" aria-details="stats-data" ref="evolutionRef"></canvas>
             </div>
           </div>
         </div>
 
         <div class="card bg-base-200 shadow-xl">
           <div class="card-body p-4 sm:p-6">
-            <h2 class="card-title text-lg">Statusi igara</h2>
+            <h2 class="card-title text-lg">{{ $t('statsContent.gameStatuses') }}</h2>
             <div class="flex flex-col sm:flex-row items-center gap-4">
               <div class="relative h-52 w-52 shrink-0">
-                <canvas role="img" aria-label="Statusi igara" aria-details="stats-data" ref="statusRef"></canvas>
+                <canvas role="img" :aria-label="$t('statsContent.gameStatuses')" aria-details="stats-data" ref="statusRef"></canvas>
               </div>
               <ul class="text-sm space-y-1.5 w-full">
                 <li v-for="s in statusBreakdown" :key="s.key" class="flex items-center gap-2">
@@ -154,45 +154,45 @@
         <div class="card bg-base-200 shadow-xl">
           <div class="card-body p-4 sm:p-6">
             <div class="flex items-center justify-between gap-2">
-              <h2 class="card-title text-lg">Žanrovi</h2>
+              <h2 class="card-title text-lg">{{ $t('common.genres') }}</h2>
               <div class="tabs tabs-box tabs-sm">
-                <button type="button" class="tab" :aria-pressed="genreMode === 'count'" :class="{ 'tab-active': genreMode === 'count' }" @click="genreMode = 'count'">Broj</button>
-                <button type="button" class="tab" :aria-pressed="genreMode === 'hours'" :class="{ 'tab-active': genreMode === 'hours' }" @click="genreMode = 'hours'">Sati</button>
+                <button type="button" class="tab" :aria-pressed="genreMode === 'count'" :class="{ 'tab-active': genreMode === 'count' }" @click="genreMode = 'count'">{{ $t('statsContent.count') }}</button>
+                <button type="button" class="tab" :aria-pressed="genreMode === 'hours'" :class="{ 'tab-active': genreMode === 'hours' }" @click="genreMode = 'hours'">{{ $t('common.hours') }}</button>
               </div>
             </div>
             <div class="relative h-64 sm:h-72">
-              <canvas role="img" aria-label="Žanrovi" aria-details="stats-data" ref="genreRef"></canvas>
+              <canvas role="img" :aria-label="$t('common.genres')" aria-details="stats-data" ref="genreRef"></canvas>
             </div>
           </div>
         </div>
 
         <div class="card bg-base-200 shadow-xl">
           <div class="card-body p-4 sm:p-6">
-            <h2 class="card-title text-lg">Platforme</h2>
+            <h2 class="card-title text-lg">{{ $t('common.platforms') }}</h2>
             <div class="relative h-64 sm:h-72">
-              <canvas role="img" aria-label="Platforme" aria-details="stats-data" ref="platformRef"></canvas>
+              <canvas role="img" :aria-label="$t('common.platforms')" aria-details="stats-data" ref="platformRef"></canvas>
             </div>
           </div>
         </div>
 
         <div v-if="scatterData.length >= 3" class="card bg-base-200 shadow-xl lg:col-span-2">
           <div class="card-body p-4 sm:p-6">
-            <h2 class="card-title text-lg">Kritičari vs Ti</h2>
-            <p class="text-xs opacity-60 -mt-1">Svaka točka je jedna igra. Crtkana linija = savršen slaganje s kritičarima (Metacritic/20 = tvoja ocjena).</p>
+            <h2 class="card-title text-lg">{{ $t('statsContent.criticsVsYou') }}</h2>
+            <p class="text-xs opacity-60 -mt-1">{{ $t('statsContent.eachPointIsAGame') }}</p>
             <div class="flex flex-wrap gap-2 mb-2 text-xs">
-              <span class="badge badge-success badge-outline"><span class="w-2 h-2 rounded-full bg-success inline-block mr-1"></span>Slažeš se ({{ scatterSummary.agree }})</span>
-              <span class="badge badge-info badge-outline"><span class="w-2 h-2 rounded-full bg-info inline-block mr-1"></span>Sviđa ti se više ({{ scatterSummary.loved }})</span>
-              <span class="badge badge-warning badge-outline"><span class="w-2 h-2 rounded-full bg-warning inline-block mr-1"></span>Kritičari ljubazniji ({{ scatterSummary.harsh }})</span>
+              <span class="badge badge-success badge-outline"><span class="w-2 h-2 rounded-full bg-success inline-block mr-1"></span>{{ $t('statsContent.youAgree') }}{{ scatterSummary.agree }})</span>
+              <span class="badge badge-info badge-outline"><span class="w-2 h-2 rounded-full bg-info inline-block mr-1"></span>{{ $t('statsContent.youLikeItMore') }}{{ scatterSummary.loved }})</span>
+              <span class="badge badge-warning badge-outline"><span class="w-2 h-2 rounded-full bg-warning inline-block mr-1"></span>{{ $t('statsContent.criticsLikedItMore') }}{{ scatterSummary.harsh }})</span>
             </div>
             <div class="relative h-64 sm:h-80">
-              <canvas role="img" aria-label="Kritičari i tvoje ocjene" aria-details="stats-data" ref="scatterRef"></canvas>
+              <canvas role="img" :aria-label="$t('statsContent.criticsAndYourRatings')" aria-details="stats-data" ref="scatterRef"></canvas>
             </div>
           </div>
         </div>
       </div>
 
       <!-- REKORDI -->
-      <h2 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Rekordi</h2>
+      <h2 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{{ $t('statsContent.records') }}</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <component
           :is="record.game ? 'button' : 'div'"
@@ -213,7 +213,7 @@
       <!-- TOP LISTE -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div>
-          <h2 class="text-lg sm:text-xl font-bold mb-3">Najbolje ocijenjene</h2>
+          <h2 class="text-lg sm:text-xl font-bold mb-3">{{ $t('statsContent.highestRated') }}</h2>
           <div class="space-y-3">
             <button type="button"
               v-for="(game, i) in topRatedGames"
@@ -245,7 +245,7 @@
         </div>
 
         <div>
-          <h2 class="text-lg sm:text-xl font-bold mb-3">Najviše igrani naslovi</h2>
+          <h2 class="text-lg sm:text-xl font-bold mb-3">{{ $t('statsContent.mostPlayedTitles') }}</h2>
           <div class="space-y-3">
             <button type="button"
               v-for="(game, i) in mostPlayedGames"
@@ -279,6 +279,7 @@
 </template>
 
 <script>
+import { formatLocale, locale, t } from '../i18n/index.js';
 import { fetchUserRows } from '../services/libraryData';
 import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -288,11 +289,11 @@ import { supabase } from '../supabase';
 import { cardProgress } from '../services/cardProgress.js';
 import { computePercent } from '../constants/progressModes';
 import { GAME_STATUS, GAME_STATUS_MAP } from '../constants/gameStatus';
-import Chart from 'chart.js/auto';
+import Chart from '../services/chartSetup.js';
 import bannerLightUrl from '../assets/newAssets/GamenoteBannerLightMode.png';
 import bannerDarkUrl from '../assets/newAssets/GamenoteBannerDarkMode.png';
 
-const HR_MONTHS = ['Sij', 'Vel', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'];
+const MONTH_KEYS = ['statsContent.january', 'statsContent.february', 'statsContent.march', 'statsContent.april', 'statsContent.may', 'statsContent.june', 'statsContent.july', 'statsContent.august', 'statsContent.september', 'statsContent.october', 'statsContent.november', 'statsContent.december'];
 const YEARLY_THRESHOLD = 60;
 
 export default {
@@ -303,6 +304,7 @@ export default {
     const themeStore = useThemeStore();
     const router = useRouter();
 
+    const months = computed(() => MONTH_KEYS.map(key => t(key)));
     const loading = ref(true);
     const games = ref([]);
     const selectedBucket = ref(null);
@@ -334,7 +336,7 @@ export default {
         const data = await fetchUserRows(supabase, 'games', userStore.user.id);
         games.value = data || [];
       } catch (error) {
-        loadError.value = error.message || 'Knjižnicu nije moguće učitati. Osvježi stranicu.';
+        loadError.value = error.message || t('common.theLibraryCouldntBeLoaded');
       } finally {
         loading.value = false;
         await nextTick();
@@ -402,18 +404,18 @@ export default {
         if (granularity === 'month') {
           const [y, m] = b.key.split('-');
           b.year = y;
-          b.shortLabel = HR_MONTHS[Number(m) - 1];
-          b.fullLabel = `${HR_MONTHS[Number(m) - 1]} ${y}.`;
-          b.axisLabel = HR_MONTHS[Number(m) - 1];
+          b.shortLabel = months.value[Number(m) - 1];
+          b.fullLabel = `${months.value[Number(m) - 1]} ${y}.`;
+          b.axisLabel = months.value[Number(m) - 1];
           b.showYear = i === 0 || Number(m) === 1;
-          b.tip = `${b.fullLabel} — dodano: ${b.added}, završeno: ${b.completed}${b.hours ? ', ' + b.hours + 'h' : ''}`;
+          b.tip = t('statsContent.periodSummary', [b.fullLabel, b.added, b.completed, b.hours ? ', ' + b.hours + 'h' : '']);
         } else {
           b.year = b.key;
           b.shortLabel = b.key.slice(2);
           b.fullLabel = `${b.key}. godina`;
           b.axisLabel = b.key;
           b.showYear = true;
-          b.tip = `${b.key}. — dodano: ${b.added}, završeno: ${b.completed}${b.hours ? ', ' + b.hours + 'h' : ''}`;
+          b.tip = t('statsContent.yearSummary', [b.key, b.added, b.completed, b.hours ? ', ' + b.hours + 'h' : '']);
         }
       });
 
@@ -453,7 +455,7 @@ export default {
             }
             if (g.status === 'completed' && keyFromDate(parseDate(g.end_date), 'day') === key) completed++;
           });
-          return { key, axisLabel: String(day), fullLabel: `${day}. ${HR_MONTHS[selectedMonth.value - 1]} ${selectedYear.value}.`, added, completed, dropped, paused, wishlist, fiveStar, hours: 0 };
+          return { key, axisLabel: String(day), fullLabel: `${day}. ${months.value[selectedMonth.value - 1]} ${selectedYear.value}.`, added, completed, dropped, paused, wishlist, fiveStar, hours: 0 };
         });
       }
       if (selectedYear.value === null) return timeline.value.buckets;
@@ -474,7 +476,7 @@ export default {
             hours += g.play_time || 0;
           }
         });
-        return { key, axisLabel: HR_MONTHS[i], fullLabel: `${HR_MONTHS[i]} ${selectedYear.value}.`, added, completed, dropped, paused, wishlist, fiveStar, hours };
+        return { key, axisLabel: months.value[i], fullLabel: `${months.value[i]} ${selectedYear.value}.`, added, completed, dropped, paused, wishlist, fiveStar, hours };
       });
     });
 
@@ -505,7 +507,7 @@ export default {
       selectedBucket.value = null;
     };
     const activeFilterLabel = computed(() => {
-      if (selectedYear.value !== null && selectedMonth.value !== null) return `${HR_MONTHS[selectedMonth.value - 1]} ${selectedYear.value}.`;
+      if (selectedYear.value !== null && selectedMonth.value !== null) return `${months.value[selectedMonth.value - 1]} ${selectedYear.value}.`;
       if (selectedYear.value !== null) return `${selectedYear.value}. godina`;
       if (selectedBucket.value) return timeline.value.buckets.find(b => b.key === selectedBucket.value)?.fullLabel || selectedBucket.value;
       return null;
@@ -586,9 +588,9 @@ export default {
 
       const mostPlayed = [...list].filter(g => g.play_time > 0).sort((a, b) => b.play_time - a.play_time)[0];
       out.push({
-        title: 'Najigranija igra',
+        title: t('statsContent.mostPlayedGame'),
         value: mostPlayed ? `${mostPlayed.play_time}h` : '—',
-        sub: mostPlayed ? mostPlayed.title : 'Nema podataka o satu igranja',
+        sub: mostPlayed ? mostPlayed.title : t('statsContent.noPlaytimeData'),
         accent: 'text-primary',
         game: mostPlayed
       });
@@ -596,9 +598,9 @@ export default {
       const withDays = list.map(g => ({ g, days: daysBetween(g) })).filter(x => x.days !== null && x.days > 0);
       const longest = [...withDays].sort((a, b) => b.days - a.days)[0];
       out.push({
-        title: 'Najduži završetak',
+        title: t('statsContent.longestCompletion'),
         value: longest ? `${longest.days} dana` : '—',
-        sub: longest ? longest.g.title : 'Nema datuma igranja',
+        sub: longest ? longest.g.title : t('statsContent.noPlayDates'),
         accent: 'text-info',
         game: longest?.g
       });
@@ -610,9 +612,9 @@ export default {
       });
       const bestYearEntry = Object.entries(byYear).sort((a, b) => b[1] - a[1])[0];
       out.push({
-        title: 'Najbolja godina',
+        title: t('statsContent.bestYear'),
         value: bestYearEntry ? bestYearEntry[0] + '.' : '—',
-        sub: bestYearEntry ? `${bestYearEntry[1]} završenih igara` : 'Nema završenih igara',
+        sub: bestYearEntry ? t('statsContent.completedGames', [bestYearEntry[1]]) : t('statsContent.noCompletedGames'),
         accent: 'text-warning',
         game: null
       });
@@ -626,9 +628,9 @@ export default {
       });
       const favGenre = Object.entries(genreHours).sort((a, b) => b[1] - a[1])[0];
       out.push({
-        title: 'Omiljeni žanr (po satima)',
+        title: t('statsContent.favoriteGenreByHours'),
         value: favGenre ? favGenre[0] : '—',
-        sub: favGenre ? `${favGenre[1]} sati igranja` : 'Nema podataka',
+        sub: favGenre ? t('statsContent.hoursPlayed', [favGenre[1]]) : t('statsContent.noData'),
         accent: 'text-accent',
         game: null
       });
@@ -805,7 +807,7 @@ export default {
             datasets: [
               {
                 type: 'line',
-                label: 'Ukupno igara',
+                label: t('common.totalGames'),
                 data: cumulative,
                 borderColor: colors.primary,
                 backgroundColor: mixWith(colors.primary, 12),
@@ -817,7 +819,7 @@ export default {
               },
               {
                 type: 'bar',
-                label: 'Završene u razdoblju',
+                label: t('statsContent.completedInThisPeriod'),
                 data: bs.map(b => b.completed),
                 backgroundColor: mixWith(colors.success, 70),
                 borderRadius: 3
@@ -873,7 +875,7 @@ export default {
           data: {
             labels: entries.map(([name]) => name),
             datasets: [{
-              label: 'Broj igara',
+              label: t('common.gameCount'),
               data: entries.map(([, v]) => v.count),
               backgroundColor: entries.map(([name]) => platformColor(name)),
               borderRadius: 4
@@ -889,7 +891,7 @@ export default {
                 callbacks: {
                   afterLabel: (ctx) => {
                     const hours = entries[ctx.dataIndex][1].hours;
-                    return hours ? `Ukupno: ${hours}h` : null;
+                    return hours ? t('statsContent.totalH', [hours]) : null;
                   }
                 }
               }
@@ -933,9 +935,9 @@ export default {
                 pointRadius: 0,
                 fill: false
               },
-              mkDataset(`Slažeš se (${groups.agree.length})`, groups.agree, 'success'),
-              mkDataset(`Sviđa ti se više (${groups.loved.length})`, groups.loved, 'info'),
-              mkDataset(`Kritičari ljubazniji (${groups.harsh.length})`, groups.harsh, 'warning')
+              mkDataset(t('statsContent.youAgreeError', [groups.agree.length]), groups.agree, 'success'),
+              mkDataset(t('statsContent.youLikeItMoreError', [groups.loved.length]), groups.loved, 'info'),
+              mkDataset(t('statsContent.criticsLikedItMoreError', [groups.harsh.length]), groups.harsh, 'warning')
             ]
           },
           options: {
@@ -947,13 +949,13 @@ export default {
                 filter: (item) => item.dataset.label !== '__diagonal',
                 callbacks: {
                   title: (items) => items[0]?.raw?.title || '',
-                  label: (ctx) => `Metacritic ${ctx.raw.x} • Tvoja ocjena ${ctx.raw.y}/5`
+                  label: (ctx) => t('statsContent.metacriticYourRating5', [ctx.raw.x, ctx.raw.y])
                 }
               }
             },
             scales: {
               x: { ...baseScaleOptions(colors), min: 0, max: 100, title: { display: true, text: 'Metacritic (0–100)', color: mixWith(colors.content, 60) } },
-              y: { ...baseScaleOptions(colors), min: 0, max: 5, ticks: { ...baseScaleOptions(colors).ticks, stepSize: 1 }, title: { display: true, text: 'Moja ocjena (0–5)', color: mixWith(colors.content, 60) } }
+              y: { ...baseScaleOptions(colors), min: 0, max: 5, ticks: { ...baseScaleOptions(colors).ticks, stepSize: 1 }, title: { display: true, text: t('statsContent.myRating05'), color: mixWith(colors.content, 60) } }
             }
           }
         });
@@ -973,7 +975,7 @@ export default {
         data: {
           labels: entries.map(([name]) => name),
           datasets: [{
-            label: genreMode.value === 'hours' ? 'Sati' : 'Broj igara',
+            label: genreMode.value === 'hours' ? t('common.hours') : t('common.gameCount'),
             data: entries.map(([, v]) => genreMode.value === 'hours' ? v.hours : v.count),
             backgroundColor: mixWith(colors.secondary, 65),
             borderRadius: 4
@@ -1015,7 +1017,7 @@ export default {
             {
               type: 'bar',
               yAxisID: 'y',
-              label: `Dodano (${src.reduce((s, b) => s + b.added, 0)})`,
+              label: t('statsContent.addedError', [src.reduce((s, b) => s + b.added, 0)]),
               data: src.map(b => b.added),
               backgroundColor: mixWith(colors.primary, 68),
               borderColor: colors.primary,
@@ -1163,7 +1165,7 @@ export default {
               beginAtZero: true,
               max: yMax,
               ticks: { ...baseScaleOptions(colors).ticks, precision: 0, font: { size: isMobile ? 10 : 11 } },
-              title: { display: !isMobile, text: 'Dodano / Završeno', color: mixWith(colors.content, 60), font: { size: 10 } },
+              title: { display: !isMobile, text: t('statsContent.addedCompleted'), color: mixWith(colors.content, 60), font: { size: 10 } },
               grid: { color: mixWith(colors.content, isMobile ? 14 : 20), borderColor: mixWith(colors.content, 22) }
             },
             y1: {
@@ -1174,7 +1176,7 @@ export default {
               grid: { drawOnChartArea: false, color: mixWith(colors.content, 12), borderColor: mixWith(colors.content, 22) },
               ticks: { color: mixWith(colors.content, 68), precision: 0, font: { size: isMobile ? 10 : 11 } },
               border: { color: mixWith(colors.content, 22) },
-              title: { display: !isMobile, text: 'Ostalo', color: mixWith(colors.content, 60), font: { size: 10 } }
+              title: { display: !isMobile, text: t('statsContent.other'), color: mixWith(colors.content, 60), font: { size: 10 } }
             }
           },
           onClick: (_, els) => {
@@ -1195,11 +1197,11 @@ export default {
 
     watch(games, () => nextTick(renderAllCharts));
     watch(genreMode, () => nextTick(() => renderGenreChart()));
-    watch(() => themeStore.currentTheme, () => nextTick(renderAllCharts));
+    watch([() => themeStore.currentTheme, locale], () => nextTick(renderAllCharts));
     watch([selectedYear, selectedMonth], () => nextTick(() => renderTimelineChart()));
     watch(selectedYear, (val) => { if (val === null) selectedMonth.value = null; });
 
-    const formatHours = (h) => (h ?? 0).toLocaleString('hr-HR');
+    const formatHours = (h) => (h ?? 0).toLocaleString(formatLocale.value);
 
     const navigateToGame = (id) => {
       if (props.publicGames !== null) emit('open-game', id);
@@ -1237,7 +1239,7 @@ export default {
       selectedMonth,
       availableYears,
       timelineChartSource,
-      HR_MONTHS,
+      months,
       bannerUrl,
       watermarkOpacity,
       watermarkClass,

@@ -1,5 +1,5 @@
 <template>
-  <Icon :icon="iconName" :class="className" role="img" aria-hidden="false" :aria-label="matchedTitle || 'Žanr'" :title="matchedTitle || undefined" />
+  <Icon :icon="iconName" :class="className" role="img" aria-hidden="false" :aria-label="matchedTitle || $t('common.genre')" :title="matchedTitle || undefined" />
 </template>
 
 <script>

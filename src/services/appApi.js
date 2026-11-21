@@ -1,3 +1,4 @@
+import { t, translateServiceError } from '../i18n/index.js';
 export async function requestAppApi(payload, options = {}) {
   const response = await fetch('/.netlify/functions/app-api', {
     method: 'POST',
@@ -5,7 +6,7 @@ export async function requestAppApi(payload, options = {}) {
     body: JSON.stringify(payload),
     signal: options.signal || AbortSignal.timeout(20000),
   });
-  const data = await response.json().catch(() => { throw new Error('Servis nije dostupan. Pokušaj ponovno.'); });
-  if (!response.ok) throw new Error(data.error || 'Dohvat nije uspio. Pokušaj ponovno.');
+  const data = await response.json().catch(() => { throw new Error(t('appApi.theServiceIsUnavailableTry')); });
+  if (!response.ok) throw new Error(translateServiceError(data.error) || t('appApi.couldntFetchTheDataTry'));
   return data;
 }

@@ -32,7 +32,9 @@ jobs:
       - name: Provjera stabla ovisnosti
         run: npm ls --all > /dev/null
       - name: Unit testovi aplikacije i importera
-        run: node --test tests/app/app.test.js tests/importers/importers.test.js
+        run: node --test tests/app/app.test.js tests/app/libraryCache.test.js tests/app/mfaRecovery.test.js tests/importers/importers.test.js
+      - name: Provjera i18n lokalizacije
+        run: npm run test:i18n
       - name: Instalacija Chromiuma
         run: npx --no-install playwright install --with-deps chromium
       - name: Browser regresije aplikacije

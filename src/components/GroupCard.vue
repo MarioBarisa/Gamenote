@@ -1,5 +1,5 @@
 <template>
-  <button ref="card" type="button" class="group-card card w-full bg-base-200 shadow-xl hover:shadow-2xl transition-all cursor-pointer overflow-hidden text-left" :aria-label="`Otvori grupu: ${group.name}`" @click="$emit('open')">
+  <button ref="card" type="button" class="group-card card w-full bg-base-200 shadow-xl hover:shadow-2xl transition-all cursor-pointer overflow-hidden text-left" :aria-label="$t('groupCard.openGroup', [group.name])" @click="$emit('open')">
     <span v-if="images.length" class="relative block h-32 overflow-hidden w-full" aria-hidden="true">
       <span class="flex w-full h-full">
         <img v-for="(image, index) in images" :key="index" :src="image" alt="" loading="lazy" class="flex-1 min-w-0 h-full object-cover" />
@@ -11,7 +11,7 @@
       <span class="font-bold text-lg">{{ group.name }}</span>
       <span class="flex items-center gap-2 mt-1">
         <span class="badge badge-sm badge-outline">{{ group.type }}</span>
-        <span v-if="gameCount > 0" class="text-xs opacity-70">{{ gameCount }} igre/a</span>
+        <span v-if="gameCount > 0" class="text-xs opacity-70">{{ gameCount }} {{ $t('common.groupGameCountUnit') }}</span>
       </span>
       <span v-if="group.rating" class="flex items-center gap-1 mt-2">
         <span class="rating rating-xs" aria-hidden="true"><span v-for="star in 5" :key="star" class="mask mask-star-2 size-3 bg-orange-400" :class="{ 'opacity-25': star > group.rating }"></span></span>

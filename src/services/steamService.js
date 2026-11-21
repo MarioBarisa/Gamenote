@@ -1,3 +1,4 @@
+import { t, translateServiceError } from '../i18n/index.js';
 import { supabase } from '../supabase';
 import { normalizeSteamGames } from './steamImport';
 
@@ -5,7 +6,7 @@ const SNAPSHOT_KEY = 'gamenote.steam.snapshot.';
 
 async function requestSteam(payload, signal) {
   const { data: { session }, error } = await supabase.auth.getSession();
-  if (error || !session) throw new Error('Prijavi se za Steam uvoz.');
+  if (error || !session) throw new Error(t('steamService.signInToImportFrom'));
   let response;
   try {
     response = await fetch('/.netlify/functions/steam', {
@@ -16,11 +17,11 @@ async function requestSteam(payload, signal) {
     });
   } catch (error) {
     if (error.name === 'AbortError') throw error;
-    throw new Error('Steam uvoz nije dostupan. Provjeri vezu i pokušaj ponovno.');
+    throw new Error(t('steamService.steamImportIsUnavailableCheck'));
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(data.error || 'Dohvat sa Steama nije uspio.');
+    const error = new Error(translateServiceError(data.error) || t('steamService.couldntFetchDataFromSteam'));
     error.status = response.status;
     throw error;
   }

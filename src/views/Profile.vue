@@ -2,7 +2,7 @@
 <template>
   <div v-if="loadError" role="alert" class="alert alert-error mb-4">{{ loadError }}</div>
   <div class="profile">
-    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Profil</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">{{ $t('common.profile') }}</h1>
     
     <div class="profile-sections">
       <div class="profile-sidebar">
@@ -11,17 +11,17 @@
             <div class="flex items-center gap-4 mb-4">
               <div class="avatar shrink-0">
                 <div class="w-16 rounded-full ring ring-primary ring-offset-2">
-                  <img :src="profileImageFailed ? fallbackAvatar : profileImageUrl" alt="Profilna slika" @error="handleImageError" />
+                  <img :src="profileImageFailed ? fallbackAvatar : profileImageUrl" :alt="$t('common.profilePicture')" @error="handleImageError" />
                 </div>
               </div>
-              <h2 id="profile-details-title" class="text-lg sm:text-xl font-semibold">Osobni podaci</h2>
+              <h2 id="profile-details-title" class="text-lg sm:text-xl font-semibold">{{ $t('profile.personalDetails') }}</h2>
             </div>
 
             <form class="profile-form" @submit.prevent="updateProfile">
               <div class="form-control">
-                <label for="profile-name" class="label mb-1">Ime</label>
+                <label for="profile-name" class="label mb-1">{{ $t('profile.name') }}</label>
                 <input id="profile-name" v-model="profileForm.name" type="text" autocomplete="nickname"
-                  class="input input-bordered w-full" placeholder="Vaše ime" required />
+                  class="input input-bordered w-full" :placeholder="$t('profile.yourName')" required />
               </div>
               <div class="form-control">
                 <label for="profile-email" class="label mb-1">Email</label>
@@ -34,7 +34,7 @@
               </div>
               <button type="submit" class="btn btn-primary w-full" :disabled="updating">
                 <span v-if="updating" class="loading loading-spinner"></span>
-                <span v-else>Spremi promjene</span>
+                <span v-else>{{ $t('common.saveChanges') }}</span>
               </button>
             </form>
           </div>
@@ -42,24 +42,25 @@
 
         <section class="card bg-base-200 profile-security" aria-labelledby="profile-security-title">
           <div class="card-body">
-            <h2 id="profile-security-title" class="text-lg sm:text-xl font-semibold mb-4">Sigurnost</h2>
-            <form class="profile-form" @submit.prevent="updatePassword">
+            <h2 id="profile-security-title" class="text-lg sm:text-xl font-semibold mb-4">{{ $t('profile.security') }}</h2>
+            <ProfileMfa />
+            <form class="profile-form" method="post" @submit.prevent="updatePassword">
               <div class="form-control">
-                <label for="profile-new-password" class="label mb-1">Nova lozinka</label>
+                <label for="profile-new-password" class="label mb-1">{{ $t('common.newPassword') }}</label>
                 <input id="profile-new-password" v-model="passwordForm.newPassword" type="password" autocomplete="new-password"
-                  class="input input-bordered w-full" placeholder="Minimalno 6 znakova" minlength="6" />
+                  class="input input-bordered w-full" :placeholder="$t('profile.atLeast6Characters')" minlength="6" />
               </div>
               <div class="form-control">
-                <label for="profile-confirm-password" class="label mb-1">Potvrdi lozinku</label>
+                <label for="profile-confirm-password" class="label mb-1">{{ $t('common.confirmPassword') }}</label>
                 <input id="profile-confirm-password" v-model="passwordForm.confirmPassword" type="password" autocomplete="new-password"
-                  class="input input-bordered w-full" placeholder="Ponovite lozinku" />
+                  class="input input-bordered w-full" :placeholder="$t('profile.repeatPassword')" />
               </div>
               <div v-if="passwordForm.newPassword && !passwordsMatch" class="text-error text-sm">
-                Lozinke se ne poklapaju
+                {{ $t('profile.passwordsDontMatch') }}
               </div>
               <button type="submit" class="btn btn-secondary w-full" :disabled="updatingPassword || !passwordsMatch">
                 <span v-if="updatingPassword" class="loading loading-spinner"></span>
-                <span v-else>Promijeni lozinku</span>
+                <span v-else>{{ $t('profile.changePassword') }}</span>
               </button>
             </form>
           </div>
@@ -73,30 +74,30 @@
             <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
               <div>
                 <div class="flex items-center gap-2">
-                  <h2 id="profile-gamercard-title" class="text-lg sm:text-xl font-semibold">Tvoja Gamenote kartica</h2>
-                  <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" aria-label="O Gamenote signature boji i titulama" @click="cardInfo.showModal()">
+                  <h2 id="profile-gamercard-title" class="text-lg sm:text-xl font-semibold">{{ $t('profile.yourGamenoteCard') }}</h2>
+                  <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" :aria-label="$t('profile.aboutTheGamenoteSignatureColor')" @click="cardInfo.showModal()">
                     <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg>
                   </button>
                 </div>
                 <p class="text-sm text-base-content/60 mt-1"></p>
               </div>
-              <div class="flex flex-wrap gap-2" role="group" aria-label="Izvoz kartice" :aria-busy="exporting">
-                <button type="button" class="btn btn-sm btn-ghost" :disabled="loading || !!loadError" @click="openCardEditor">Uredi karticu</button>
-                <button type="button" class="btn btn-sm btn-primary" aria-label="Preuzmi karticu" title="Preuzmi PNG" :disabled="exporting || loading || !!loadError" @click="exportCard">
+              <div class="flex flex-wrap gap-2" role="group" :aria-label="$t('profile.exportCard')" :aria-busy="exporting">
+                <button type="button" class="btn btn-sm btn-ghost" :disabled="loading || !!loadError" @click="openCardEditor">{{ $t('profile.editCard') }}</button>
+                <button type="button" class="btn btn-sm btn-primary" :aria-label="$t('profile.downloadCard')" :title="$t('profile.downloadPng')" :disabled="exporting || loading || !!loadError" @click="exportCard">
                   <span v-if="exporting" class="loading loading-spinner loading-xs" aria-hidden="true"></span>
                   <svg v-else class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>
-                  <span class="hidden sm:inline">Preuzmi karticu</span><span class="sm:hidden">PNG</span>
+                  <span class="hidden sm:inline">{{ $t('profile.downloadCard') }}</span><span class="sm:hidden">PNG</span>
                 </button>
               </div>
             </div>
             <p v-if="cardColor === 'signature'" class="text-xs text-base-content/60 mb-3">
-              Gamenote signature · {{ signature.genre || 'Automatski' }}
+              Gamenote signature · {{ signature.genre || $t('profile.automatic') }}
             </p>
-            <div v-if="loading" class="skeleton h-80 w-full" role="status" aria-label="Učitavanje kartice"></div>
+            <div v-if="loading" class="skeleton h-80 w-full" role="status" :aria-label="$t('profile.loadingCard')"></div>
             <GamerCard v-else-if="!loadError" ref="gamingCardRef" card-id="gaming-card" :games="games"
-              :name="userStore.user?.user_metadata?.name || 'Igrač'" :email="userStore.user?.email || ''" :avatar-url="profileImageUrl"
+              :name="userStore.user?.user_metadata?.name || $t('common.player')" :email="userStore.user?.email || ''" :avatar-url="profileImageUrl"
               :created-at="userStore.user?.created_at || ''" :color="cardColor" :theme="cardTheme" />
-            <p v-if="exporting" role="status" class="text-sm text-base-content/70 mt-2">Pripremam sliku visoke rezolucije…</p>
+            <p v-if="exporting" role="status" class="text-sm text-base-content/70 mt-2">{{ $t('profile.preparingHighResolutionImage') }}</p>
           </div>
         </section>
 
@@ -104,7 +105,7 @@
           <div class="card-body">
             <h2 id="profile-achievements-title" class="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
               <AchievementIcon name="medal" class="size-5 text-warning" />
-              Postignuća
+              {{ $t('profile.achievements') }}
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <div v-for="achievement in achievements" :key="achievement.id"
@@ -121,23 +122,23 @@
 
       <section class="card bg-base-200 profile-account" aria-labelledby="profile-account-title">
         <div class="card-body">
-          <h2 id="profile-account-title" class="text-lg sm:text-xl font-semibold mb-4">Račun</h2>
+          <h2 id="profile-account-title" class="text-lg sm:text-xl font-semibold mb-4">{{ $t('profile.account') }}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
             <div class="flex items-center justify-between gap-4">
               <div>
-                <h3 class="font-medium">Sesija</h3>
-                <p class="text-sm text-base-content/60 mt-1">Odjavi se na ovom uređaju.</p>
+                <h3 class="font-medium">{{ $t('profile.session') }}</h3>
+                <p class="text-sm text-base-content/60 mt-1">{{ $t('profile.signOutOnThisDevice') }}</p>
               </div>
-              <button type="button" class="btn btn-sm btn-outline shrink-0" @click="logout">Odjavi se</button>
+              <button type="button" class="btn btn-sm btn-outline shrink-0" @click="logout">{{ $t('common.signOut') }}</button>
             </div>
             <div class="flex items-center justify-between gap-4 border-t border-base-content/10 pt-5 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-6">
               <div>
-                <h3 class="font-medium">Brisanje računa</h3>
-                <p class="text-sm text-base-content/60 mt-1">Trajno ukloni račun i podatke.</p>
+                <h3 class="font-medium">{{ $t('profile.deleteAccount') }}</h3>
+                <p class="text-sm text-base-content/60 mt-1">{{ $t('profile.permanentlyRemoveYourAccountAnd') }}</p>
               </div>
               <button type="button" class="btn btn-sm btn-outline btn-error shrink-0" :disabled="deletingAccount" @click="showDeleteModal = true">
                 <span v-if="deletingAccount" class="loading loading-spinner"></span>
-                <span v-else>Obriši račun</span>
+                <span v-else>{{ $t('profile.deleteAccountLabel') }}</span>
               </button>
             </div>
           </div>
@@ -146,15 +147,32 @@
     </div>
     
     
+    <MfaDialog v-if="passwordVerification" :title="$t('mfa.passwordChangeTitle')" :busy="updatingPassword" @close="closePasswordVerification">
+      <p v-if="passwordCodeError" role="alert" class="alert alert-error alert-soft text-sm">{{ $t(passwordCodeError) }}</p>
+      <form method="post" class="flex flex-col gap-4" @submit.prevent="verifyPasswordChange">
+        <input type="text" name="username" autocomplete="username" :value="userStore.user?.email" class="hidden" readonly />
+        <label v-if="totpFactors.length > 1" class="flex flex-col gap-2">
+          {{ $t('mfa.authenticator') }}
+          <select v-model="passwordFactorId" class="select w-full" :disabled="updatingPassword">
+            <option v-for="factor in totpFactors" :key="factor.id" :value="factor.id">
+              {{ factor.friendly_name || $t('mfa.authenticator') }}
+            </option>
+          </select>
+        </label>
+        <MfaCodeInput v-model="passwordCode" :invalid="passwordCodeError === 'mfa.invalidCode'" :disabled="updatingPassword" autofocus />
+        <button type="submit" class="btn btn-primary" :disabled="updatingPassword">{{ $t('mfa.verify') }}</button>
+      </form>
+    </MfaDialog>
+
     <dialog ref="cardInfo" class="modal" aria-labelledby="card-info-title">
       <div class="modal-box card-info-copy">
-        <h2 id="card-info-title" class="text-xl font-semibold shrink-0 mb-4">Gamenote signature i titule</h2>
+        <h2 id="card-info-title" class="text-xl font-semibold shrink-0 mb-4">{{ $t('profile.gamenoteSignatureAndTitles') }}</h2>
         <div class="card-info-scroll">
-          <h3 class="font-semibold mb-2">Tvoja signature boja</h3>
-          <p class="text-sm text-base-content/75">Zadana boja Gamercarda prati omiljeni žanr: žanr koji se pojavljuje na najviše igara u tvojoj biblioteci. Jedna igra može pripadati više žanrova. Kod izjednačenja koristi se prvi među jednako zastupljenim žanrovima.</p>
+          <h3 class="font-semibold mb-2">{{ $t('profile.yourSignatureColor') }}</h3>
+          <p class="text-sm text-base-content/75">{{ $t('profile.theGamercardsDefaultColorFollows') }}</p>
           <div class="overflow-x-auto mt-3">
             <table class="table table-sm">
-              <thead><tr><th>Žanrovi</th><th>daisyUI paleta</th></tr></thead>
+              <thead><tr><th>{{ $t('common.genres') }}</th><th>{{ $t('profile.daisyuiPalette') }}</th></tr></thead>
               <tbody>
                 <tr v-for="rule in GENRE_THEMES" :key="rule.theme">
                   <td class="whitespace-normal">{{ rule.genres.join(', ') }}</td>
@@ -163,35 +181,35 @@
               </tbody>
             </table>
           </div>
-          <h3 class="font-semibold mt-6 mb-2">Kako dobivaš titulu</h3>
-          <p class="text-sm text-base-content/75">Zbrajaju se zabilježeni sati svih igara u biblioteci. Dobivaš najvišu titulu čiji si prag dosegnuo; prag vrijedi od navedenog broja sati, uključivo.</p>
+          <h3 class="font-semibold mt-6 mb-2">{{ $t('profile.howYouEarnATitle') }}</h3>
+          <p class="text-sm text-base-content/75">{{ $t('profile.hoursLoggedAcrossAllGames') }}</p>
           <table class="table table-sm mt-3">
-            <thead><tr><th>Titula</th><th>Ukupno sati</th></tr></thead>
-            <tbody><tr v-for="title in PLAYER_TITLES" :key="title.hours"><td>{{ title.label }}</td><td>Od {{ formatCardNumber(title.hours) }} h</td></tr></tbody>
+            <thead><tr><th>{{ $t('profile.title') }}</th><th>{{ $t('common.totalHours') }}</th></tr></thead>
+            <tbody><tr v-for="title in PLAYER_TITLES" :key="title.hours"><td>{{ title.label }}</td><td>{{ $t('profile.from') }} {{ formatCardNumber(title.hours) }} h</td></tr></tbody>
           </table>
-          <p class="text-sm text-base-content/75 mt-3">Omiljena igra je ona s najviše zabilježenih sati. Igra bez vremena igranja ne ulazi u taj izbor.</p>
+          <p class="text-sm text-base-content/75 mt-3">{{ $t('profile.yourFavoriteGameIsThe') }}</p>
         </div>
-        <form method="dialog" class="modal-action"><button class="btn btn-primary">Razumijem</button></form>
+        <form method="dialog" class="modal-action"><button class="btn btn-primary">{{ $t('common.gotIt') }}</button></form>
       </div>
-      <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori informacije">Zatvori</button></form>
+      <form method="dialog" class="modal-backdrop"><button :aria-label="$t('profile.closeInformation')">{{ $t('common.close') }}</button></form>
     </dialog>
 
     <dialog ref="cardEditor" class="modal" aria-labelledby="card-editor-title" @close="onCardEditorClose">
       <div v-if="cardEditorOpen" class="modal-box card-editor-box">
         <div class="flex items-start justify-between gap-3 mb-5">
           <div>
-            <h2 id="card-editor-title" class="text-xl font-semibold">Uredi Gamenote karticu</h2>
-            <p class="text-sm text-base-content/60 mt-1">Odaberi temu i boju podloge pa provjeri izgled prije spremanja.</p>
+            <h2 id="card-editor-title" class="text-xl font-semibold">{{ $t('profile.editGamenoteCard') }}</h2>
+            <p class="text-sm text-base-content/60 mt-1">{{ $t('profile.chooseAThemeAndBackground') }}</p>
           </div>
-          <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" aria-label="Zatvori uređivanje kartice" @click="closeCardEditor">✕</button>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost shrink-0" :aria-label="$t('profile.closeCardEditor')" @click="closeCardEditor">✕</button>
         </div>
-        <div class="card-palette-controls mb-5" role="group" aria-label="daisyUI palete">
+        <div class="card-palette-controls mb-5" role="group" :aria-label="$t('profile.daisyuiPalettes')">
           <button type="button" class="btn btn-sm btn-ghost signature-choice" :aria-pressed="draftCardColor === 'signature'" @click="selectSignature">
             <span class="signature-swatch" :style="{ backgroundColor: signature.primary }" aria-hidden="true"></span>
             Gamenote signature
-            <span class="sr-only"> · {{ signature.genre || 'Prema omiljenom žanru' }}</span>
+            <span class="sr-only"> · {{ signature.genre || $t('profile.basedOnFavoriteGenre') }}</span>
           </button>
-          <div class="card-quick-themes" role="group" aria-label="Predefinirane teme">
+          <div class="card-quick-themes" role="group" :aria-label="$t('profile.presetThemes')">
             <button v-for="theme in SIGNATURE_THEMES" :key="theme.value" type="button"
               class="btn btn-sm sm:btn-circle btn-ghost theme-choice tooltip tooltip-bottom" :data-tip="theme.label"
               :aria-label="theme.label" :aria-pressed="draftCardColor === theme.value"
@@ -201,23 +219,23 @@
             </button>
           </div>
           <div class="card-custom-controls">
-            <label class="btn btn-sm btn-ghost card-color-choice" title="Vlastita boja" :class="{ 'card-choice-active': draftCardColor.startsWith('#') }">
-              <input type="color" aria-label="Vlastita boja kartice" :value="draftColorHex"
+            <label class="btn btn-sm btn-ghost card-color-choice" :title="$t('profile.customColor')" :class="{ 'card-choice-active': draftCardColor.startsWith('#') }">
+              <input type="color" :aria-label="$t('profile.customCardColor')" :value="draftColorHex"
                 class="card-custom-color" @input="draftCardColor = $event.target.value" />
-              <span>Vlastita boja</span>
+              <span>{{ $t('profile.customColor') }}</span>
             </label>
             <CardThemePicker :model-value="draftCardTheme" @update:model-value="changeDraftTheme" />
           </div>
         </div>
         <GamerCard class="card-editor-preview" card-id="gaming-card-preview" :games="games" :color="draftCardColor" :theme="draftCardTheme"
-          :name="userStore.user?.user_metadata?.name || 'Igrač'" :email="userStore.user?.email || ''" :avatar-url="profileImageUrl"
+          :name="userStore.user?.user_metadata?.name || $t('common.player')" :email="userStore.user?.email || ''" :avatar-url="profileImageUrl"
           :created-at="userStore.user?.created_at || ''" />
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="closeCardEditor">Odustani</button>
-          <button type="button" class="btn btn-primary" @click="saveCardEditor">Spremi izgled</button>
+          <button type="button" class="btn btn-ghost" @click="closeCardEditor">{{ $t('common.cancel') }}</button>
+          <button type="button" class="btn btn-primary" @click="saveCardEditor">{{ $t('profile.saveAppearance') }}</button>
         </div>
       </div>
-      <form method="dialog" class="modal-backdrop"><button aria-label="Zatvori uređivač">Zatvori</button></form>
+      <form method="dialog" class="modal-backdrop"><button :aria-label="$t('profile.closeEditor')">{{ $t('common.close') }}</button></form>
     </dialog>
 
     <div v-if="toast.show" role="status" aria-atomic="true" class="toast toast-top toast-end">
@@ -236,31 +254,30 @@
             <GamenoteBanner class="h-10 w-auto max-w-full object-contain" />
           </div>
 
-          <h3 class="text-xl font-bold text-center text-error">Obriši račun</h3>
+          <h3 class="text-xl font-bold text-center text-error">{{ $t('profile.deleteAccountLabel') }}</h3>
 
           <div class="mt-4 p-4 bg-error/10 rounded-lg border border-error/30">
             <p class="text-sm leading-relaxed">
-              Ova radnja će trajno obrisati vaš korisnički račun i sve povezane podatke.
-              Ovo se <strong>ne može poništiti</strong>.
+              {{ $t('profile.thisWillPermanentlyDeleteYour') }} <strong>{{ $t('profile.cantBeUndone') }}</strong>.
             </p>
           </div>
 
           <!-- Re-auth forma ako je sesija istekla -->
           <div v-if="needsReauth" class="mt-4 p-3 bg-warning/20 rounded-lg border border-warning/40">
-            <p class="text-sm font-medium mb-2">Sesija je istekla — prijavite se ponovno:</p>
+            <p class="text-sm font-medium mb-2">{{ $t('profile.yourSessionHasExpiredSign') }}</p>
             <input v-model="reauthEmail" type="email" class="input input-bordered w-full mb-2" placeholder="Email" />
-            <input v-model="reauthPassword" type="password" class="input input-bordered w-full mb-2" placeholder="Lozinka" />
+            <input v-model="reauthPassword" type="password" class="input input-bordered w-full mb-2" :placeholder="$t('common.password')" />
             <p v-if="reauthError" class="text-error text-sm mb-2">{{ reauthError }}</p>
             <button @click="handleReauthAndDelete" class="btn btn-warning w-full" :disabled="deletingAccount">
               <span v-if="deletingAccount" class="loading loading-spinner"></span>
-              <span v-else>Prijavi se i obriši račun</span>
+              <span v-else>{{ $t('profile.signInAndDeleteAccount') }}</span>
             </button>
           </div>
 
           <!-- Normalna potvrda (bez re-auth) -->
           <div v-else class="mt-4">
             <label class="label">
-              <span class="label-text">Upišite <span class="font-mono font-bold">DELETE</span> za potvrdu:</span>
+              <span class="label-text">{{ $t('profile.type') }} <span class="font-mono font-bold">DELETE</span> {{ $t('profile.toConfirm') }}</span>
             </label>
             <input
               v-model="deleteConfirmInput"
@@ -272,7 +289,7 @@
           </div>
 
           <div class="flex gap-2 mt-6">
-            <button @click="closeDeleteModal" class="btn btn-ghost flex-1" :disabled="deletingAccount">Odustani</button>
+            <button @click="closeDeleteModal" class="btn btn-ghost flex-1" :disabled="deletingAccount">{{ $t('common.cancel') }}</button>
             <button
               v-if="!needsReauth"
               @click="handleDeleteAccount"
@@ -280,7 +297,7 @@
               :disabled="deleteConfirmInput !== 'DELETE' || deletingAccount"
             >
               <span v-if="deletingAccount" class="loading loading-spinner"></span>
-              <span v-else>Obriši račun</span>
+              <span v-else>{{ $t('profile.deleteAccountLabel') }}</span>
             </button>
           </div>
         </div>
@@ -290,6 +307,7 @@
 </template>
 
 <script>
+import { formatLocale, t } from '../i18n/index.js';
 import ProfileInfoButton from '../components/ProfileInfoButton.vue';
 import LibraryShareButton from '../components/LibraryShareButton.vue';
 import { usePageTitle } from '../composables/usePageTitle';
@@ -301,19 +319,24 @@ import { ref, reactive, onMounted, computed, onUnmounted, watch, nextTick } from
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
-import Chart from 'chart.js/auto';
+import Chart from '../services/chartSetup.js';
 import GamenoteBanner from '../components/GamenoteBanner.vue';
 import GamerCard from '../components/GamerCard.vue';
 import CardThemePicker from '../components/CardThemePicker.vue';
 import CardThemePreview from '../components/CardThemePreview.vue';
 import AchievementIcon from '../components/AchievementIcon.vue';
+import ProfileMfa from '../components/ProfileMfa.vue';
+import MfaCodeInput from '../components/MfaCodeInput.vue';
+import MfaDialog from '../components/MfaDialog.vue';
+import { verifyTotp } from '../services/mfa.js';
 import { getProfileAchievements } from '../services/profileAchievements.js';
 import { getGamerCardStats, PLAYER_TITLES, formatCardNumber } from '../services/gamerCard.js';
 import { SIGNATURE_THEMES, GENRE_THEMES, signatureForGenre, cardColorValue, cardColorHex, validCardColor, loadCardColor, saveCardColor, loadCardTheme, saveCardTheme } from '../services/cardAppearance.js';
 
 
 export default {
-  components: { ProfileInfoButton, LibraryShareButton, GamenoteBanner, GamerCard, CardThemePicker, CardThemePreview, AchievementIcon },
+  components: { ProfileInfoButton, LibraryShareButton, GamenoteBanner, GamerCard, CardThemePicker, CardThemePreview,
+    AchievementIcon, ProfileMfa, MfaCodeInput, MfaDialog },
   setup() {
     const router = useRouter();
     const userStore = useUserStore();
@@ -322,6 +345,12 @@ export default {
     const loading = ref(false);
     const updating = ref(false);
     const updatingPassword = ref(false);
+    const passwordVerification = ref(false);
+    const passwordCode = ref('');
+    const passwordCodeError = ref('');
+    const passwordFactorId = ref('');
+    const totpFactors = computed(() => userStore.user?.factors?.filter(
+      factor => factor.factor_type === 'totp' && factor.status === 'verified') || []);
     const genreChartRef = ref(null);
     const platformChartRef = ref(null);
     const gamingCardRef = ref(null);
@@ -486,42 +515,75 @@ export default {
         
         if (error) {
           console.error('Greška pri ažuriranju profila:', error);
-          showToast('Greška pri ažuriranju profila', 'error');
+          showToast(t('profile.couldntUpdateYourProfile'), 'error');
           return;
         }
         
         await userStore.fetchUser();
-        showToast('Profil uspješno ažuriran!');
+        showToast(t('profile.profileUpdatedSuccessfully'));
       } catch (error) {
         console.error('Greška pri ažuriranju profila:', error);
-        showToast('Greška pri ažuriranju profila', 'error');
+        showToast(t('profile.couldntUpdateYourProfile'), 'error');
       } finally {
         updating.value = false;
       }
     };
     
     const updatePassword = async () => {
-      if (!passwordsMatch.value) return;
-      
+      if (updatingPassword.value || !passwordsMatch.value) return;
+      if (totpFactors.value.length) {
+        passwordFactorId.value = totpFactors.value[0].id;
+        passwordVerification.value = true;
+        return;
+      }
+      await savePassword(passwordForm.newPassword);
+    };
+
+    const closePasswordVerification = () => {
+      passwordVerification.value = false;
+      passwordCode.value = '';
+      passwordCodeError.value = '';
+    };
+
+    const verifyPasswordChange = async (event) => {
+      if (updatingPassword.value || !passwordsMatch.value || !userStore.user) return;
+      const code = new FormData(event.target).get('totp');
+      const owner = userStore.user.id;
+      const newPassword = passwordForm.newPassword;
+      passwordCodeError.value = '';
+      updatingPassword.value = true;
+      try {
+        const session = await verifyTotp(passwordFactorId.value, code);
+        if (userStore.user?.id !== owner || session.user?.id !== owner) return;
+        closePasswordVerification();
+        await savePassword(newPassword);
+      } catch (error) {
+        passwordCodeError.value = error?.code === 'mfa_verification_failed' ? 'mfa.invalidCode' : 'mfa.unavailable';
+      } finally {
+        updatingPassword.value = false;
+      }
+    };
+
+    const savePassword = async (newPassword) => {
       updatingPassword.value = true;
       
       try {
         const { error } = await supabase.auth.updateUser({
-          password: passwordForm.newPassword
+          password: newPassword
         });
         
         if (error) {
           console.error('Greška pri mijenjanju lozinke:', error);
-          showToast('Greška pri mijenjanju lozinke', 'error');
+          showToast(t('profile.couldntChangeYourPassword'), 'error');
           return;
         }
         
         passwordForm.newPassword = '';
         passwordForm.confirmPassword = '';
-        showToast('Lozinka uspješno promijenjena!');
+        showToast(t('profile.passwordChangedSuccessfully'));
       } catch (error) {
         console.error('Greška pri mijenjanju lozinke:', error);
-        showToast('Greška pri mijenjanju lozinke', 'error');
+        showToast(t('profile.couldntChangeYourPassword'), 'error');
       } finally {
         updatingPassword.value = false;
       }
@@ -539,7 +601,7 @@ export default {
     };
     
     const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('hr-HR');
+      return new Date(dateString).toLocaleDateString(formatLocale.value);
     };
     
     const renderCharts = () => {
@@ -577,7 +639,7 @@ export default {
           data: {
             labels: Object.keys(platformData.value),
             datasets: [{
-              label: 'Broj igara',
+              label: t('common.gameCount'),
               data: Object.values(platformData.value),
               backgroundColor: '#36A2EB'
             }]
@@ -608,7 +670,7 @@ export default {
         games.value = data || [];
         renderCharts();
       } catch (error) {
-        loadError.value = error.message || 'Knjižnicu nije moguće učitati. Osvježi stranicu.';
+        loadError.value = error.message || t('common.theLibraryCouldntBeLoaded');
       } finally {
         loading.value = false;
       }
@@ -623,7 +685,7 @@ export default {
       if (platformChart) platformChart.destroy();
     });
     
-    const achievements = computed(() => getProfileAchievements(games.value));
+    const achievements = computed(() => getProfileAchievements(games.value, totpFactors.value.length > 0));
 
     const exportCard = async () => {
       if (!gamingCardRef.value || exporting.value || loading.value || loadError.value) return;
@@ -639,10 +701,10 @@ export default {
         document.body.appendChild(link);
         link.click();
         link.remove();
-        showToast('Kartica je spremna za preuzimanje (PNG).');
+        showToast(t('profile.yourCardIsReadyTo'));
       } catch (error) {
         console.error('Greška pri izvozu kartice:', error);
-        showToast(error.message || 'Karticu nije moguće izvesti. Pokušaj ponovno.', 'error');
+        showToast(error.message || t('profile.theCardCouldntBeExported'), 'error');
       } finally {
         exporting.value = false;
         if (downloadUrl) setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
@@ -673,7 +735,7 @@ export default {
             return;
           }
           console.error('Greška pri brisanju računa:', error);
-          showToast(error.message || 'Greška pri brisanju računa', 'error');
+          showToast(error.message || t('profile.couldntDeleteTheAccount'), 'error');
           deletingAccount.value = false;
           return;
         }
@@ -685,7 +747,7 @@ export default {
         router.push('/login');
       } catch (error) {
         console.error('Greška pri brisanju računa:', error);
-        showToast(error.message || 'Greška pri brisanju računa', 'error');
+        showToast(error.message || t('profile.couldntDeleteTheAccount'), 'error');
         deletingAccount.value = false;
       }
     };
@@ -704,7 +766,7 @@ export default {
         });
 
         if (signInError || signInData.user?.id !== accountId) {
-          reauthError.value = 'Pogrešna e-mail adresa ili lozinka.';
+          reauthError.value = t('common.incorrectEmailAddressOrPassword');
           deletingAccount.value = false;
           return;
         }
@@ -713,7 +775,7 @@ export default {
 
         if (error) {
           console.error('Greška pri brisanju računa:', error);
-          showToast(error.message || 'Greška pri brisanju računa', 'error');
+          showToast(error.message || t('profile.couldntDeleteTheAccount'), 'error');
           deletingAccount.value = false;
           return;
         }
@@ -725,7 +787,7 @@ export default {
         router.push('/login');
       } catch (error) {
         console.error('Greška pri brisanju računa:', error);
-        showToast(error.message || 'Greška pri brisanju računa', 'error');
+        showToast(error.message || t('profile.couldntDeleteTheAccount'), 'error');
         deletingAccount.value = false;
       }
     };
@@ -735,6 +797,13 @@ export default {
       loading,
       updating,
       updatingPassword,
+      passwordVerification,
+      passwordCode,
+      passwordCodeError,
+      passwordFactorId,
+      totpFactors,
+      closePasswordVerification,
+      verifyPasswordChange,
       profileForm,
       passwordForm,
       profileImageUrl,

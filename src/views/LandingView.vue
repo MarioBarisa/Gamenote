@@ -17,14 +17,14 @@
              class="w-64 sm:w-80 md:w-96 max-w-full h-auto object-contain drop-shadow-2xl" />
              
         <div class="max-w-3xl mt-4">
-          <h1 class="text-4xl md:text-6xl font-extrabold text-base-content mb-6">Tvoj gaming dnevnik<span class="text-[#F9461F]">.</span></h1>
+          <h1 class="text-4xl md:text-6xl font-extrabold text-base-content mb-6">{{ $t('landingView.yourGamingJournal') }}<span class="text-[#F9461F]">.</span></h1>
           <p class="text-lg md:text-xl text-base-content/80 mb-8 max-w-2xl mx-auto">
-            Organiziraj igre koje igraš, koje si završio i koje te još čekaju. Zapiši dojmove, prati vrijeme i napredak.
+            {{ $t('landingView.organizeTheGamesYourePlaying') }}
           </p>
 
           <div class="flex flex-col sm:flex-row gap-4 justify-center w-full px-4 sm:px-0">
-            <RouterLink to="/register" class="btn btn-primary btn-lg  shadow-xl sm:w-auto w-full hover:-translate-y-1 hover:scale-105 transition-all">Stvori račun</RouterLink>
-            <RouterLink to="/login" class="btn btn-outline btn-lg sm:w-auto w-full hover:-translate-y-1 transition-all bg-base-100/50 backdrop-blur-sm">Prijava</RouterLink>
+            <RouterLink to="/register" class="btn btn-primary btn-lg  shadow-xl sm:w-auto w-full hover:-translate-y-1 hover:scale-105 transition-all">{{ $t('common.createAccount') }}</RouterLink>
+            <RouterLink to="/login" class="btn btn-outline btn-lg sm:w-auto w-full hover:-translate-y-1 transition-all bg-base-100/50 backdrop-blur-sm">{{ $t('common.signIn') }}</RouterLink>
           </div>
         </div>
       </div>
@@ -32,55 +32,55 @@
 
     <section id="mogucnosti" class="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10 scroll-mt-8">
       <div class="mb-12 text-center md:text-left">
-        <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-[#F9461F]">Svaka igra ima svoju priču.</h2>
-        <p class="text-base-content/70 text-xl max-w-2xl">Sačuvaj gdje si stao, što te oduševilo i što želiš igrati sljedeće.</p>
+        <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-[#F9461F]">{{ $t('landingView.everyGameHasAStory') }}</h2>
+        <p class="text-base-content/70 text-xl max-w-2xl">{{ $t('landingView.saveWhereYouLeftOff') }}</p>
       </div>
       <div class="features-grid">
         <article class="feature-card feature-library">
           <div class="feature-copy">
-            <span class="feature-label text-[#F9461F]">✦ Tvoja kolekcija</span>
-            <h3 class="text-2xl md:text-3xl font-bold">Biblioteka kroz sve faze igranja</h3>
-            <p class="text-base-content/70 text-lg">Za ono što igraš sada. I sve što dolazi poslije. Posloži igre po statusima i svojim grupama.</p>
+            <span class="feature-label text-[#F9461F]">{{ $t('landingView.yourCollection') }}</span>
+            <h3 class="text-2xl md:text-3xl font-bold">{{ $t('landingView.aLibraryForEveryStage') }}</h3>
+            <p class="text-base-content/70 text-lg">{{ $t('landingView.forWhatYourePlayingNow') }}</p>
           </div>
           <LandingPreview kind="library" />
         </article>
         <article class="feature-card feature-details">
           <div class="feature-copy">
-            <span class="feature-label text-warning">✦ Istraži svaki detalj</span>
-            <h3 class="text-2xl font-bold">Sve o igri, na jednom mjestu</h3>
-            <p class="text-base-content/70 text-lg">Od sinopsisa i galerije do ESRB oznake, Metacritic ocjene i igara iz istog serijala — lako pronađi dostupne informacije.</p>
+            <span class="feature-label text-warning">{{ $t('landingView.exploreEveryDetail') }}</span>
+            <h3 class="text-2xl font-bold">{{ $t('landingView.everythingAboutAGameIn') }}</h3>
+            <p class="text-base-content/70 text-lg">{{ $t('landingView.fromTheSynopsisAndGallery') }}</p>
           </div>
           <LandingPreview kind="details" />
         </article>
         <article class="feature-card feature-import">
           <div class="feature-copy">
-            <span class="feature-label text-accent">↓ Manje prepisivanja</span>
-            <h3 class="text-2xl font-bold">Steam i PlayStation importeri</h3>
-            <p class="text-base-content/70 text-lg">Uvezi odabrane igre, dostupne sate i postignuća. Ostale dodaj ručno uz Gamenote katalog.</p>
+            <span class="feature-label text-accent">{{ $t('landingView.lessManualEntry') }}</span>
+            <h3 class="text-2xl font-bold">{{ $t('landingView.steamAndPlaystationImporters') }}</h3>
+            <p class="text-base-content/70 text-lg">{{ $t('landingView.importSelectedGamesAvailableHours') }}</p>
           </div>
           <LandingPreview kind="import" />
-          <p class="text-xs text-base-content/60 px-1">Steam traži javni profil i detalje igara; PlayStation povezuješ prema uputama importera.</p>
+          <p class="text-xs text-base-content/60 px-1">{{ $t('landingView.steamNeedsAPublicProfile') }}</p>
         </article>
         <article class="feature-card feature-summary">
           <div class="feature-copy">
-            <span class="feature-label text-success">↗ Svaki sat se računa</span>
-            <h3 class="text-2xl md:text-3xl font-bold">Tvoj pregled igranja</h3>
-            <p class="text-base-content/70 text-lg">Sati, statistike i napredak tvoje kolekcije. A za uspomenu — vlastita gamerska kartica.</p>
+            <span class="feature-label text-success">{{ $t('landingView.everyHourCounts') }}</span>
+            <h3 class="text-2xl md:text-3xl font-bold">{{ $t('landingView.yourPlaytimeOverview') }}</h3>
+            <p class="text-base-content/70 text-lg">{{ $t('landingView.hoursStatsAndProgressFor') }}</p>
           </div>
           <LandingPreview kind="summary" />
         </article>
       </div>
-      <p class="text-center text-base-content/70 mt-12 max-w-2xl mx-auto">Tvoj dnevnik, bez oglasa, alata za praćenje i prodaje osobnih podataka. <RouterLink to="/privacy" class="link">Pročitaj pravila privatnosti</RouterLink>.</p>
+      <p class="text-center text-base-content/70 mt-12 max-w-2xl mx-auto">{{ $t('landingView.yourJournalWithNoAds') }} <RouterLink to="/privacy" class="link">{{ $t('landingView.readThePrivacyPolicy') }}</RouterLink>.</p>
     </section>
 
     <section class="py-20 md:py-28 bg-gradient-to-b from-base-100 to-base-200">
       <div class="max-w-4xl mx-auto text-center px-4">
-        <h2 class="text-4xl md:text-5xl font-black mb-6">Koju ćeš igru prvu zapisati?</h2>
+        <h2 class="text-4xl md:text-5xl font-black mb-6">{{ $t('landingView.whichGameWillYouLog') }}</h2>
         <p class="text-base-content/70 text-xl mb-10 max-w-2xl mx-auto font-medium">
-          Stvori besplatan račun danas i počni graditi svoju osobnu gaming biblioteku bez ometanja.
+          {{ $t('landingView.createAFreeAccountToday') }}
         </p>
         <RouterLink to="/register" class="btn btn-primary btn-lg shadow-primary/40 shadow-2xl hover:-translate-y-2 hover:scale-110 transition-all duration-300 text-lg px-10 rounded-full">
-          Započni besplatno
+          {{ $t('landingView.getStartedForFree') }}
         </RouterLink>
       </div>
     </section>

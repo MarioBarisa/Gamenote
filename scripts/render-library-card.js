@@ -1,11 +1,13 @@
 import { createSSRApp, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
+import { createAppI18n } from '../src/i18n/index.js';
 import { parse, formatHex } from 'culori';
 import GamerCard from '../src/components/GamerCard.vue';
 import ComparisonSocialCard from '../src/components/ComparisonSocialCard.vue';
 
 export async function renderComparisonCard(left, right) {
   const app = createSSRApp({ render: () => h(ComparisonSocialCard, { left, right }) });
+  app.use(createAppI18n());
   const html = await renderToString(app);
   const svg = html.match(/<svg\b[\s\S]*<\/svg>/)?.[0];
   if (!svg) throw new Error('Karticu nije moguće pripremiti.');
@@ -17,6 +19,7 @@ export async function renderLibraryCard(header, avatar = '') {
     name: header.name, username: header.username, createdAt: header.created_at,
     cardStats: header.card, color: 'signature', preparedAvatar: avatar,
   }) });
+  app.use(createAppI18n());
   const html = await renderToString(app);
   const svg = html.match(/<svg\b[\s\S]*<\/svg>/)?.[0];
   if (!svg) throw new Error('Karticu nije moguće pripremiti.');

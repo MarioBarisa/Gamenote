@@ -1,5 +1,5 @@
 <template>
-  <Icon :icon="iconName" class="platform-icon" role="img" aria-hidden="false" :aria-label="name || 'Nepoznata platforma'" />
+  <Icon :icon="iconName" class="platform-icon" role="img" aria-hidden="false" :aria-label="name || $t('common.unknownPlatform')" />
 </template>
 
 <script>

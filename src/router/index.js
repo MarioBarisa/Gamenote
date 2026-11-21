@@ -191,6 +191,7 @@ router.beforeEach(async (to) => {
   try {
     const userStore = useUserStore();
     await userStore.initializeAuth();
+    if (to.name === 'register' && userStore.pendingMfa) return { name: 'login' };
     if (to.meta.requiresAuth && !userStore.isLoggedIn) return { name: 'login', query: { redirect: to.fullPath } };
   } catch (error) {
     console.error('Provjera prijave nije uspjela:', error);

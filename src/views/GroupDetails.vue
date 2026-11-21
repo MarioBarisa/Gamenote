@@ -5,7 +5,7 @@
       <div class="skeleton h-8 w-64 max-w-full" aria-hidden="true"></div>
       <LoadingCardGrid :layout="cardSizeStore.getSizeConfig(cardSizeStore.cardSize)" />
     </div>
-    <div v-else-if="!group" class="text-sm opacity-70">Grupa nije pronađena.</div>
+    <div v-else-if="!group" class="text-sm opacity-70">{{ $t('groupDetails.groupNotFound') }}</div>
     <div v-else>
       <div class="card bg-base-200 shadow-xl mb-6 overflow-hidden">
         <figure v-if="gameImages.length > 0" class="relative h-48 overflow-hidden">
@@ -26,7 +26,7 @@
         <div class="card-body">
           <div class="flex items-center gap-2 mb-2">
             <h1 v-if="gameImages.length === 0" class="text-2xl sm:text-3xl font-bold">{{ group.name }}</h1>
-            <button class="btn btn-sm btn-ghost" @click="openRenameModal" title="Preimenuj grupu">
+            <button class="btn btn-sm btn-ghost" @click="openRenameModal" :title="$t('groupDetails.renameGroup')">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
@@ -40,27 +40,27 @@
 
           <div class="flex items-center gap-3 flex-wrap">
             <span class="badge badge-outline">{{ group.type }}</span>
-            <span class="text-sm opacity-70">{{ groupGames.length }} igre/a</span>
+            <span class="text-sm opacity-70">{{ groupGames.length }} {{ $t('common.groupGameCountUnit') }}</span>
           </div>
 
           <div class="mt-4 flex items-center gap-3 flex-wrap">
-            <label class="label">Ocjena grupe</label>
+            <label class="label">{{ $t('groupDetails.groupRating') }}</label>
             <div class="rating rating-sm">
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="1 od 5" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="2 od 5" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="3 od 5" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="4 od 5" />
-              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="groupRating" @change="saveRating" :disabled="savingRating"  aria-label="5 od 5" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="groupRating" @change="saveRating" :disabled="savingRating"  :aria-label="$t('common.value1OutOf5')" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="groupRating" @change="saveRating" :disabled="savingRating"  :aria-label="$t('common.value2OutOf5')" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="groupRating" @change="saveRating" :disabled="savingRating"  :aria-label="$t('common.value3OutOf5')" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="groupRating" @change="saveRating" :disabled="savingRating"  :aria-label="$t('common.value4OutOf5')" />
+              <input type="radio" name="group-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="groupRating" @change="saveRating" :disabled="savingRating"  :aria-label="$t('common.value5OutOf5')" />
             </div>
             <span v-if="savingRating" class="loading loading-spinner loading-xs"></span>
-            <span class="text-sm opacity-70">Ukupno vrijeme igranja:</span>
+            <span class="text-sm opacity-70">{{ $t('groupDetails.totalPlaytime') }}</span>
             <span class="badge badge-ghost gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {{ totalHours }}h
             </span>
-            <span class="text-sm opacity-70">Prosječna ocjena:</span>
+            <span class="text-sm opacity-70">{{ $t('groupDetails.averageRating') }}</span>
             <span class="badge badge-ghost gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -74,23 +74,23 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              Dodaj igre
+              {{ $t('groupDetails.addGames') }}
             </button>
             <button class="btn" :class="selectMode ? 'btn-primary' : 'btn-ghost'" @click="toggleSelectMode">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {{ selectMode ? 'Gotovo' : 'Odaberi' }}
+              {{ selectMode ? $t('groupDetails.done') : $t('common.choose') }}
             </button>
           </div>
         </div>
       </div>
 
-      <AppModal v-if="showAddModal" label="Dodaj igre u grupu" :busy="adding" @close="closeAddModal">
+      <AppModal v-if="showAddModal" :label="$t('groupDetails.addGamesToGroup')" :busy="adding" @close="closeAddModal">
         <div class="modal-box max-w-lg">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="adding" @click.stop="closeAddModal">✕</button>
-          <h3 class="font-bold text-lg">Dodaj igre u grupu</h3>
-          <input v-model="addSearch" type="text" placeholder="Pretraži igre..." class="input input-bordered w-full mt-3"  aria-label="Pretraži igre..." />
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" :disabled="adding" @click.stop="closeAddModal">✕</button>
+          <h3 class="font-bold text-lg">{{ $t('groupDetails.addGamesToGroup') }}</h3>
+          <input v-model="addSearch" type="text" :placeholder="$t('common.searchGames')" class="input input-bordered w-full mt-3"  :aria-label="$t('common.searchGames')" />
           <ul v-if="filteredAvailable.length" class="mt-3 max-h-72 overflow-y-auto space-y-1">
             <li v-for="game in filteredAvailable" :key="game.id">
               <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 cursor-pointer" :class="{ 'bg-base-200': isAddSelected(game.id) }">
@@ -102,39 +102,39 @@
               </label>
             </li>
           </ul>
-          <p v-else class="text-sm opacity-70 mt-3">Nema dostupnih igara.</p>
+          <p v-else class="text-sm opacity-70 mt-3">{{ $t('groupDetails.noGamesAvailable') }}</p>
           <div class="modal-action">
-            <button class="btn" @click="closeAddModal" :disabled="adding">Odustani</button>
+            <button class="btn" @click="closeAddModal" :disabled="adding">{{ $t('common.cancel') }}</button>
             <button class="btn btn-primary" @click="confirmAddGames" :disabled="addSelectedIds.size === 0 || adding">
               <span v-if="adding" class="loading loading-spinner loading-sm"></span>
-              <span v-else>Dodaj ({{ addSelectedIds.size }})</span>
+              <span v-else>{{ $t('groupDetails.add') }}{{ addSelectedIds.size }})</span>
             </button>
           </div>
         </div>
         <form method="dialog" class="modal-backdrop">
-          <button @click="closeAddModal">zatvori</button>
+          <button @click="closeAddModal">{{ $t('common.closeLabel') }}</button>
         </form>
       </AppModal>
 
-      <h2 class="text-xl font-semibold mb-4">Igre u grupi</h2>
+      <h2 class="text-xl font-semibold mb-4">{{ $t('groupDetails.gamesInGroup') }}</h2>
       <div v-if="selectMode" class="flex items-center justify-between gap-2 mb-4 p-3 card bg-base-200 shadow">
-        <span class="text-sm font-semibold">Odabrano: {{ selectedGameIds.size }}</span>
+        <span class="text-sm font-semibold">{{ $t('groupDetails.selected') }} {{ selectedGameIds.size }}</span>
         <div class="flex gap-2">
-          <button class="btn btn-sm btn-ghost" @click="toggleSelectMode">Poništi</button>
+          <button class="btn btn-sm btn-ghost" @click="toggleSelectMode">{{ $t('common.reset') }}</button>
           <button class="btn btn-sm btn-error" @click="showBulkDeleteModal = true" :disabled="selectedGameIds.size === 0 || bulkRemoving">
-            Obriši odabrane ({{ selectedGameIds.size }})
+            {{ $t('groupDetails.deleteSelected') }}{{ selectedGameIds.size }})
           </button>
         </div>
       </div>
       <div v-if="groupGames.length === 0" class="card bg-base-200 shadow-xl">
         <div class="card-body text-center">
-          <p class="text-sm opacity-70">Nema igara u grupi.</p>
+          <p class="text-sm opacity-70">{{ $t('groupDetails.noGamesInThisGroup') }}</p>
         </div>
       </div>
       <div :class="['grid', cardSizeStore.getSizeConfig(cardSizeStore.cardSize).container, cardSizeStore.getSizeConfig(cardSizeStore.cardSize).gap]">
         <template v-for="gg in groupGames" :key="gg.id">
           <div v-if="gg.games" class="relative cursor-pointer rounded-box" :class="{ 'ring-2 ring-primary': isSelected(gg.games.id) }" >
-            <button v-if="selectMode" type="button" class="card-open-link absolute inset-0 z-10 rounded-box" :aria-label="`Odaberi igru: ${gg.games.title}`" :aria-pressed="isSelected(gg.games.id)" @click="toggleSelect(gg.games.id)"></button>
+            <button v-if="selectMode" type="button" class="card-open-link absolute inset-0 z-10 rounded-box" :aria-label="$t('groupDetails.selectGame', [gg.games.title])" :aria-pressed="isSelected(gg.games.id)" @click="toggleSelect(gg.games.id)"></button>
             <GameCard :game="gg.games" :to="selectMode ? '' : `/game/${gg.games.id}`" lazy />
             <span v-if="selectMode" class="pointer-events-none absolute top-2 left-2 z-10 size-7 rounded-full shadow-lg flex items-center justify-center transition-all" :class="isSelected(gg.games.id) ? 'bg-primary text-primary-content' : 'bg-black/50 border-2 border-white/70'" aria-hidden="true">
               <svg v-if="isSelected(gg.games.id)" xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,57 +146,57 @@
       </div>
     </div>
 
-    <AppModal v-if="showBulkDeleteModal" label="Ukloni igre iz grupe" :busy="bulkRemoving" @close="showBulkDeleteModal = false">
+    <AppModal v-if="showBulkDeleteModal" :label="$t('groupDetails.removeGamesFromGroup')" :busy="bulkRemoving" @close="showBulkDeleteModal = false">
       <div class="modal-box">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="bulkRemoving" @click.stop="showBulkDeleteModal = false">✕</button>
-        <h3 class="font-bold text-lg">Ukloni igre iz grupe?</h3>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" :disabled="bulkRemoving" @click.stop="showBulkDeleteModal = false">✕</button>
+        <h3 class="font-bold text-lg">{{ $t('groupDetails.removeGamesFromTheGroup') }}</h3>
         <p class="py-3 text-sm">
-          Jeste li sigurni da želite ukloniti
-          <strong>{{ selectedGameIds.size }} {{ selectedGameIds.size === 1 ? 'igru' : (selectedGameIds.size % 10 >= 2 && selectedGameIds.size % 10 <= 4 && (selectedGameIds.size % 100 < 12 || selectedGameIds.size % 100 > 14) ? 'igre' : 'igara') }}</strong>
-          iz grupe "{{ group?.name }}"? Igre ostaju u vašoj kolekciji.
+          {{ $t('groupDetails.areYouSureYouWant') }}
+          <strong>{{ selectedGameIds.size }} {{ selectedGameIds.size === 1 ? 'igru' : (selectedGameIds.size % 10 >= 2 && selectedGameIds.size % 10 <= 4 && (selectedGameIds.size % 100 < 12 || selectedGameIds.size % 100 > 14) ? $t('groupDetails.gamesToRemoveUnit') : $t('common.gameCountUnit')) }}</strong>
+          {{ $t('groupDetails.fromTheGroup') }}{{ group?.name }}{{ $t('groupDetails.theGamesWillStayIn') }}
         </p>
         <ul class="max-h-48 overflow-y-auto space-y-1 mb-2 text-sm opacity-80 list-disc list-inside">
           <li v-for="sg in selectedGames" :key="sg.games.id">{{ sg.games.title }}</li>
         </ul>
         <div class="modal-action">
-          <button @click="showBulkDeleteModal = false" class="btn" :disabled="bulkRemoving">Odustani</button>
+          <button @click="showBulkDeleteModal = false" class="btn" :disabled="bulkRemoving">{{ $t('common.cancel') }}</button>
           <button @click="removeSelected" class="btn btn-error" :disabled="bulkRemoving">
             <span v-if="bulkRemoving" class="loading loading-spinner loading-sm"></span>
-            <span v-else>Ukloni ({{ selectedGameIds.size }})</span>
+            <span v-else>{{ $t('groupDetails.remove') }}{{ selectedGameIds.size }})</span>
           </button>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click="showBulkDeleteModal = false">zatvori</button>
+        <button @click="showBulkDeleteModal = false">{{ $t('common.closeLabel') }}</button>
       </form>
     </AppModal>
 
-    <AppModal v-if="showRenameModal" label="Preimenuj grupu" @close="showRenameModal = false">
+    <AppModal v-if="showRenameModal" :label="$t('groupDetails.renameGroup')" @close="showRenameModal = false">
       <div class="modal-box">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" @click.stop="showRenameModal = false">✕</button>
-        <h3 class="font-bold text-lg">Preimenuj grupu</h3>
-        <input v-model="renameInput" type="text" placeholder="Naziv grupe" class="input input-bordered w-full mt-3" @keyup.enter="confirmRename"  aria-label="Naziv grupe" />
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" @click.stop="showRenameModal = false">✕</button>
+        <h3 class="font-bold text-lg">{{ $t('groupDetails.renameGroup') }}</h3>
+        <input v-model="renameInput" type="text" :placeholder="$t('common.groupName')" class="input input-bordered w-full mt-3" @keyup.enter="confirmRename"  :aria-label="$t('common.groupName')" />
         <div class="modal-action">
-          <button class="btn" @click="showRenameModal = false">Odustani</button>
-          <button class="btn btn-primary" @click="confirmRename" :disabled="!renameInput.trim()">Spremi</button>
+          <button class="btn" @click="showRenameModal = false">{{ $t('common.cancel') }}</button>
+          <button class="btn btn-primary" @click="confirmRename" :disabled="!renameInput.trim()">{{ $t('common.save') }}</button>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click="showRenameModal = false">zatvori</button>
+        <button @click="showRenameModal = false">{{ $t('common.closeLabel') }}</button>
       </form>
     </AppModal>
 
-    <AppModal v-if="showDeleteModal" label="Potvrdi brisanje" :busy="deleting" @close="showDeleteModal = false">
+    <AppModal v-if="showDeleteModal" :label="$t('common.confirmDeletion')" :busy="deleting" @close="showDeleteModal = false">
       <div class="modal-box">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="deleting" @click.stop="showDeleteModal = false">✕</button>
-        <h3 class="font-bold text-lg">Potvrdi brisanje</h3>
-        <p class="py-4">Jeste li sigurni da želite obrisati grupu "{{ group.name }}"? Sve igre će biti uklonjene iz grupe.</p>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" :disabled="deleting" @click.stop="showDeleteModal = false">✕</button>
+        <h3 class="font-bold text-lg">{{ $t('common.confirmDeletion') }}</h3>
+        <p class="py-4">{{ $t('groupDetails.areYouSureYouWantToDeleteThe') }}{{ group.name }}{{ $t('groupDetails.allGamesWillBeRemoved') }}</p>
         <div class="modal-action">
           <button @click="deleteGroupConfirmed" class="btn btn-error" :disabled="deleting">
             <span v-if="deleting" class="loading loading-spinner"></span>
-            <span v-else>Obriši</span>
+            <span v-else>{{ $t('common.delete') }}</span>
           </button>
-          <button @click="showDeleteModal = false" class="btn">Odustani</button>
+          <button @click="showDeleteModal = false" class="btn">{{ $t('common.cancel') }}</button>
         </div>
       </div>
     </AppModal>
@@ -204,6 +204,7 @@
 </template>
 
 <script>
+import { t } from '../i18n/index.js';
 import AppModal from '../components/AppModal.vue';
 import { usePageTitle } from '../composables/usePageTitle';
 import { fetchUserRows } from '../services/libraryData';
@@ -304,7 +305,7 @@ export default {
         groupGames.value = links;
         allUserGames.value = games;
       } catch (failure) {
-        if (version === loadVersion) error.value = failure.message || 'Učitavanje grupe nije uspjelo.';
+        if (version === loadVersion) error.value = failure.message || t('groupDetails.couldntLoadTheGroup');
       } finally {
         if (version === loadVersion) loading.value = false;
       }
@@ -316,7 +317,7 @@ export default {
       try {
         await updateGroup(group.value.id, userStore.user.id, { rating: Number(groupRating.value) || null });
       } catch (failure) {
-        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
+        error.value = failure.message || t('groupDetails.theChangeWasntSavedTry');
       } finally {
         savingRating.value = false;
       }
@@ -337,7 +338,7 @@ export default {
         group.value.name = renameInput.value.trim();
         showRenameModal.value = false;
       } catch (e) {
-        error.value = e.message || 'Spremanje naziva nije uspjelo.';
+        error.value = e.message || t('groupDetails.theNameCouldntBeSaved');
       }
     };
 
@@ -371,7 +372,7 @@ export default {
         closeAddModal();
         await fetchAll();
       } catch (failure) {
-        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
+        error.value = failure.message || t('groupDetails.theChangeWasntSavedTry');
       } finally {
         adding.value = false;
       }
@@ -382,7 +383,7 @@ export default {
       try {
         await removeGameFromGroup({ user_id: userStore.user.id, group_id: group.value.id, game_id: gameId });
         await fetchAll();
-      } catch (failure) { error.value = failure.message || 'Uklanjanje nije uspjelo.'; }
+      } catch (failure) { error.value = failure.message || t('groupDetails.removalFailed'); }
     };
 
     const navigateToGame = (id) => {
@@ -417,7 +418,7 @@ export default {
         selectMode.value = false;
         await fetchAll();
       } catch (failure) {
-        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
+        error.value = failure.message || t('groupDetails.theChangeWasntSavedTry');
       } finally {
         bulkRemoving.value = false;
       }
@@ -434,7 +435,7 @@ export default {
         await deleteGroup(group.value.id, userStore.user.id);
         router.push('/groups');
       } catch (failure) {
-        error.value = failure.message || 'Promjena nije spremljena. Pokušaj ponovno.';
+        error.value = failure.message || t('groupDetails.theChangeWasntSavedTry');
       } finally {
         deleting.value = false;
         showDeleteModal.value = false;

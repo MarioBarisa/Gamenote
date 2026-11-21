@@ -1,38 +1,38 @@
 <template>
-  <div class="modal-box screenshot-viewer" role="region" aria-roledescription="carousel" aria-label="Screenshotovi igre" :style="{ '--image-ratio': imageRatio }">
+  <div class="modal-box screenshot-viewer" role="region" aria-roledescription="carousel" :aria-label="$t('screenshotViewer.gameScreenshots')" :style="{ '--image-ratio': imageRatio }">
     <div class="flex items-center justify-between gap-2 shrink-0">
       <div class="flex items-center gap-1">
-        <button v-if="images.length > 1" type="button" class="btn btn-sm btn-square btn-ghost screenshot-control screenshot-mobile" aria-label="Prethodni screenshot" @click="previous">❮</button>
+        <button v-if="images.length > 1" type="button" class="btn btn-sm btn-square btn-ghost screenshot-control screenshot-mobile" :aria-label="$t('screenshotViewer.previousScreenshot')" @click="previous">❮</button>
         <span class="screenshot-counter text-sm tabular-nums opacity-70 whitespace-nowrap" aria-live="polite">{{ selectedIndex + 1 }} / {{ images.length }}</span>
-        <button v-if="images.length > 1" type="button" class="btn btn-sm btn-square btn-ghost screenshot-control screenshot-mobile" aria-label="Sljedeći screenshot" @click="next">❯</button>
+        <button v-if="images.length > 1" type="button" class="btn btn-sm btn-square btn-ghost screenshot-control screenshot-mobile" :aria-label="$t('screenshotViewer.nextScreenshot')" @click="next">❯</button>
       </div>
-      <div class="flex items-center gap-1 sm:gap-2" role="group" aria-label="Alati screenshota">
-        <a v-if="downloadUrl" :href="downloadUrl" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-square screenshot-control" aria-label="Preuzmi screenshot" title="Preuzmi screenshot">
+      <div class="flex items-center gap-1 sm:gap-2" role="group" :aria-label="$t('screenshotViewer.screenshotTools')">
+        <a v-if="downloadUrl" :href="downloadUrl" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-square screenshot-control" :aria-label="$t('screenshotViewer.downloadScreenshot')" :title="$t('screenshotViewer.downloadScreenshot')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="size-5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5" /></svg>
         </a>
-        <div class="join screenshot-desktop" role="group" aria-label="Zumiranje screenshota">
-          <button type="button" class="btn btn-sm btn-square join-item screenshot-control" aria-label="Umanji screenshot" title="Umanji screenshot" :disabled="zoom <= 1" @click="zoom = Math.max(1, zoom - 0.25)">
+        <div class="join screenshot-desktop" role="group" :aria-label="$t('screenshotViewer.screenshotZoom')">
+          <button type="button" class="btn btn-sm btn-square join-item screenshot-control" :aria-label="$t('screenshotViewer.zoomOut')" :title="$t('screenshotViewer.zoomOut')" :disabled="zoom <= 1" @click="zoom = Math.max(1, zoom - 0.25)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-5" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14" /></svg>
           </button>
-          <button type="button" class="btn btn-sm btn-square join-item screenshot-control" aria-label="Uvećaj screenshot" title="Uvećaj screenshot" :disabled="zoom >= 3" @click="zoom = Math.min(3, zoom + 0.25)">
+          <button type="button" class="btn btn-sm btn-square join-item screenshot-control" :aria-label="$t('screenshotViewer.zoomIn')" :title="$t('screenshotViewer.zoomIn')" :disabled="zoom >= 3" @click="zoom = Math.min(3, zoom + 0.25)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-5" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14M12 5v14" /></svg>
           </button>
         </div>
-        <select v-model.number="zoom" class="select select-sm screenshot-zoom screenshot-desktop w-20 text-xs tabular-nums" aria-label="Povećanje slike">
+        <select v-model.number="zoom" class="select select-sm screenshot-zoom screenshot-desktop w-20 text-xs tabular-nums" :aria-label="$t('screenshotViewer.imageZoom')">
           <option v-for="percentage in [100, 125, 150, 175, 200, 225, 250, 275, 300]" :key="percentage" :value="percentage / 100">{{ percentage }}%</option>
         </select>
-        <button type="button" class="btn btn-sm btn-circle btn-ghost screenshot-control" aria-label="Zatvori screenshot" title="Zatvori screenshot" @click="$emit('close')">✕</button>
+        <button type="button" class="btn btn-sm btn-circle btn-ghost screenshot-control" :aria-label="$t('screenshotViewer.closeScreenshot')" :title="$t('screenshotViewer.closeScreenshot')" @click="$emit('close')">✕</button>
       </div>
     </div>
     <div class="screenshot-surface">
-      <div ref="stage" class="screenshot-stage bg-base-300/40 rounded-box" :class="{ 'is-zoomed': zoom > 1, 'is-dragging': dragging }" role="group" aria-roledescription="slide" :aria-label="`Screenshot ${selectedIndex + 1} od ${images.length}`" tabindex="0" @pointerdown="startInteraction" @pointermove="movePan" @pointerup="finishInteraction" @pointercancel="cancelInteraction" @lostpointercapture="stopPan" @scroll.passive="scheduleViewport" @dblclick="toggleZoom">
+      <div ref="stage" class="screenshot-stage bg-base-300/40 rounded-box" :class="{ 'is-zoomed': zoom > 1, 'is-dragging': dragging }" role="group" aria-roledescription="slide" :aria-label="$t('screenshotViewer.screenshotOf', [selectedIndex + 1, images.length])" tabindex="0" @pointerdown="startInteraction" @pointermove="movePan" @pointerup="finishInteraction" @pointercancel="cancelInteraction" @lostpointercapture="stopPan" @scroll.passive="scheduleViewport" @dblclick="toggleZoom">
         <div class="screenshot-canvas" :style="{ width: `${zoom * 100}%`, height: `${zoom * 100}%` }">
           <img :src="imageUrl" :alt="`Screenshot ${selectedIndex + 1}`" class="screenshot-main select-none" decoding="async" draggable="false" @load="readImageSize" />
         </div>
       </div>
-      <button v-if="images.length > 1" type="button" class="btn btn-circle btn-ghost screenshot-desktop screenshot-arrow screenshot-previous bg-black/50 text-white hover:bg-black/75" aria-label="Prethodni screenshot" @click="previous">❮</button>
-      <button v-if="images.length > 1" type="button" class="btn btn-circle btn-ghost screenshot-desktop screenshot-arrow screenshot-next bg-black/50 text-white hover:bg-black/75" aria-label="Sljedeći screenshot" @click="next">❯</button>
-      <button v-if="zoom > 1" type="button" class="screenshot-minimap rounded-box focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 border border-base-content/30 bg-base-100/90 shadow" :style="{ aspectRatio: viewport.ratio }" aria-label="Premjesti vidljivo područje slike" title="Premjesti prikaz slike" @click="moveFromMinimap">
+      <button v-if="images.length > 1" type="button" class="btn btn-circle btn-ghost screenshot-desktop screenshot-arrow screenshot-previous bg-black/50 text-white hover:bg-black/75" :aria-label="$t('screenshotViewer.previousScreenshot')" @click="previous">❮</button>
+      <button v-if="images.length > 1" type="button" class="btn btn-circle btn-ghost screenshot-desktop screenshot-arrow screenshot-next bg-black/50 text-white hover:bg-black/75" :aria-label="$t('screenshotViewer.nextScreenshot')" @click="next">❯</button>
+      <button v-if="zoom > 1" type="button" class="screenshot-minimap rounded-box focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 border border-base-content/30 bg-base-100/90 shadow" :style="{ aspectRatio: viewport.ratio }" :aria-label="$t('screenshotViewer.moveTheVisibleAreaOf')" :title="$t('screenshotViewer.panImage')" @click="moveFromMinimap">
         <img :src="imageUrl" alt="" class="block w-full h-full object-contain rounded-box" draggable="false" />
         <span class="screenshot-viewport absolute border-2 border-primary bg-primary/15 outline outline-1 outline-base-100/80" :style="{ left: `${viewport.left}%`, top: `${viewport.top}%`, width: `${viewport.width}%`, height: `${viewport.height}%` }"></span>
       </button>

@@ -1,17 +1,17 @@
 <template>
   <div class="card-theme-picker">
     <button ref="trigger" type="button" class="btn btn-sm btn-ghost gap-1.5 px-1.5"
-      aria-label="Sve daisyUI teme" title="Odaberi temu kartice" :popovertarget="popoverId"
+      :aria-label="$t('cardThemePicker.allDaisyuiThemes')" :title="$t('cardThemePicker.chooseACardTheme')" :popovertarget="popoverId"
       :style="{ anchorName }">
       <CardThemePreview :theme="selectedTheme" />
-      <span class="sm:hidden">Sve teme</span>
+      <span class="sm:hidden">{{ $t('cardThemePicker.allThemes') }}</span>
       <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 8 5 5 5-5"/></svg>
     </button>
-    <div ref="popover" :id="popoverId" popover aria-label="Sve teme kartice"
+    <div ref="popover" :id="popoverId" popover :aria-label="$t('cardThemePicker.allCardThemes')"
       class="dropdown dropdown-end bg-base-200 text-base-content rounded-box shadow-2xl card-theme-menu"
       :style="{ positionAnchor: anchorName }">
       <ul class="menu w-full">
-        <li class="menu-title text-xs">Tema kartice</li>
+        <li class="menu-title text-xs">{{ $t('cardThemePicker.cardTheme') }}</li>
         <li v-for="theme in CARD_THEMES" :key="theme.value">
           <button type="button" class="gap-3 px-2" :aria-label="theme.label"
             :aria-pressed="modelValue === theme.value" @click="selectTheme(theme.value)">

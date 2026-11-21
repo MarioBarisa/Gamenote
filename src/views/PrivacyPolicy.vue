@@ -2,22 +2,6 @@
   <div class="min-h-screen bg-base-100">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
 
-      <!-- Language toggle -->
-      <div class="flex justify-end mb-8">
-        <div class="join">
-          <button
-            class="join-item btn btn-sm"
-            :class="lang === 'hr' ? 'btn-primary' : 'btn-ghost'"
-            @click="lang = 'hr'"
-          >HR</button>
-          <button
-            class="join-item btn btn-sm"
-            :class="lang === 'en' ? 'btn-primary' : 'btn-ghost'"
-            @click="lang = 'en'"
-          >EN</button>
-        </div>
-      </div>
-
       <!-- Logo -->
       <div class="flex justify-center mb-6">
         <GamenoteBanner class="h-12 sm:h-14 w-auto max-w-full object-contain" />
@@ -25,18 +9,17 @@
 
       <!-- Headline -->
       <h1 class="text-3xl sm:text-4xl font-black text-center mb-2">
-        <span v-if="lang === 'hr'">Pravila privatnosti – Gamenote</span>
-        <span v-else>Privacy Policy – Gamenote</span>
+        {{ $t('seo.privacyPolicyGamenote') }}
       </h1>
 
       <!-- Date -->
-      <p class="text-center text-base-content/50 text-sm mb-8">{{ effectiveDate[lang] }}</p>
+      <p class="text-center text-base-content/50 text-sm mb-8">{{ $t('legal.effectiveDate') }}</p>
 
       <!-- Content card -->
       <div class="card bg-base-200 shadow-xl">
         <div class="card-body p-6 sm:p-8 space-y-6 text-base sm:text-lg leading-relaxed">
 
-          <template v-if="lang === 'hr'">
+          <template v-if="locale === 'hr'">
 
             <p>Gamenote vjeruje u privatnost. Tvoji podaci su tvoji — ovdje je transparentno objašnjeno što prikupljamo i, još važnije, što ne radimo s tim.</p>
 
@@ -219,15 +202,8 @@
 </template>
 
 <script setup>
-import { usePageTitle } from '../composables/usePageTitle'
-import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import GamenoteBanner from '../components/GamenoteBanner.vue'
 
-const lang = ref('hr')
-if (!import.meta.env.SSR) usePageTitle(() => lang.value === 'hr' ? 'Pravila privatnosti – Gamenote' : 'Privacy Policy – Gamenote')
-
-const effectiveDate = {
-  hr: '19. lipnja 2026.',
-  en: 'June 19, 2026'
-}
+const { locale } = useI18n()
 </script>

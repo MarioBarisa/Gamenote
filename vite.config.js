@@ -98,6 +98,31 @@ function steamDevServer(env) {
   };
 }
 
+function mfaRecoveryDevServer(env) {
+  const require = createRequire(import.meta.url);
+  const handler = require('./netlify/functions/mfa-recovery.js').createHandler(env);
+  return {
+    name: 'mfa-recovery-dev-server',
+    configureServer(server) {
+      server.middlewares.use('/.netlify/functions/mfa-recovery', async (req, res) => {
+        let body = '';
+        if (req.method === 'POST') {
+          for await (const chunk of req) {
+            body += chunk;
+            if (body.length > 1024) {
+              res.writeHead(413, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+              return res.end(JSON.stringify({ error: 'request' }));
+            }
+          }
+        }
+        const result = await handler({ httpMethod: req.method, headers: req.headers, body });
+        res.writeHead(result.statusCode, result.headers);
+        res.end(result.body);
+      });
+    },
+  };
+}
+
 function appApiDevServer(env) {
   const require = createRequire(import.meta.url);
   const { appApi } = require('./netlify/functions/lib/_appApi.js');
@@ -165,6 +190,7 @@ export default defineConfig(({ mode }) => ({
     psnDevServer(),
     libraryCardDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
     appApiDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
+    mfaRecoveryDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
     steamDevServer({ ...loadEnv(mode, process.cwd(), ''), ...process.env }),
   ],
   // Izbjegni zastarjeli cache TCG modula.

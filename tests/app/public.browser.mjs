@@ -57,7 +57,7 @@ let browser;
 try {
   browser = await chromium.launch({ headless: true });
   for (const enabled of [false, true]) {
-    const context = await browser.newContext({ javaScriptEnabled: enabled });
+    const context = await browser.newContext({ locale: 'hr-HR', javaScriptEnabled: enabled });
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
       if (url.origin === origin && url.pathname === '/.netlify/functions/app-api') {
@@ -258,8 +258,12 @@ try {
       await page.getByRole('link', { name: 'Pročitaj pravila privatnosti' }).click();
       await expect(page).toHaveURL(origin + '/privacy');
       await expect(page).toHaveTitle('Pravila privatnosti – Gamenote');
-      await page.getByRole('button', { name: 'EN', exact: true }).click();
+      await page.getByLabel('Jezik', { exact: true }).selectOption('en');
       await expect(page).toHaveTitle('Privacy Policy – Gamenote');
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+      await expect(page.getByRole('heading', { name: '1. Data controller' })).toBeVisible();
+      await page.reload();
+      await expect(page.getByLabel('Language', { exact: true })).toHaveValue('en');
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://gamenote.eu/privacy');
       await page.goBack();
       await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
@@ -268,6 +272,21 @@ try {
     assert.deepEqual(errors, []);
     await context.close();
   }
+  const foreign = await browser.newContext({ locale: 'de-DE' });
+  await foreign.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+  const englishPage = await foreign.newPage();
+  await englishPage.goto(origin + '/login');
+  await expect(englishPage.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(englishPage.getByLabel('Password', { exact: true })).toBeVisible();
+  await englishPage.goto(origin);
+  await expect(englishPage.getByRole('heading', { name: 'Your gaming journal.' })).toBeVisible();
+  await expect(englishPage.locator('.preview-game').first()).toContainText('Completed');
+  await expect(englishPage.locator('.preview-game').first().locator('[data-tip="PlayStation 5"]')).toBeAttached();
+  await englishPage.getByLabel('Language', { exact: true }).selectOption('hr');
+  await expect(englishPage.locator('html')).toHaveAttribute('lang', 'hr');
+  await expect(englishPage.getByRole('heading', { name: 'Tvoj gaming dnevnik.' })).toBeVisible();
+  await foreign.close();
+
   for (const path of ['/robots.txt', '/sitemap.xml', '/social-preview.png']) {
     const response = await fetch(origin + path);
     assert.equal(response.status, 200);

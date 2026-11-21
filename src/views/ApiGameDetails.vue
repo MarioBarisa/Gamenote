@@ -10,16 +10,16 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2" />
         </svg>
         <div>
-          <h3 class="font-bold">Greška</h3>
+          <h3 class="font-bold">{{ $t('common.error') }}</h3>
           <div class="text-sm">{{ error }}</div>
         </div>
       </div>
-      <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
+      <router-link to="/" class="btn btn-primary mt-4">{{ $t('common.backToHome') }}</router-link>
     </div>
 
     <div v-else-if="!game" class="text-center my-8">
-      <p class="text-xl">Igra nije pronađena</p>
-      <router-link to="/" class="btn btn-primary mt-4">Natrag na početnu</router-link>
+      <p class="text-xl">{{ $t('common.gameNotFound') }}</p>
+      <router-link to="/" class="btn btn-primary mt-4">{{ $t('common.backToHome') }}</router-link>
     </div>
 
     <div v-else>
@@ -27,10 +27,10 @@
       <div v-if="gameInLibraryId" class="alert bg-gradient-to-r from-sky-400 via-blue-500 to-sky-600 text-white shadow-xl relative overflow-hidden border-2 border-sky-300 mb-6">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-8 h-8 drop-shadow-md"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <div>
-          <h3 class="font-bold text-lg drop-shadow">Ova igra je već u tvojoj kolekciji!</h3>
-          <div class="text-sm text-sky-100 drop-shadow-sm">Možeš je urediti ili pogledati detalje u svojoj biblioteci.</div>
+          <h3 class="font-bold text-lg drop-shadow">{{ $t('apiGameDetails.thisGameIsAlreadyIn') }}</h3>
+          <div class="text-sm text-sky-100 drop-shadow-sm">{{ $t('apiGameDetails.youCanEditItOr') }}</div>
         </div>
-        <router-link :to="`/game/${gameInLibraryId}`" class="btn btn-sm bg-white text-blue-600 hover:bg-sky-50 border-none ml-auto shadow-md">Prikaži u biblioteci</router-link>
+        <router-link :to="`/game/${gameInLibraryId}`" class="btn btn-sm bg-white text-blue-600 hover:bg-sky-50 border-none ml-auto shadow-md">{{ $t('apiGameDetails.viewInLibrary') }}</router-link>
       </div>
 
 <!-- Hero -->
@@ -40,10 +40,10 @@
         <div class="hero-overlay bg-gradient-to-t from-base-100 to-transparent opacity-90"></div>
         <div class="hero-content text-neutral-content w-full h-full flex flex-col justify-between items-start !p-4 sm:!p-8">
           <div v-if="!previewGameId" class="flex w-full justify-between items-start">
-            <router-link v-if="!previewGameId" to="/add-game" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">❮ Natrag</router-link>
+            <router-link v-if="!previewGameId" to="/add-game" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm">{{ $t('common.back') }}</router-link>
             <button @click="shareGame" class="btn btn-sm btn-ghost bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-              Podijeli
+              {{ $t('common.share') }}
             </button>
           </div>
           <div class="mt-auto w-full lg:flex lg:items-end lg:gap-5">
@@ -65,7 +65,7 @@
         <!-- Informacije -->
         <div class="card bg-base-200 shadow-xl lg:col-span-2">
           <div class="card-body p-3 sm:p-4 flex flex-col">
-            <h2 class="card-title text-base m-0 mb-3">Informacije</h2>
+            <h2 class="card-title text-base m-0 mb-3">{{ $t('common.information') }}</h2>
 
             <!-- Metacritic + ESRB -->
             <div class="flex flex-wrap items-center justify-evenly gap-x-10 gap-y-3 bg-base-300 rounded-xl p-3 w-full mb-3">
@@ -98,7 +98,7 @@
             <div v-if="platformList.length > 0" class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" /></svg>
-                  Platforme
+                  {{ $t('common.platforms') }}
               </span>
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <span v-for="p in platformList" :key="p" class="tooltip tooltip-top flex items-center justify-center" :data-tip="p" :title="p">
@@ -111,7 +111,7 @@
             <div v-if="getPublishers() !== 'N/A'" class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                Izdavač
+                {{ $t('common.publisherLabel') }}
               </span>
               <span class="text-sm font-semibold text-right">{{ getPublishers() }}</span>
             </div>
@@ -120,7 +120,7 @@
             <div class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" /></svg>
-                Datum izdavanja
+                {{ $t('common.releaseDate') }}
               </span>
               <span class="text-sm font-semibold text-right">{{ formatDate(game.released) }}</span>
             </div>
@@ -129,14 +129,14 @@
             <div v-if="game.website" class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 text-sm opacity-70 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>
-                Službena stranica
+                {{ $t('common.officialWebsite') }}
               </span>
-              <a :href="game.website" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm font-semibold">Otvori</a>
+              <a :href="game.website" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm font-semibold">{{ $t('common.open') }}</a>
             </div>
 
             <div v-if="!previewGameId" class="flex gap-2 mt-4 pt-3 border-t border-base-300">
               <button @click="openAddToCollectionModal" class="btn btn-primary btn-sm flex-1 px-1">
-                Dodaj u Gamenote
+                {{ $t('common.addToGamenote') }}
               </button>
             </div>
           </div>
@@ -147,17 +147,17 @@
           <div class="card-body p-3 sm:p-4 flex flex-col">
             <div class="flex flex-col flex-1">
               <div role="tablist" class="tabs tabs-lift" @keydown="handleTabKeys">
-                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'" aria-label="Informacije" :id="fieldId + '-tab-info'" :aria-controls="fieldId + '-panel-info'" :tabindex="activeInfoTab === 'info' ? 0 : -1">
+                <button role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'info' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'info'" @click="activeInfoTab = 'info'" :aria-label="$t('common.information')" :id="fieldId + '-tab-info'" :aria-controls="fieldId + '-panel-info'" :tabindex="activeInfoTab === 'info' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
-                  <span class="hidden sm:inline font-bold">Informacije</span>
+                  <span class="hidden sm:inline font-bold">{{ $t('common.information') }}</span>
                 </button>
-                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'" aria-label="Serija igara" :id="fieldId + '-tab-series'" :aria-controls="fieldId + '-panel-series'" :tabindex="activeInfoTab === 'series' ? 0 : -1">
+                <button v-if="gameSeries.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'series' ? 'tab-active [--tab-bg:var(--color-base-300)]!' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'series'" @click="activeInfoTab = 'series'" :aria-label="$t('common.gameSeries')" :id="fieldId + '-tab-series'" :aria-controls="fieldId + '-panel-series'" :tabindex="activeInfoTab === 'series' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-                  <span class="hidden sm:inline font-bold">Serija igara</span>
+                  <span class="hidden sm:inline font-bold">{{ $t('common.gameSeries') }}</span>
                 </button>
-                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-active' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'" aria-label="Slike igre" :id="fieldId + '-tab-screens'" :aria-controls="fieldId + '-panel-screens'" :tabindex="activeInfoTab === 'screens' ? 0 : -1">
+                <button v-if="screenshots.length > 0" role="tab" class="tab tab-lifted gap-1.5" :class="activeInfoTab === 'screens' ? 'border-[--tab-border] [--tab-bg:var(--color-base-300)]! tab-active' : 'opacity-60 hover:opacity-100'" :aria-selected="activeInfoTab === 'screens'" @click="activeInfoTab = 'screens'" :aria-label="$t('common.gameImages')" :id="fieldId + '-tab-screens'" :aria-controls="fieldId + '-panel-screens'" :tabindex="activeInfoTab === 'screens' ? 0 : -1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-                  <span class="hidden sm:inline font-bold">Slike igre</span>
+                  <span class="hidden sm:inline font-bold">{{ $t('common.gameImages') }}</span>
                 </button>
               </div>
 
@@ -165,8 +165,8 @@
                 <!-- Opis -->
                 <div v-show="activeInfoTab === 'info'" class="flex flex-col gap-3 flex-1" role="tabpanel" :id="fieldId + '-panel-info'" :aria-labelledby="fieldId + '-tab-info'">
                   <div>
-                    <h3 class="text-lg font-bold">Opis</h3>
-                    <p class="whitespace-pre-wrap">{{ game.description_raw || 'Nema opisa.' }}</p>
+                    <h3 class="text-lg font-bold">{{ $t('common.description') }}</h3>
+                    <p class="whitespace-pre-wrap">{{ game.description_raw || $t('common.noDescription') }}</p>
                   </div>
                 </div>
 
@@ -179,9 +179,9 @@
                       </figure>
                       <div class="card-body p-4">
                         <h4 class="card-title text-sm">{{ previousGame.name }}</h4>
-                        <p class="text-xs text-gray-500">Prethodna igra • {{ formatDate(previousGame.released) }}</p>
+                        <p class="text-xs text-gray-500">{{ $t('common.previousGame') }} {{ formatDate(previousGame.released) }}</p>
                         <div class="card-actions justify-end mt-2">
-                          <router-link :to="`/api-games/${previousGame.id}`" class="btn btn-xs btn-primary">Pogledaj</router-link>
+                          <router-link :to="`/api-games/${previousGame.id}`" class="btn btn-xs btn-primary">{{ $t('common.view') }}</router-link>
                         </div>
                       </div>
                     </div>
@@ -192,28 +192,28 @@
                       </figure>
                       <div class="card-body p-4">
                         <h4 class="card-title text-sm">{{ nextGame.name }}</h4>
-                        <p class="text-xs text-gray-500">Sljedeća igra • {{ formatDate(nextGame.released) }}</p>
+                        <p class="text-xs text-gray-500">{{ $t('common.nextGame') }} {{ formatDate(nextGame.released) }}</p>
                         <div class="card-actions justify-end mt-2">
-                          <router-link :to="`/api-games/${nextGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
+                          <router-link :to="`/api-games/${nextGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">{{ $t('common.view') }}</router-link>
                         </div>
                       </div>
                     </div>
 
                     <div v-if="!previousGame" class="card bg-base-100 shadow-sm">
                       <div class="card-body p-4 text-center">
-                        <p class="text-sm text-gray-500">Nema prethodne igre u seriji</p>
+                        <p class="text-sm text-gray-500">{{ $t('common.noPreviousGameInThe') }}</p>
                       </div>
                     </div>
 
                     <div v-if="!nextGame" class="card bg-base-100 shadow-sm">
                       <div class="card-body p-4 text-center">
-                        <p class="text-sm text-gray-500">Ova igra je najnovija u seriji! 😊</p>
+                        <p class="text-sm text-gray-500">{{ $t('common.thisIsTheLatestGame') }}</p>
                       </div>
                     </div>
                   </div>
 
                   <div v-if="!previousGame && !nextGame && !isLatestGame && gameSeries.length > 1" class="mt-4">
-                    <h4 class="text-md font-semibold mb-2">Sve igre u seriji:</h4>
+                    <h4 class="text-md font-semibold mb-2">{{ $t('common.allGamesInTheSeries') }}</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div v-for="seriesGame in filteredSeriesGames" :key="seriesGame.id" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
                         <figure class="px-4 pt-4">
@@ -223,7 +223,7 @@
                           <h4 class="card-title text-sm">{{ seriesGame.name }}</h4>
                           <p class="text-xs text-gray-500">{{ formatDate(seriesGame.released) }}</p>
                           <div class="card-actions justify-end mt-2">
-                            <router-link :to="`/api-games/${seriesGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">Pogledaj</router-link>
+                            <router-link :to="`/api-games/${seriesGame.id}`" class="btn btn-xs btn-primary" @click="activeInfoTab = 'info'">{{ $t('common.view') }}</router-link>
                           </div>
                         </div>
                       </div>
@@ -275,16 +275,16 @@
       </div>
 
       <!-- Screenshot lightbox -->
-      <AppModal v-if="selectedScreenshotIndex !== null" label="Pregled screenshotova" @close="closeScreenshotModal">
+      <AppModal v-if="selectedScreenshotIndex !== null" :label="$t('common.screenshotPreview')" @close="closeScreenshotModal">
         <ScreenshotViewer :images="screenshots" :selected-index="selectedScreenshotIndex" @select="openScreenshotModal" @close="closeScreenshotModal" />
       </AppModal>
     </div>
 
     <!-- dodaj kolekciju -->
-    <AppModal v-if="showAddModal" label="Dodaj u Gamenote" :busy="saveLoading" @close="closeAddModal">
+    <AppModal v-if="showAddModal" :label="$t('common.addToGamenote')" :busy="saveLoading" @close="closeAddModal">
       <div class="modal-box max-w-2xl">
-          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" aria-label="Zatvori" :disabled="saveLoading" @click.stop="closeAddModal">✕</button>
-        <h3 class="font-bold text-2xl mb-4">Dodaj u Gamenote</h3>
+          <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-20" :aria-label="$t('common.close')" :disabled="saveLoading" @click.stop="closeAddModal">✕</button>
+        <h3 class="font-bold text-2xl mb-4">{{ $t('common.addToGamenote') }}</h3>
         
         <div v-if="game" class="mb-6">
           <div class="flex gap-4 mb-4">
@@ -296,8 +296,8 @@
             <div class="min-w-0">
               <h4 class="text-[1.375rem] font-bold [overflow-wrap:anywhere]">{{ game.name }}</h4>
               <p class="text-sm opacity-70">{{ formatDate(game.released) }}</p>
-              <p class="text-sm"><strong>Žanr:</strong> {{ getGenres() }}</p>
-              <p class="text-sm"><strong>Izdavač:</strong> {{ getPublishers() }}</p>
+              <p class="text-sm"><strong>{{ $t('common.genreLabel') }}</strong> {{ getGenres() }}</p>
+              <p class="text-sm"><strong>{{ $t('common.publisher') }}</strong> {{ getPublishers() }}</p>
             </div>
           </div>
         </div>
@@ -305,14 +305,14 @@
         <form @submit.prevent="saveToCollection" class="space-y-6">
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control col-span-2 sm:col-span-1">
-              <label class="label font-medium" :for="fieldId + '-1'">Naziv</label>
+              <label class="label font-medium" :for="fieldId + '-1'">{{ $t('common.name') }}</label>
               <input type="text" v-model="collectionForm.title" class="input input-bordered" required  :id="fieldId + '-1'" />
             </div>
             
             <div class="form-control col-span-2 sm:col-span-1">
-              <label class="label font-medium" :for="fieldId + '-2'">Platforma</label>
+              <label class="label font-medium" :for="fieldId + '-2'">{{ $t('common.platform') }}</label>
               <select v-model="collectionForm.platform" class="select select-bordered" required :id="fieldId + '-2'">
-                <option value="" disabled>Odaberi platformu</option>
+                <option value="" disabled>{{ $t('common.chooseAPlatform') }}</option>
                 <option v-for="platform in platforms" :key="platform" :value="platform">
                   {{ platform }}
                 </option>
@@ -320,12 +320,12 @@
             </div>
             
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-3'">Vrijeme igranja <span class="sr-only sm:not-sr-only">(sati)</span></label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-3'">{{ $t('common.playtime') }} <span class="sr-only sm:not-sr-only">{{ $t('common.hoursLabel') }}</span></label>
               <input type="number" v-model="collectionForm.play_time" class="input input-bordered w-full min-w-0 min-h-11 sm:min-h-10" min="0"  :id="fieldId + '-3'" />
             </div>
             
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-4'">Status</label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-4'">{{ $t('common.status') }}</label>
               <select v-model="collectionForm.status" class="select select-bordered w-full min-w-0 font-semibold" :class="GAME_STATUS_SELECT_CLASS[collectionForm.status]" :id="fieldId + '-4'">
                 <option value="" disabled class="bg-base-100 text-base-content font-normal">{{ statusPlaceholder }}</option>
                 <option v-for="s in GAME_STATUS" :key="s.key" :value="s.key" class="bg-base-100 text-base-content font-normal">{{ s.label }}</option>
@@ -333,23 +333,23 @@
             </div>
 
             <div class="form-control col-span-2 flex items-center gap-2">
-              <span :id="fieldId + '-rating-label'" class="label font-medium shrink-0">Ocjena (1-5)</span>
+              <span :id="fieldId + '-rating-label'" class="label font-medium shrink-0">{{ $t('common.rating15') }}</span>
               <div class="rating rating-sm sm:rating-md shrink-0" role="radiogroup" :aria-labelledby="fieldId + '-rating-label'">
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating"  aria-label="1 od 5" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating"  aria-label="2 od 5" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating"  aria-label="3 od 5" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating"  aria-label="4 od 5" />
-                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating"  aria-label="5 od 5" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="1" v-model="collectionForm.rating"  :aria-label="$t('common.value1OutOf5')" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="2" v-model="collectionForm.rating"  :aria-label="$t('common.value2OutOf5')" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="3" v-model="collectionForm.rating"  :aria-label="$t('common.value3OutOf5')" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="4" v-model="collectionForm.rating"  :aria-label="$t('common.value4OutOf5')" />
+                <input type="radio" name="collection-rating" class="mask mask-star-2 bg-orange-400" value="5" v-model="collectionForm.rating"  :aria-label="$t('common.value5OutOf5')" />
               </div>
             </div>
           </div>
 
           <fieldset class="min-w-0 rounded-box border border-base-300 bg-base-300/30 p-4 space-y-4">
-            <legend class="sr-only">Napredak igre</legend>
+            <legend class="sr-only">{{ $t('common.gameProgress') }}</legend>
             <div class="form-control">
-              <label class="label font-medium" :for="fieldId + '-5'">Vrsta napretka</label>
+              <label class="label font-medium" :for="fieldId + '-5'">{{ $t('common.progressType') }}</label>
               <select v-model="collectionForm.progress_mode" class="select select-bordered w-full" :id="fieldId + '-5'">
-                <option value="" disabled>Odaberi način praćenja</option>
+                <option value="" disabled>{{ $t('common.chooseHowToTrackProgress') }}</option>
                 <option v-for="mode in PROGRESS_MODES" :key="mode.key" :value="mode.key">{{ mode.label }}</option>
               </select>
             </div>
@@ -359,20 +359,20 @@
                 <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-8'">
-                      Ukupno
+                      {{ $t('common.total') }}
                     </label>
                     <input
                       type="number"
                       v-model.number="collectionForm.progress_total"
                       class="input input-bordered w-full min-w-0 font-bold"
                       min="0"
-                      placeholder="npr. 50"
+                      :placeholder="$t('common.eG50')"
                      :id="fieldId + '-8'" />
                   </div>
 
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-9'">
-                      Ostvareno
+                      {{ $t('common.earned') }}
                     </label>
                     <input
                       type="number"
@@ -380,24 +380,24 @@
                       class="input input-bordered w-full min-w-0 font-bold text-success"
                       min="0"
                       :max="collectionForm.progress_total || undefined"
-                      placeholder="npr. 25"
+                      :placeholder="$t('common.eG25')"
                      :id="fieldId + '-9'" />
 
                   </div>
 
                   <div class="form-control min-w-0">
-                    <label class="label font-medium text-sm" :for="fieldId + '-10'">Jedinica</label>
+                    <label class="label font-medium text-sm" :for="fieldId + '-10'">{{ $t('common.unit') }}</label>
                     <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-10'">
                       <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ collectionForm.progress_unit || selectedCollectionProgressMode.defaultUnit || '—' }}</code>
                     </output>
                   </div>
                   <div class="col-span-3">
                     <span class="text-xs opacity-70">
-                      Napredak:
+                      {{ $t('common.progressLabel') }}
                       <strong v-if="collectionForm.progress_total > 0">
                         {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
                       </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
+                      <span v-else class="text-warning">{{ $t('common.setATotal') }}</span>
                     </span>
                   </div>
                 </div>
@@ -407,20 +407,20 @@
                 <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content] gap-2 sm:gap-4">
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-11'">
-                      Ukupno
+                      {{ $t('common.total') }}
                     </label>
                     <input
                       type="number"
                       v-model.number="collectionForm.progress_total"
                       class="input input-bordered w-full min-w-0 font-bold"
                       min="0"
-                      placeholder="npr. 251"
+                      :placeholder="$t('common.eG251')"
                      :id="fieldId + '-11'" />
                   </div>
 
                   <div class="form-control">
                     <label class="label font-medium text-sm" :for="fieldId + '-12'">
-                      Uhvaćeno
+                      {{ $t('common.caught') }}
                     </label>
                     <input
                       type="number"
@@ -428,24 +428,24 @@
                       class="input input-bordered w-full min-w-0 font-bold text-success"
                       min="0"
                       :max="collectionForm.progress_total || undefined"
-                      placeholder="npr. 150"
+                      :placeholder="$t('common.eG150')"
                      :id="fieldId + '-12'" />
 
                   </div>
 
                   <div class="form-control min-w-0">
-                    <label class="label font-medium text-sm" :for="fieldId + '-13'">Jedinica</label>
+                    <label class="label font-medium text-sm" :for="fieldId + '-13'">{{ $t('common.unit') }}</label>
                     <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-13'">
                       <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ collectionForm.progress_unit || selectedCollectionProgressMode.defaultUnit || '—' }}</code>
                     </output>
                   </div>
                   <div class="col-span-3">
                     <span class="text-xs opacity-70">
-                      Napredak:
+                      {{ $t('common.progressLabel') }}
                       <strong v-if="collectionForm.progress_total > 0">
                         {{ Math.round((collectionForm.progress_value / collectionForm.progress_total) * 100) }}%
                       </strong>
-                      <span v-else class="text-warning">postavi ukupno</span>
+                      <span v-else class="text-warning">{{ $t('common.setATotal') }}</span>
                     </span>
                   </div>
                 </div>
@@ -453,15 +453,15 @@
 
               <div v-else class="grid grid-cols-2 gap-2 sm:gap-4">
                 <div class="form-control" v-if="selectedCollectionProgressMode.kind === 'count' || selectedCollectionProgressMode.kind === 'rank'">
-                  <label class="label font-medium text-sm" :for="fieldId + '-14'">Vrijednost</label>
+                  <label class="label font-medium text-sm" :for="fieldId + '-14'">{{ $t('common.value') }}</label>
                   <input type="number" v-model.number="collectionForm.progress_value" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-14'" />
                 </div>
                 <div class="form-control" v-if="selectedCollectionProgressMode.requiresTotal">
-                  <label class="label font-medium text-sm" :for="fieldId + '-15'">Ukupno</label>
+                  <label class="label font-medium text-sm" :for="fieldId + '-15'">{{ $t('common.total') }}</label>
                   <input type="number" v-model.number="collectionForm.progress_total" class="input input-bordered w-full min-w-0" min="0"  :id="fieldId + '-15'" />
                 </div>
                 <div class="form-control">
-                  <label class="label font-medium text-sm" :for="fieldId + '-16'">Jedinica</label>
+                  <label class="label font-medium text-sm" :for="fieldId + '-16'">{{ $t('common.unit') }}</label>
                   <output class="flex min-h-10 items-center text-base-content/70" :id="fieldId + '-16'">
                     <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ collectionForm.progress_unit || selectedCollectionProgressMode.defaultUnit || '—' }}</code>
                   </output>
@@ -472,12 +472,12 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-6'">Datum početka</label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-6'">{{ $t('common.startDate') }}</label>
               <input type="date" v-model="collectionForm.start_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-6'" />
             </div>
 
             <div class="form-control min-w-0">
-              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-7'">Datum završetka</label>
+              <label class="label font-medium text-sm sm:text-base" :for="fieldId + '-7'">{{ $t('common.endDate') }}</label>
               <input type="date" v-model="collectionForm.end_date" class="input input-bordered w-full min-w-0 px-2 sm:px-3"  :id="fieldId + '-7'" />
             </div>
           </div>
@@ -487,12 +487,12 @@
           <div class="form-control bg-base-200/50 p-4 rounded-box border border-base-300">
             <label class="label cursor-pointer justify-start gap-4 mb-2">
               <input type="checkbox" v-model="showGroupSelector" class="checkbox" />
-              <span class="label-text font-medium text-base">Dodaj u grupe/kolekcije</span>
+              <span class="label-text font-medium text-base">{{ $t('apiGameDetails.addToGroupsCollections') }}</span>
             </label>
 
             <div v-if="showGroupSelector" class="mt-2">
-              <div v-if="groupsLoading" class="text-sm opacity-70">Učitavam grupe...</div>
-              <div v-else-if="groups.length === 0" class="text-sm opacity-70">Nema dostupnih grupa. Kreiraj prvu!</div>
+              <div v-if="groupsLoading" class="text-sm opacity-70">{{ $t('common.loadingGroups') }}</div>
+              <div v-else-if="groups.length === 0" class="text-sm opacity-70">{{ $t('common.noGroupsAvailableCreateYour') }}</div>
               <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <label v-for="group in groups" :key="group.id" class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-base-300 bg-base-100 hover:border-primary transition-colors">
                   <input 
@@ -508,7 +508,7 @@
           </div>
           
           <div class="form-control">
-            <label class="label font-medium" :for="fieldId + '-17'">Bilješke</label>
+            <label class="label font-medium" :for="fieldId + '-17'">{{ $t('common.notes') }}</label>
             <textarea v-model="collectionForm.notes" class="textarea textarea-bordered h-24 w-full" :id="fieldId + '-17'"></textarea>
           </div>
           
@@ -517,10 +517,10 @@
           <div class="modal-action">
             <button type="submit" class="btn btn-primary" :disabled="saveLoading">
               <span v-if="saveLoading" class="loading loading-spinner"></span>
-              <span v-else>Dodaj u Gamenote</span>
+              <span v-else>{{ $t('common.addToGamenote') }}</span>
             </button>
             <button type="button" @click="closeAddModal" class="btn btn-secondary">
-              Odustani
+              {{ $t('common.cancel') }}
             </button>
           </div>
         </form>
@@ -536,6 +536,7 @@
 </template>
 
 <script>
+import { formatLocale, t } from '../i18n/index.js';
 import ScreenshotViewer from '../components/ScreenshotViewer.vue';
 import { useStatusPlaceholder } from '../composables/useStatusPlaceholder.js';
 import { handleTabKeys } from '../services/tabNavigation.js';
@@ -548,6 +549,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGamesApi } from '../services/gamesApi';
 import { useUserStore } from '../stores/user';
 import { supabase } from '../supabase';
+import { invalidateGames } from '../services/libraryCache.js';
 import { PROGRESS_MODES, PROGRESS_MODE_MAP } from '../constants/progressModes';
 import { GAME_STATUS, GAME_STATUS_SELECT_CLASS } from '../constants/gameStatus';
 import { listGroups, addGameToGroup } from '../services/groupsApi';
@@ -643,7 +645,7 @@ export default {
       try {
         const details = await gamesApi.getGameDetails(gameId);
         if (!details) {
-          if (version === loadVersion) error.value = 'Igra nije pronađena.';
+          if (version === loadVersion) error.value = t('apiGameDetails.gameNotFound');
           return;
         }
         const [pictures, series, library] = await Promise.all([
@@ -657,7 +659,7 @@ export default {
         gameSeries.value = series.results || [];
         gameInLibraryId.value = library.data?.[0]?.id || null;
       } catch (failure) {
-        if (version === loadVersion) error.value = failure.message || 'Učitavanje nije uspjelo.';
+        if (version === loadVersion) error.value = failure.message || t('common.couldntLoadTheData');
       } finally {
         if (version === loadVersion) loading.value = false;
       }
@@ -715,7 +717,7 @@ export default {
       try {
         const shareUrl = `${window.location.origin}/shared?id=${game.value.id}`;
         await navigator.clipboard.writeText(shareUrl);
-        showToast('Link je kopiran u međuspremnik!');
+        showToast(t('common.linkCopiedToClipboard'));
       } catch (err) {
         console.error('Failed to copy text: ', err);
       }
@@ -841,7 +843,7 @@ export default {
     
     const formatDate = (dateString) => {
       if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('hr-HR');
+      return new Date(dateString).toLocaleDateString(formatLocale.value);
     };
     
     const getMetacriticColorClass = (score) => {
@@ -1006,10 +1008,11 @@ export default {
 
         if (error) {
           console.error('Error saving game:', error);
-          saveError.value = error.message || 'Greška pri dodavanju igre';
+          saveError.value = error.message || t('apiGameDetails.couldntAddTheGame');
           return;
         }
 
+        invalidateGames(ownerId);
         const newGameId = insertedGame?.id;
         let groupFailed = false;
         
@@ -1028,13 +1031,13 @@ export default {
           }
         }
 
-        if (groupFailed) showToast('Igra je dodana, ali neke grupe nisu spremljene. Uredi ih iz detalja igre.', 'error');
-        else showToast(`${collectionForm.title} uspješno dodana u kolekciju!`);
+        if (groupFailed) showToast(t('apiGameDetails.theGameWasAddedBut'), 'error');
+        else showToast(t('apiGameDetails.wasAddedToYourCollection', [collectionForm.title]));
         closeAddModal();
         setTimeout(() => router.push('/library'), 1000);
       } catch (error) {
         console.error('Error saving game:', error);
-        saveError.value = error.message || 'Greška pri dodavanju igre';
+        saveError.value = error.message || t('apiGameDetails.couldntAddTheGame');
       } finally {
         saveLoading.value = false;
       }

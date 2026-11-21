@@ -67,7 +67,7 @@ export async function checkAuthStartup(browser, origin, artifacts) {
   const errors = [];
   let checks = 0;
   const open = async (path = '/', width = 390) => {
-    const context = await browser.newContext({ viewport: { width, height: 844 } });
+    const context = await browser.newContext({ locale: 'hr-HR', viewport: { width, height: 844 } });
     await context.addInitScript(options => { window.startupOptions = options; }, { path });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
@@ -238,7 +238,7 @@ export async function checkAuthStartup(browser, origin, artifacts) {
       return route.fulfill({ contentType: 'image/png', body: png });
     });
     const setAvatar = (url, owner = 'startup-user') => page.evaluate(({ url, owner }) => {
-      window.startupStore.setUser({ id: owner, email: 'avatar@example.test', user_metadata: { name: 'Avatar', avatar_url: url } });
+      window.startupStore.setSession({ user: { id: owner, email: 'avatar@example.test', user_metadata: { name: 'Avatar', avatar_url: url } } });
     }, { url, owner });
     await setAvatar('https://avatar.test/transient');
     const avatar = page.locator('header img[alt="Profilna slika"]');
