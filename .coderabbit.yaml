@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+tone_instructions: >-
+  Write precise, professional English. For actionable findings, state the severity,
+  impact, and a concrete fix with a short code example where applicable.
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  high_level_summary_instructions: >-
+    Summarize the changes and list any breaking changes with their affected callers.
+    Call out build, localization, unit test, or Playwright regression risks.
+    Distinguish CI results from checks inferred by review.
+  sequence_diagrams: false
+  poem: false
+  collapse_walkthrough: false
+  review_status: true
+  commit_status: true
+  fail_commit_status: false
+  auto_approvals:
+    enabled: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 0
+    drafts: true
+    base_branches: [".*"]
+    ignore_usernames: []
+  path_filters:
+    # Uključi lockfile PR-ove.
+    - "**/package-lock.json"
+    - "**/*.lock"
+    - "!**/coverage/**"
+    - "!**/playwright-report/**"
+    - "!**/test-results/**"
+    - "!**/.nyc_output/**"
+    - "!**/.netlify/**"
+    - "!netlify/functions/lib/card-renderer/**"
+  path_instructions:
+    - path: "**"
+      instructions: |
+        Review each changed file for correctness, security and regressions. Prioritize build and test failures,
+        broken routes or component contracts, authentication and authorization gaps, exposed secrets, and unhandled failures.
+        Surface confirmed dependency risks in the walkthrough. Keep inline comments off generated files and lockfiles.
+    - path: "src/supabase.js"
+      instructions: |
+        Verify that the Supabase URL and public key come from environment variables. Flag privileged keys in client code
+        and changes that break session refresh or expiration handling.
+    - path: "src/services/**"
+      instructions: |
+        Check token storage, input validation, error responses, and compatibility of exported functions with their callers.
+    - path: "src/stores/**"
+      instructions: |
+        Check session refresh, account changes, and TOTP and recovery flows. Verify that authorization is enforced by the
+        server or RLS wherever client state can be modified.
+    - path: "src/**/*.vue"
+      instructions: |
+        Flag unsafe HTML or URLs, leaked user data, and prop or event changes that break callers. Check both i18n locales
+        for UI changes and preserve the platform and game status labels defined by the repository.
+    - path: "netlify/**"
+      instructions: |
+        Check authorization and user scoping in functions, server-only secret handling, input validation, and responses.
+        Flag unsafe redirects or outbound URL validation changes that permit access to internal services.
+    - path: "tests/**"
+      instructions: |
+        Flag deleted or weakened regression coverage, missing assertions for changed behavior, and browser tests that
+        can reach live Supabase or external providers instead of fixtures.
+    - path: ".github/workflows/**"
+      instructions: |
+        Require full commit SHA pins for external actions and minimal permissions. Flag unsafe pull_request_target
+        checkouts, potential secret disclosure, and direct interpolation of untrusted event data in shell commands.
+        Verify that fork and Dependabot PRs can run the checks with fixture data and without privileged secrets.
+    - path: "**/package.json"
+      instructions: |
+        Check whether dependency changes are justified, compatible with the supported Node versions and peer dependencies,
+        and reflected in the lockfile. Check for suspicious package names, install scripts, advisories, and license changes.
+  tools:
+    actionlint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    osvScanner:
+      enabled: true
+    yamllint:
+      enabled: true

@@ -15,6 +15,11 @@
   port = 8888
   autoLaunch = false
 
+[[headers]]
+  for = "/.well-known/apple-app-site-association"
+  [headers.values]
+    Content-Type = "application/json"
+
 [[redirects]]
   from = "/api/rawg/*"
   to = "https://api.rawg.io/api/:splat"

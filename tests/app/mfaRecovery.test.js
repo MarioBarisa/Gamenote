@@ -68,6 +68,46 @@ function fixture() {
   };
 }
 
+test('Pogrešna konfiguracija bilježi samo nazive varijabli', async context => {
+  const diagnostics = context.mock.method(console, 'warn', () => {});
+  const handler = createHandler({
+    SUPABASE_URL: 'https://supabase.test',
+    MFA_RECOVERY_KEY: 'invalid-test-key',
+  }, () => assert.fail('Supabase se poziva uz neispravnu konfiguraciju'));
+  const event = {
+    httpMethod: 'POST',
+    headers: { authorization: 'Bearer fake-token' },
+    body: '{',
+  };
+
+  for (const result of [await handler(event), await handler(event)]) {
+    assert.equal(result.statusCode, 503);
+    assert.deepEqual(JSON.parse(result.body), { error: 'unavailable' });
+  }
+  assert.equal(diagnostics.mock.callCount(), 1);
+  assert.deepEqual(diagnostics.mock.calls[0].arguments, [
+    '[mfa-recovery] Missing or invalid runtime variables: SUPABASE_SERVICE_ROLE_KEY, MFA_RECOVERY_KEY',
+  ]);
+});
+
+test('Koristi javni Supabase URL kad serverski alias nedostaje', async () => {
+  const handler = createHandler({
+    VITE_SUPABASE_URL: 'https://supabase.test',
+    SUPABASE_SERVICE_ROLE_KEY: 'fixture',
+    MFA_RECOVERY_KEY: Buffer.alloc(32, 19).toString('base64'),
+  }, (url, serviceKey) => {
+    assert.equal(url, 'https://supabase.test');
+    assert.equal(serviceKey, 'fixture');
+    return { auth: { getUser: async () => ({ error: new Error('Nevaljan token') }) } };
+  });
+  const result = await handler({
+    httpMethod: 'POST',
+    headers: { authorization: 'Bearer fake-token' },
+    body: JSON.stringify({ action: 'status' }),
+  });
+  assert.equal(result.statusCode, 401);
+});
+
 test('Kodovi se izdaju samo uz AAL2 i pohranjuju kao kompaktan šifrat', async () => {
   const app = fixture();
   assert.equal((await app.call('aal1', 'issue', { factorId: 'factor' })).status, 403);

@@ -37,13 +37,25 @@ function unseal(payload, key, userId, factorId) {
 }
 
 function createHandler(env = process.env, connect = createClient) {
+  let reportedConfigurationError = false;
   return async event => {
     if (event.httpMethod !== 'POST') return reply(405, { error: 'method' });
     const jwt = event.headers?.authorization?.match(/^Bearer (\S+)$/i)?.[1];
     if (!jwt) return reply(401, { error: 'session' });
-    const { SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: serviceKey, MFA_RECOVERY_KEY } = env;
+    const { SUPABASE_SERVICE_ROLE_KEY: serviceKey, MFA_RECOVERY_KEY } = env;
+    const url = env.SUPABASE_URL?.trim() || env.VITE_SUPABASE_URL?.trim();
     const key = Buffer.from(MFA_RECOVERY_KEY || '', 'base64');
-    if (!url || !serviceKey || key.length !== 32) return reply(503, { error: 'unavailable' });
+    const invalidVariables = [];
+    if (!url) invalidVariables.push('SUPABASE_URL or VITE_SUPABASE_URL');
+    if (!serviceKey?.trim()) invalidVariables.push('SUPABASE_SERVICE_ROLE_KEY');
+    if (key.length !== 32) invalidVariables.push('MFA_RECOVERY_KEY');
+    if (invalidVariables.length) {
+      if (!reportedConfigurationError) {
+        console.warn('[mfa-recovery] Missing or invalid runtime variables: ' + invalidVariables.join(', '));
+        reportedConfigurationError = true;
+      }
+      return reply(503, { error: 'unavailable' });
+    }
     if (!event.body || event.body.length > 1024 || event.isBase64Encoded) return reply(400, { error: 'request' });
 
     let body;

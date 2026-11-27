@@ -5,7 +5,16 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "04:00"
+      timezone: "Europe/Zagreb"
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
     open-pull-requests-limit: 10
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Europe/Zagreb"
